@@ -1,0 +1,26 @@
+{
+  "name": "blogify",
+  "version": "1.0.0",
+  "description": "The Blogging Platform with User Authentication project is a web application where users can create, manage, and share blog posts. The platform allows users to register, log in, and maintain personal profiles. Once logged in, users can write new posts, edit or delete existing ones, and view posts by other users. The application also supports features like commenting, tagging, and searching for posts.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Abdellah Nait Hadid",
+  "license": "ISC"
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.19.0",
+    "cloudinary": "^1.27.1",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "express-fileupload": "^1.2.1",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^6.1.0",
+    "nodemailer": "^6.7.2",
+    "stripe": "^8.195.0",
+    "validator": "^13.7.0"
+  }
+}
