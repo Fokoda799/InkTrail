@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import UserController from '../controllers/userController.js';
-// import AuthController from '../controllers/authController.js';
+import AuthController from '../controllers/authController.js';
 
 // Create a new router
 const router = Router();
@@ -13,8 +13,8 @@ router.put('/users/:id', UserController.updateUser);
 router.delete('/users/:id', UserController.deleteUser);
 
 // Define auth routes
-// router.post('/login', AuthController.connectUser);
-// router.get('/me', UserController.getMe);
+router.get('/login', AuthController.connectUser);
+router.get('/user/me', UserController.getMe);
 // router.post('/logout', AuthController.disconnectUser);
 
 export default router;

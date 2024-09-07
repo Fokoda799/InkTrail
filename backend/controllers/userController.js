@@ -1,4 +1,5 @@
-import User from '../modules/userModel.js';
+import User from '../models/userModel.js';
+import jwt from 'jsonwebtoken';
 
 class UserController {
     // @desc    Get all users
@@ -97,6 +98,51 @@ class UserController {
             res.status(500).json({ message: error.message });
         }
     }
+
+    // @desc    Get the connected user
+    // @route   Get /users/me
+    //@ access  User
+    static async getMe(req, res) {
+        try {
+            // Extract the Authorization header
+            const authHeader = req.headers.authorization;
+            if (!authHeader || !authHeader.startsWith('Bearer ')) {
+                return res.status(401).json({ message: "Unauthorized, no token provided" });
+            }
+    
+            // Extract the token from the "Bearer <token>" format
+            const authToken = authHeader.split(' ')[1];
+    
+            // Verify the token
+            const decoded = jwt.verify(authToken, process.env.JWT_SECRET);
+            if (!decoded) {
+                return res.status(401).json({ message: "Unauthorized, invalid token" });
+            }
+    
+            // Get the user ID from the decoded token
+            const userId = decoded.user.id;
+    
+            // Find the user by ID
+            const user = await User.findOne({ _id: userId });
+            if (!user) {
+                return res.status(404).json({ message: "User not found" });
+            }
+    
+            // Respond with user details
+            return res.status(200).json({
+                message: "Welcome back",
+                user: {
+                    id: user._id,
+                    username: user.username,
+                    email: user.email,
+                    role: user.role
+                }
+            });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ message: "Internal server error" });
+        }
+    }    
 };
 
 export default UserController;
