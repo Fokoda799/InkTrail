@@ -4,6 +4,7 @@ import cors from 'cors';
 import colors from 'colors';
 import dotenv from 'dotenv';
 import connectDB from './config/db.js';
+import router from './routes/index.js';
 
 // Load env variables
 dotenv.config();
@@ -21,6 +22,9 @@ app.get('/', (req, res) => {
   res.status(200).json({'message': 'API is running...'});
 });
 
+// Import routes
+app.use('/api/v1', router);
+
 // Connect to MongoDB
 connectDB();
 
@@ -28,5 +32,5 @@ connectDB();
 const PORT = process.env.PORT || 8080;
 const DEV_MODE = process.env.DEV_MODE || 'development';
 app.listen(PORT, () => {
-    console.log(`Server is running on ${DEV_MODE} mode, port n ${PORT}`.bgWhite);
+    console.log(`Server is running on ${DEV_MODE} mode, port N ${PORT}`.bgWhite);
 });
