@@ -45,6 +45,27 @@ class AuthController {
             return res.status(500).json({ message: 'Internal server error' });
         }
     }
+
+    // @desc    Disconnect the user
+    // @route   POST /logout
+    // @access  User
+    static async disconnectUser(req, res) {
+        try {
+            const authHeader = req.headers.authorization;
+            if (!authHeader || !authHeader.startsWith('Bearer ')) {
+                return res.status(401).json({ message: "Unauthorized" });
+            }
+            
+            const authToken = authHeader.split(' ')[1];
+            const decoded = jwt.verify(authToken, process.env.JWT_SECRET);
+            if (!decoded) return res.status(401).json({ message: "Unauthorized" });
+
+            return res.status(200).json({ message: "Logged out" });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ message: "Internal server error" });
+        }
+    }
 }
 
 export default AuthController;

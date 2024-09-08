@@ -4,7 +4,8 @@ import cors from 'cors';
 import colors from 'colors';
 import dotenv from 'dotenv';
 import connectDB from './config/db.js';
-import router from './routes/index.js';
+import userRouter from './routes/userRoutes.js';
+import blogRouter from './routes/blogRoutes.js';
 
 // Load env variables
 dotenv.config();
@@ -23,7 +24,8 @@ app.get('/', (req, res) => {
 });
 
 // Import routes
-app.use('/api/v1', router);
+app.use('/api/v1/users', userRouter);
+app.use('/api/v1/blogs', blogRouter);
 
 // Connect to MongoDB
 connectDB();

@@ -34,6 +34,20 @@ const userSchema = new mongoose.Schema({
         enum: ['user', 'admin'],
         default: 'user'
     },
+    avatar: {
+        public_id: {
+            type: String,
+        },
+        url: {
+            type: String,
+        }
+    },
+    blogs: [
+        {
+            type: mongoose.Schema.ObjectId,
+            ref: 'Blog',
+        }
+    ]
 }, { timestamps: true });
 
 // Hash password before saving user
