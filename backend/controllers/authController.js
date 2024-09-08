@@ -1,5 +1,6 @@
 import User from '../models/userModel.js';
-import jwt from 'jsonwebtoken';
+import sendToken from '../utils/jwtToken.js';
+
 
 class AuthController {
     static async connectUser(req, res) {
@@ -32,14 +33,8 @@ class AuthController {
                 return res.status(400).json({ message: 'Invalid credentials' });
             }
 
-            // Create JWT payload
-            const payload = { user: { id: user._id } };
-
-            // Generate token
-            const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
-            if (!token) return res.status(500).json({ message: error.message });
-            return res.status(200).json({ token });
-
+            // Send token
+            sendToken(user, 200, res);
         } catch (error) {
             console.error(error);
             return res.status(500).json({ message: 'Internal server error' });
@@ -51,14 +46,10 @@ class AuthController {
     // @access  User
     static async disconnectUser(req, res) {
         try {
-            const authHeader = req.headers.authorization;
-            if (!authHeader || !authHeader.startsWith('Bearer ')) {
-                return res.status(401).json({ message: "Unauthorized" });
-            }
-            
-            const authToken = authHeader.split(' ')[1];
-            const decoded = jwt.verify(authToken, process.env.JWT_SECRET);
-            if (!decoded) return res.status(401).json({ message: "Unauthorized" });
+            res.cookie('token', null, {
+                expires: new Date(Date.now()),
+                httpOnly: true,
+            })
 
             return res.status(200).json({ message: "Logged out" });
         } catch (error) {

@@ -1,5 +1,6 @@
 import User from '../models/userModel.js';
 import jwt from 'jsonwebtoken';
+import sendToken from '../utils/jwtToken.js';
 
 class UserController {
     // @desc    Get all users
@@ -45,12 +46,7 @@ class UserController {
             });
             await newUser.save();
             if (!newUser) return res.status(400).json({ message: "User not created" });
-            res.status(201).json({
-                id: newUser._id,
-                username,
-                email,
-                role: newUser.role
-            });
+            sendToken(newUser, 201, res);
         } catch (error) {
             res.status(500).json({ message: error.message });
         }
@@ -104,23 +100,7 @@ class UserController {
     //@ access  User
     static async getMe(req, res) {
         try {
-            // Extract the Authorization header
-            const authHeader = req.headers.authorization;
-            if (!authHeader || !authHeader.startsWith('Bearer ')) {
-                return res.status(401).json({ message: "Unauthorized, no token provided" });
-            }
-    
-            // Extract the token from the "Bearer <token>" format
-            const authToken = authHeader.split(' ')[1];
-    
-            // Verify the token
-            const decoded = jwt.verify(authToken, process.env.JWT_SECRET);
-            if (!decoded) {
-                return res.status(401).json({ message: "Unauthorized, invalid token" });
-            }
-    
-            // Get the user ID from the decoded token
-            const userId = decoded.user.id;
+            const userId = req.user._id;
     
             // Find the user by ID
             const user = await User.findOne({ _id: userId });

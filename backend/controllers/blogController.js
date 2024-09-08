@@ -1,4 +1,5 @@
 import Blog from '../models/blogModel.js';
+import User from '../models/userModel.js';
 import idValidation from '../utils/idValidation.js';
 
 class BlogController {
@@ -86,6 +87,36 @@ class BlogController {
             console.error(error);
             return res.status(500).json({ message: 'Internal server error' });
         };
+    }
+
+    static async getMyBlogs(req, res) {
+        const { id } = req.params;
+
+        // Extract the Authorization header
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ message: "Unauthorized, no token provided" });
+        }
+
+        // Extract the token from the "Bearer <token>" format
+        const authToken = authHeader.split(' ')[1];
+
+        // Verify the token
+        const decoded = jwt.verify(authToken, process.env.JWT_SECRET);
+        if (!decoded) {
+            return res.status(401).json({ message: "Unauthorized, invalid token" });
+        }
+
+        // Get the user ID from the decoded token
+        const userId = decoded.user.id;
+        const user = await User.findOne({ _id: userId });
+
+        // Find the user by ID
+        if (id) {
+            if (!idValidation(id)) return res.status(400).json({ message: 'Invalid id' });
+            const userBlog = await User.findById(id).populate('blogs');
+            if (!userBlog) return res.status(404).json({ message: 'User not found' });
+        }
     }
 }
 

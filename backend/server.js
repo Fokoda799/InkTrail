@@ -3,6 +3,7 @@ import morgan from 'morgan';
 import cors from 'cors';
 import colors from 'colors';
 import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
 import connectDB from './config/db.js';
 import userRouter from './routes/userRoutes.js';
 import blogRouter from './routes/blogRoutes.js';
@@ -17,6 +18,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
+app.use(cookieParser());
 
 // Routes
 app.get('/', (req, res) => {
