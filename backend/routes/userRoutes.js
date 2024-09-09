@@ -8,19 +8,16 @@ import { isAuthenticatedUser, authorizeRoles } from '../middlewares/auth.js';
 const userRouter = Router();
 
 // Define user routes
-userRouter.get('/', authorizeRoles('admin'), UserController.getAllUsers);
-userRouter.get('/user/:id', authorizeRoles('admin'), UserController.getUserById);
-userRouter.post('/', UserController.createUser);
-userRouter.put('/user/:id', authorizeRoles('admin'), UserController.updateUser);
-userRouter.delete('/user/:id', authorizeRoles('admin'), UserController.deleteUser);
+userRouter.get('/admin/users', isAuthenticatedUser, authorizeRoles('admin'), UserController.getAllUsers);
+userRouter.get('/admin/users/:id', isAuthenticatedUser, authorizeRoles('admin'), UserController.getUserById);
+userRouter.put('admin/users/:id', isAuthenticatedUser, authorizeRoles('admin'), UserController.updateUser);
+userRouter.put('/admin/users/:id/role', isAuthenticatedUser, authorizeRoles('admin'), UserController.updateUserRole);
+userRouter.delete('/admin/users/:id', isAuthenticatedUser, authorizeRoles('admin'), UserController.deleteUser);
 
 // Define auth routes
-userRouter.get('/login', AuthController.connectUser);
-userRouter.get('/me', isAuthenticatedUser, UserController.getMe);
-userRouter.get('/logout', AuthController.disconnectUser);
-
-// Get user blogs
-userRouter.get('/user/:id/blogs', BlogController.getUserBlogs);
-userRouter.get('/me/blogs/:id', BlogController.getMyBlogs);
+userRouter.post('/user/register', UserController.createUser);
+userRouter.get('/user/login', AuthController.connectUser);
+userRouter.get('/user/me', isAuthenticatedUser, UserController.getMe);
+userRouter.get('/user/logout', AuthController.disconnectUser);
 
 export default userRouter;

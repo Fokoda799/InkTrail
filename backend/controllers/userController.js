@@ -1,6 +1,7 @@
 import User from '../models/userModel.js';
 import jwt from 'jsonwebtoken';
 import sendToken from '../utils/jwtToken.js';
+import idValidation from '../utils/idValidation.js';
 
 class UserController {
     // @desc    Get all users
@@ -92,6 +93,25 @@ class UserController {
             res.status(200).json({ message: "User removed" });
         } catch (error) {
             res.status(500).json({ message: error.message });
+        }
+    }
+
+    static async updateUserRole(req, res) {
+        try {
+            const { id } = req.params
+            if (!idValidation(id)) return res.status(400).json({ message: "Invalid ID" });
+
+            const { role } = req.body;
+            if (!role) return res.status(400).json({ message: "Role is required" });
+            const roles = ["user", "admin"];
+            if (!roles.includes(role)) return res.status(400).json({ message: "Invalid role" });
+        
+            const user = await User.findByIdAndUpdate(id, { role });
+            if (!user) return res.status(404).json({ message: "User not found" });
+
+            return res.status(200).json({ message: "User role updated" });
+        } catch (error) {
+            return res.status(500).json({ message: "Internal server error" });
         }
     }
 

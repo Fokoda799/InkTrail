@@ -26,8 +26,8 @@ app.get('/', (req, res) => {
 });
 
 // Import routes
-app.use('/api/v1/users', userRouter);
-app.use('/api/v1/blogs', blogRouter);
+app.use('/api/v1/', userRouter);
+app.use('/api/v1/', blogRouter);
 
 // Connect to MongoDB
 connectDB();

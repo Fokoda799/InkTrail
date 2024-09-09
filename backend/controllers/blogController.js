@@ -10,7 +10,32 @@ class BlogController {
                 return res.status(400).json({ message: 'Title and content are required' });
             }
 
-            const newBlog = new Blog({ title, content, image });
+            const userId = req.user.id;
+
+            const newBlog = new Blog({ userId, title, content, image });
+            await newBlog.save();
+            return res.status(201).json({ message: 'Blog created successfully', blog: newBlog });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ message: 'Internal server error' });
+        }
+    }
+
+    static async postBlogAsAdmin(req, res) {
+        try {
+            const { title, content, image } = req.body;
+            let { userId } = req.body;
+            if (!title || !content || !userId) {
+                return res.status(400).json({ message: 'Title, content and userId are required' });
+            }
+
+            if (userId === 'me') userId = req.user.id;
+            if (!idValidation(userId)) return res.status(400).json({ message: 'Invalid userId' });
+
+            const user = await User.findOne({ _id: userId });
+            if (!user) return res.status(404).json({ message: 'User not found' });
+
+            const newBlog = new Blog({ userId, title, content, image });
             await newBlog.save();
             return res.status(201).json({ message: 'Blog created successfully', blog: newBlog });
         } catch (error) {
@@ -80,42 +105,58 @@ class BlogController {
         try {
             const { id } = req.params;
             if (!idValidation(id)) return res.status(400).json({ message: 'Invalid id' });
-            const blogs = await Blog.find({ user: id });
+
+            const blogs = await Blog.find({ userId: id });
             if (!blogs) return res.status(404).json({ message: 'Blogs not found' });
-            return res.status(200).json({ blogs });
+
+            return res.status(200).json(blogs);
         } catch (error) {
             console.error(error);
             return res.status(500).json({ message: 'Internal server error' });
         };
     }
 
-    static async getMyBlogs(req, res) {
-        const { id } = req.params;
+    static async getUserBlogById(req, res) {
+        try {
+            const { userId, id } = req.params;
+            if (!idValidation(userId) || !idValidation(id)) return res.status(400).json({ message: 'Invalid userId or id' });
 
-        // Extract the Authorization header
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return res.status(401).json({ message: "Unauthorized, no token provided" });
+            const blog = await Blog.findOne({ userId, _id: id });
+            if (!blog) return res.status(404).json({ message: 'Blog not found' });
+
+            return res.status(200).json(blog);
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ message: 'Internal server error' });
+        };
+    }
+
+    static async getAuthUserBlogs(req, res) {
+        try {
+            const userId = req.user.id;
+            const blogs = await Blog.find({ userId });
+            if (!blogs) return res.status(404).json({ message: 'Blogs not found' });
+
+            return res.status(200).json(blogs);
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ message: 'Internal server error' });
         }
+    }
 
-        // Extract the token from the "Bearer <token>" format
-        const authToken = authHeader.split(' ')[1];
-
-        // Verify the token
-        const decoded = jwt.verify(authToken, process.env.JWT_SECRET);
-        if (!decoded) {
-            return res.status(401).json({ message: "Unauthorized, invalid token" });
-        }
-
-        // Get the user ID from the decoded token
-        const userId = decoded.user.id;
-        const user = await User.findOne({ _id: userId });
-
-        // Find the user by ID
-        if (id) {
+    static async getAuthUserBlogById(req, res) {
+        try {
+            const { id } = req.params;
             if (!idValidation(id)) return res.status(400).json({ message: 'Invalid id' });
-            const userBlog = await User.findById(id).populate('blogs');
-            if (!userBlog) return res.status(404).json({ message: 'User not found' });
+
+            const userId = req.user.id;
+            const blog = await Blog.findOne({ userId, _id: id });
+            if (!blog) return res.status(404).json({ message: 'Blog not found' });
+
+            return res.status(200).json(blog);
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ message: 'Internal server error' });
         }
     }
 }
