@@ -47,12 +47,20 @@ class BlogController {
     static async getAllBlogs(req, res) {
         try {
             const blogs = await Blog.find({});
-            return res.status(200).json({ blogs });
+            
+            // If no blogs are found, return an appropriate response
+            if (blogs.length === 0) {
+                return res.status(200).json({ success: true, message: 'No blogs found', blogs: [] });
+            }
+    
+            // If blogs are found, return them along with a success message
+            return res.status(200).json({ success: true, blogs });
         } catch (error) {
             console.error(error);
-            return res.status(500).json({ message: 'Internal server error' });
+            return res.status(500).json({ success: false, message: 'Internal server error' });
         }
     }
+    
 
     static async getBlogById(req, res) {
         try {
