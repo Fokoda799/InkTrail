@@ -1,10 +1,11 @@
 import {BrowserRouter, Route, Routes } from 'react-router-dom';
-// import Header from './components/Header';
-import Login from './pages/Login';
-import Register from './pages/Register';
+import Header from './components/Header';
+import SingIn from './pages/SingIn';
+import SingUp from './pages/SingUp';
 import Home from './pages/Home';
 import Profile from './pages/Profile';
 import About from './pages/About';
+import MyAcount from './pages/MyAcount';
 
 // import NotFound from './pages/NotFound'; // Optional: Separate NotFound component
 
@@ -12,15 +13,15 @@ function App() {
   return (
     <>
       <BrowserRouter>
-        {/* <Header /> */}
+        <Header />
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route path="/blogs" element={<Home />} />
+          <Route path="/signin" element={<SingIn />} />
+          <Route path="/signup" element={<SingUp />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/myaccount" element={<MyAcount />} />
           <Route path="/about" element={<About />} />
-          {/* Fallback route for non-existent pages */}
-          {/* <Route path="*" element={<NotFound />} /> */}
+          {/* <Route path="*" element={<NotFound />} /> */} {/* Optional: Separate NotFound component */}
         </Routes>
       </BrowserRouter>
     </>

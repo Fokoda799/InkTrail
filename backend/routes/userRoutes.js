@@ -15,8 +15,8 @@ userRouter.put('/admin/user/:id/role', isAuthenticatedUser, authorizeRoles('admi
 userRouter.delete('/admin/user/:id', isAuthenticatedUser, authorizeRoles('admin'), UserController.deleteUser);
 
 // Define auth routes
-userRouter.post('/user/register', UserController.createUser);
-userRouter.get('/user/login', AuthController.connectUser);
+userRouter.post('/user/sign-up', UserController.createUser);
+userRouter.get('/user/sign-in', AuthController.connectUser);
 userRouter.get('/me', isAuthenticatedUser, UserController.getMe);
 userRouter.get('/user/logout', AuthController.disconnectUser);
 
