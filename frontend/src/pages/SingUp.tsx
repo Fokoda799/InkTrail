@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { AppProvider } from '@toolpad/core';
 import { Button, Typography, Box, Grid, Link, TextField, useTheme } from '@mui/material';
-import GoogleIcon from '@mui/icons-material/Google';
 import { FormData } from '../types/userTypes';
 import { useAuthActions } from '../actions/userAction';
 import { useNavigate } from 'react-router-dom';
 import { SuccessAlert, ErrorAlert } from '../components/Alert';
+import OAtuh from '../components/OAtuh';
 
 export default function SignUp() {
   const theme = useTheme();
@@ -34,11 +34,6 @@ export default function SignUp() {
       setErrorAlert('An error occurred. Please try again.');
       setSuccessAlert(false); // Clear any existing success alerts
     }
-  };
-
-  const handleGoogleSignUp = () => {
-    // Placeholder for Google sign-up logic
-    alert('Google sign-up is not implemented yet.');
   };
 
   return (
@@ -101,27 +96,7 @@ export default function SignUp() {
                 Sign Up
               </Button>
             </form>
-
-            <Button
-              variant="contained"
-              sx={{ 
-                mt: 2, 
-                width: '100%', 
-                backgroundColor: '#db4437', // Google red
-                color: 'white', // Text color
-                '&:hover': {
-                  backgroundColor: '#c1351d', // Darker red for hover
-                },
-                display: 'flex', 
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-              onClick={handleGoogleSignUp} // Handle Google sign-up
-            >
-              <GoogleIcon sx={{ mr: 1 }} />
-              Continue with Google
-            </Button>
-
+            <OAtuh />
             <Typography mt={3} variant="body1">
               Already have an account?{' '}
               <Link href="/signin" underline="hover">

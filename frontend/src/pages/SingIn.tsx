@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { AppProvider } from '@toolpad/core';
+import OAuth from '../components/OAtuh';
 import { Button, Typography, Box, Grid, Link, TextField, useTheme } from '@mui/material';
-import GoogleIcon from '@mui/icons-material/Google';
 import { useAuthActions } from '../actions/userAction';
 import { useNavigate } from 'react-router-dom';
 import { SuccessAlert, ErrorAlert } from '../components/Alert';
@@ -30,18 +30,6 @@ export default function SignIn() {
       setSuccessAlert(true);
       setErrorAlert(null); // Clear any existing errors
       navigate('/blogs'); // Redirect to a dashboard or home page
-    } else {
-      setErrorAlert('An error occurred. Please try again.');
-      setSuccessAlert(false); // Clear any existing success alerts
-    }
-  };
-
-  const handleGoogleSignIn = async () => {
-    const success = await signIn('google');
-    if (success) {
-      setSuccessAlert(true);
-      setErrorAlert(null); // Clear any existing errors
-      navigate('/dashboard'); // Redirect to a dashboard or home page
     } else {
       setErrorAlert('An error occurred. Please try again.');
       setSuccessAlert(false); // Clear any existing success alerts
@@ -89,27 +77,8 @@ export default function SignIn() {
                 Sign In
               </Button>
             </form>
-
-            <Button
-              variant="contained"
-              sx={{ 
-                mt: 2, 
-                width: '100%', 
-                backgroundColor: '#db4437', // Google red
-                color: 'white', // Text color
-                '&:hover': {
-                  backgroundColor: '#c1351d', // Darker red for hover
-                },
-                display: 'flex', 
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-              onClick={handleGoogleSignIn}
-            >
-              <GoogleIcon sx={{ mr: 1 }} />
-              Continue with Google
-            </Button>
-
+            <Typography mt={3} variant="body1">Or</Typography>
+            <OAuth />
             <Typography mt={3} variant="body1">
               Don’t have an account?{' '}
               <Link href="/signup" underline="hover">
