@@ -1,20 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppProvider } from '@toolpad/core';
+import OAuth from '../components/OAtuh';
 import { Button, Typography, Box, Grid, Link, TextField, useTheme } from '@mui/material';
-import { FormData } from '../types/userTypes';
-import { useAuthActions } from '../actions/userAction';
-import { useNavigate } from 'react-router-dom';
+import { signUp } from '../actions/userAction';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { SuccessAlert, ErrorAlert } from '../components/Alert';
-import OAtuh from '../components/OAtuh';
+import { useAppDispatch, useAppSelector }  from '../redux/hooks';
+import { selectUserState, clearError } from '../redux/reducers/userReducer';
+import { useAlert } from 'react-alert'
+import { SignUpData } from '../types/userTypes';
 
 export default function SignUp() {
   const theme = useTheme();
-  const [formData, setFormData] = useState<FormData>({} as FormData);
+  const [formData, setFormData] = useState<SignUpData>({} as SignUpData);
   const [successAlert, setSuccessAlert] = useState(false);
   const [errorAlert, setErrorAlert] = useState<string | null>(null);
   const navigate = useNavigate();
-  
-  const { signUp } = useAuthActions(); // Correctly using the hook
+  const dispatch = useAppDispatch();
+  const alert = useAlert();
+  const location = useLocation();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    dispatch(signUp(formData));
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -23,18 +32,19 @@ export default function SignUp() {
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const success = await signUp('credentials', formData);
-    if (success) {
-      setSuccessAlert(true);
-      setErrorAlert(null); // Clear any existing errors
-      navigate('/signin'); // Redirect to sign-in page
-    } else {
-      setErrorAlert('An error occurred. Please try again.');
-      setSuccessAlert(false); // Clear any existing success alerts
+  const { error, isAuth } = useAppSelector(selectUserState);
+  const redirect = location.search ? location.search.split("=")[1] : "/blogs";
+
+  useEffect(() => {
+    if (error) {
+      alert.error(error);
+      dispatch(clearError());
     }
-  };
+
+    if (isAuth) {
+      navigate(redirect);
+    }
+  }, [dispatch, error, alert, isAuth, navigate, redirect]);
 
   return (
     <AppProvider theme={theme}>
@@ -96,7 +106,7 @@ export default function SignUp() {
                 Sign Up
               </Button>
             </form>
-            <OAtuh />
+            <OAuth />
             <Typography mt={3} variant="body1">
               Already have an account?{' '}
               <Link href="/signin" underline="hover">

@@ -1,7 +1,6 @@
 import User from '../models/userModel.js';
 import sendToken from '../utils/jwtToken.js';
 
-
 class AuthController {
     static async connectUser(req, res) {
         try {
@@ -36,7 +35,7 @@ class AuthController {
             // Send token
             sendToken(user, 200, res);
         } catch (error) {
-            console.error(error);
+            console.error('Error during user connection:', error);
             return res.status(500).json({ message: 'Internal server error' });
         }
     }
@@ -46,15 +45,38 @@ class AuthController {
     // @access  User
     static async disconnectUser(req, res) {
         try {
-            res.cookie('token', null, {
-                expires: new Date(Date.now()),
+            res.cookie('token', '', {
+                expires: new Date(0),
                 httpOnly: true,
-            })
+                secure: process.env.NODE_ENV === 'production', // Only use secure cookies in production
+                sameSite: 'Strict' // Add sameSite attribute for additional security
+            });
 
             return res.status(200).json({ message: "Logged out" });
         } catch (error) {
-            console.error(error);
+            console.error('Error during user disconnect:', error);
             return res.status(500).json({ message: "Internal server error" });
+        }
+    }
+
+    static async signinWithGoogle(req, res) {
+        try {
+            const { username, email, avatar } = req.body;
+            let user = await User.findOne({ email });
+
+            if (user) {
+                sendToken(user, 200, res);
+            } else {
+                user = await User.create({
+                    username,
+                    email,
+                    avatar,
+                });
+                sendToken(user, 200, res);
+            }
+        } catch (error) {
+            console.error('Error during Google sign-in:', error);
+            return res.status(500).json({ message: error.message });
         }
     }
 }

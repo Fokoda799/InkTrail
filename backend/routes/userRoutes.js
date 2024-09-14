@@ -19,5 +19,6 @@ userRouter.post('/user/sign-up', UserController.createUser);
 userRouter.get('/user/sign-in', AuthController.connectUser);
 userRouter.get('/me', isAuthenticatedUser, UserController.getMe);
 userRouter.get('/user/logout', AuthController.disconnectUser);
+userRouter.post('/user/google', AuthController.signinWithGoogle);
 
 export default userRouter;

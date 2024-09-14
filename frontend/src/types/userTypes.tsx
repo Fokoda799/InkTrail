@@ -7,9 +7,18 @@ export interface FormData {
     password: string;
 };
 
+interface User {
+    fullName?: string;
+    username: string;
+    email: string;
+    password?: string;
+    avatar?: string;
+    blogs?: string[];
+}
+
 // User state types
 export interface UserState {
-    currentUser: object | null;
+    currentUser: User;
     isAuth: boolean;
     loading: boolean;
     error: string | null;
@@ -26,4 +35,17 @@ export interface AuthResponse {
 export interface ErrorResponse {
     success: false;
     message: string;
+}
+
+export interface SignInData {
+    email: string;
+    password: string;
+}
+  
+export interface SignUpData {
+    fullName?: string;
+    username: string;
+    email: string;
+    password?: string;
+    avatar?: string;
 }

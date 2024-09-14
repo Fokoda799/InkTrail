@@ -1,133 +1,100 @@
-import axios from 'axios';
-import { FormData } from '../types/userTypes';
-import { AuthResponse, ErrorResponse } from '../types/userTypes';
-import { useSelector, useDispatch } from 'react-redux';
+import type { AppDispatch } from '../redux/store';
+import type { AuthResponse, ErrorResponse } from '../types/userTypes';
 import { GoogleAuthProvider, getAuth, signInWithPopup } from 'firebase/auth';
 import { app } from '../firebase';
 import { 
-  signUpSuccess, signInSuccess,
-  signUpFailure, signInFailure,
-  signInStart, signUpStart,
-  signOutSuccess
+  signInFailure, signInSuccess, signInStart,
+  signUpFailure, signUpSuccess, signUpStart,
+  signOutSuccess, signOutFailure
 } from '../redux/reducers/userReducer';
-import { selectUser, selectUserError, selectUserLoading } from '../redux/reducers/userReducer';
+import axios from 'axios';
+import { SignInData, SignUpData } from '../types/userTypes';
 
-const useAuthActions = () => {
-  const user = useSelector(selectUser);
-  const error = useSelector(selectUserError);
-  const loading = useSelector(selectUserLoading);
-  const dispatch = useDispatch();
+// Sign In User
+export const signIn = ({ email, password }: SignInData) => async (dispatch: AppDispatch) => {
+  try {
+    dispatch(signInStart());
 
-  const signUp = async (provider: string, formData: FormData): Promise<boolean> => {
-    if (provider === 'credentials') {
-      dispatch(signUpStart()); // Set loading state
-      try {
-        const response = await axios.post<AuthResponse | ErrorResponse>('/api/v1/user/sign-up', formData);
-        const res = response.data;
+    const encoded = btoa(`${email}:${password}`);
+    const config = { headers: { Authorization: `Basic ${encoded}` } };
 
-        if (res.success) {
-          dispatch(signUpSuccess(res.user));  // Dispatch success
-          return true;
-        } else {
-          console.error('Sign up failed: ', res.message);
-          dispatch(signUpFailure(res.message || 'Sign-up failed'));  // Dispatch failure
-          return false;
-        }
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.error('Error during sign-up:', error.response?.data || error.message);
-          dispatch(signUpFailure(error.response?.data.message || 'Sign-up failed'));
-        } else {
-          console.error('Unexpected error:', error);
-          dispatch(signUpFailure('Unexpected error occurred'));
-        }
-        return false;
-      }
+    const { data }: { data: AuthResponse | ErrorResponse } = await axios.get(`/api/v1/user/sign-in`, config);
+
+    if (!data.success) {
+      console.log('Error:', data.message);
+      dispatch(signInFailure(data.message));
+      return;
     }
-    console.error('Unsupported provider for sign-up:', provider);
-    return false; // If the provider isn't 'credentials', return false
-  };
 
-  const signIn = async (provider: string, formData?: FormData): Promise<boolean> => {
-    if (provider === 'credentials') {
-      dispatch(signInStart()); // Set loading state
-      try {
-        const encoded = btoa(`${formData?.email}:${formData?.password}`);
-        const headers = { Authorization: `Basic ${encoded}` };
-
-        const response = await axios.get<AuthResponse | ErrorResponse>('/api/v1/user/sign-in', { headers });
-        const res = response.data;
-
-        if (res.success) {
-          dispatch(signInSuccess(res.user));  // Dispatch success
-          return true;
-        } else {
-          console.error('Sign in failed: ', res.message);
-          dispatch(signInFailure(res.message || 'Sign-in failed'));  // Dispatch failure
-          return false;
-        }
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.error('Error during sign-in:', error.response?.data || error.message);
-          dispatch(signInFailure(error.response?.data.message || 'Sign-in failed'));
-        } else {
-          console.error('Unexpected error:', error);
-          dispatch(signInFailure('Unexpected error occurred'));
-        }
-        return false;
-      }
-    } else if (provider === 'google') {
-      const provider = new GoogleAuthProvider();
-      const auth = getAuth(app);
-      try {
-        const result = await signInWithPopup(auth, provider);
-        const data = {
-          username: result.user.displayName,
-          email: result.user.email,
-          avatar: result.user.photoURL
-        };
-
-        const response = await axios.post<AuthResponse | ErrorResponse>('/api/v1/user/google', data);
-        const res = response.data;
-
-        if (res.success) {
-          dispatch(signInSuccess(res.user));  // Dispatch success
-          return true;
-        } else {
-          console.error('Google sign-in failed: ', res.message);
-          dispatch(signInFailure(res.message || 'Google sign-in failed'));  // Dispatch failure
-          return false;
-        }
-      } catch (error) {
-        if (error instanceof Error) {
-          console.error('Error during Google sign-in:', error.message);
-        } else {
-          console.error('Unexpected error:', error);
-        }
-        dispatch(signInFailure('Google sign-in failed'));
-        return false;
-      }
-    } else {
-      console.error('Unsupported provider:', provider);
-      return false;
-    }
-  };
-
-  const signOut = async () => {
-    try {
-      // Placeholder for sign-out logic
-      await axios.get('/api/v1/user/logout');
-      dispatch(signOutSuccess());
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error('Error during sign-out:', error.response?.data || error.message);
-      } else {
-        console.error('Unexpected error:', error);
-      }
-    }
-  };
-
-  return { user, error, loading, signUp, signIn, signOut };
+    dispatch(signInSuccess(data.user));
+  } catch (error: unknown) {
+    const message = axios.isAxiosError(error) ? error.response?.data.message : String(error);
+    console.log('Error:', message);
+    dispatch(signInFailure(message));
+  }
 };
 
-export { useAuthActions };
+// Register User
+export const signUp = (signUpData: SignUpData) => async (dispatch: AppDispatch) => {
+  try {
+    dispatch(signUpStart());
+
+    const config = { headers: { "Content-Type": "multipart/form-data" } };
+
+    const { data }: { data: AuthResponse | ErrorResponse } = await axios.post(`/api/v1/user/sign-up`, signUpData, config);
+
+    if (!data.success) {
+      console.log('Error:', data.message);
+      dispatch(signUpFailure(data.message));
+      return;
+    }
+
+    dispatch(signUpSuccess(data.user));
+  } catch (error: unknown) {
+    const message = axios.isAxiosError(error) ? error.response?.data.message : String(error);
+    console.log('Error:', message);
+    dispatch(signUpFailure(message));
+  }
+};
+
+export const signInWithGoogle = () => async (dispatch: AppDispatch) => {
+  try {
+    const provider = new GoogleAuthProvider();
+    const auth = getAuth(app);
+    const result = await signInWithPopup(auth, provider);
+    const config = { headers: { "Content-Type": 'application/json' } };
+    const signInData = {
+      username: result.user.displayName,
+      email: result.user.email,
+      avatar: result.user.photoURL,
+    }
+    console.log(result.user);
+    console.log(signInData);
+
+    const { data }: { data: AuthResponse | ErrorResponse } = await axios.post(
+      `/api/v1/user/google`,
+      signInData, config);
+    if (!data.success) {
+      console.log('Error:', data.message);
+      dispatch(signInFailure(data.message));
+      return;
+    }
+    dispatch(signInSuccess(data.user));
+  } catch (error: unknown) {
+    const message = axios.isAxiosError(error) ? error.response?.data.message : String(error);
+    console.log('Error: ', message);
+    dispatch(signInFailure(message));
+  }
+}
+
+// Logout User
+export const logout = () => async (dispatch: AppDispatch) => {
+  try {
+    await axios.get(`/api/v1/user/logout`);
+    dispatch(signOutSuccess());
+  } catch (error: unknown) {
+    const message = axios.isAxiosError(error) ? error.response?.data.message : String(error);
+    console.log('Error:', message);
+    dispatch(signOutFailure(message));
+  }
+};

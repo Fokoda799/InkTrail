@@ -1,20 +1,13 @@
 import Button from '@mui/material/Button'
 import GoogleIcon from '@mui/icons-material/Google'
-import { useAuthActions } from '../actions/userAction'
-import { useNavigate } from 'react-router-dom'
+import { useAppDispatch } from '../redux/hooks';
+import { signInWithGoogle } from '../actions/userAction';
 
 function OAtuh() {
-    const { signIn } = useAuthActions();
-    const navigate = useNavigate();
-    const handleGoogleSignIn = async () => {
-        const success = await signIn('google');
-        if (success) {
-          navigate('/blogs'); // Redirect to a dashboard or home page
-          alert('Google sign-in success');
-        } else {
-          alert('Google sign-in failed');
-        }
-    };
+  const dispatch = useAppDispatch();
+  const handleGoogleSignIn = async () => {
+    dispatch(signInWithGoogle());
+  };
 
   return (
     <Button

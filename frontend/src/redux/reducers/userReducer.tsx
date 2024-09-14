@@ -43,6 +43,12 @@ const userSlice = createSlice({
     signOutSuccess: (state) => {
       state.currentUser = null;
       state.isAuth = false;
+    },
+    signOutFailure: (state, action) => {
+      state.error = action.payload;
+    },
+    clearError: (state) => {
+      state.error = null;
     }
   },
 });
@@ -51,13 +57,10 @@ const userSlice = createSlice({
 export const {
   signInStart, signInSuccess, signInFailure,
   signUpStart, signUpSuccess, signUpFailure,
-  signOutSuccess
+  signOutSuccess, signOutFailure, clearError
 } = userSlice.actions;
 
 // Selector to get authentication state
-export const selectUser = (state: RootState) => state.user.isAuth;
-export const selectCurrentUser = (state: RootState) => state.user.currentUser;
-export const selectUserError = (state: RootState) => state.user.error;
-export const selectUserLoading = (state: RootState) => state.user.loading;
+export const selectUserState = (state: RootState) => state.user;
 
 export default userSlice.reducer;

@@ -10,15 +10,15 @@ import Badge from '@mui/material/Badge';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
-import AccountCircle from '@mui/icons-material/AccountCircle';
 import MailIcon from '@mui/icons-material/Mail';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import MoreIcon from '@mui/icons-material/MoreVert';
-import { Link, useNavigate } from 'react-router-dom'; // Import Link from React Router
+import { Link, useNavigate } from 'react-router-dom';
 import { Tabs, Tab } from '@mui/material';
-import { useAppSelector } from '../redux/hooks';
-import { selectUser } from '../redux/reducers/userReducer';
-import { useAuthActions } from '../actions/userAction';
+import Avatar from './Avatar';
+import { useAppSelector, useAppDispatch } from '../redux/hooks';
+import { selectUserState } from '../redux/reducers/userReducer';
+import { logout } from '../actions/userAction';
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
@@ -60,12 +60,10 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 function Header() {
-  const isSignin = useAppSelector(selectUser);
-  const { signOut } = useAuthActions();
-
+  const { isAuth, currentUser } = useAppSelector(selectUserState);
+  const dispatch = useAppDispatch();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [mobileMoreAnchorEl, setMobileMoreAnchorEl] =
-    React.useState<null | HTMLElement>(null);
+  const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState<null | HTMLElement>(null);
   const navigate = useNavigate();
 
   const isMenuOpen = Boolean(anchorEl);
@@ -85,18 +83,18 @@ function Header() {
     handleMobileMenuClose();
   };
 
-  const handleMyAcount = () => {
+  const handleMyAccount = () => {
     navigate('/myaccount');
     setAnchorEl(null);
     handleMobileMenuClose();
   };
 
   const handleLogout = () => {
-    signOut();
-    navigate('/signin');
+    dispatch(logout());
+    navigate('/blogs');
     setAnchorEl(null);
     handleMobileMenuClose();
-  }
+  };
 
   const handleMobileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setMobileMoreAnchorEl(event.currentTarget);
@@ -106,21 +104,15 @@ function Header() {
   const renderMenu = (
     <Menu
       anchorEl={anchorEl}
-      anchorOrigin={{
-        vertical: 'top',
-        horizontal: 'right',
-      }}
+      anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
       id={menuId}
       keepMounted
-      transformOrigin={{
-        vertical: 'top',
-        horizontal: 'right',
-      }}
+      transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       open={isMenuOpen}
       onClose={() => setAnchorEl(null)}
     >
       <MenuItem onClick={handleProfile}>Profile</MenuItem>
-      <MenuItem onClick={handleMyAcount}>My account</MenuItem>
+      <MenuItem onClick={handleMyAccount}>My account</MenuItem>
       <MenuItem onClick={handleLogout}>Logout</MenuItem>
     </Menu>
   );
@@ -129,16 +121,10 @@ function Header() {
   const renderMobileMenu = (
     <Menu
       anchorEl={mobileMoreAnchorEl}
-      anchorOrigin={{
-        vertical: 'top',
-        horizontal: 'right',
-      }}
+      anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
       id={mobileMenuId}
       keepMounted
-      transformOrigin={{
-        vertical: 'top',
-        horizontal: 'right',
-      }}
+      transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       open={isMobileMenuOpen}
       onClose={handleMobileMenuClose}
     >
@@ -151,11 +137,7 @@ function Header() {
         <p>Messages</p>
       </MenuItem>
       <MenuItem>
-        <IconButton
-          size="large"
-          aria-label="show 17 new notifications"
-          color="inherit"
-        >
+        <IconButton size="large" aria-label="show 17 new notifications" color="inherit">
           <Badge badgeContent={17} color="error">
             <NotificationsIcon />
           </Badge>
@@ -163,28 +145,22 @@ function Header() {
         <p>Notifications</p>
       </MenuItem>
       <MenuItem onClick={handleProfileMenuOpen}>
-        <IconButton
-          size="large"
-          aria-label="account of current user"
-          aria-controls="primary-search-account-menu"
-          aria-haspopup="true"
-          color="inherit"
-        >
-          <AccountCircle />
+        <IconButton size="large" aria-label="account of current user" aria-controls={menuId} aria-haspopup="true" color="inherit">
+          <Avatar username={currentUser?.username ?? 'Guest'} />
         </IconButton>
-        <p>Profile</p>
+        <p>Avatar</p>
       </MenuItem>
     </Menu>
   );
 
-  const singinSinupTabs = (
+  const signInSignUpTabs = (
     <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-        <Tabs aria-label="basic tabs example">
-            <Tab label="Home" component={Link} to="/blogs" />
-            <Tab label="About" component={Link} to="/about" />
-            <Tab label="singin" component={Link} to="/signin" />
-            <Tab label="singup" component={Link} to="/signup" />
-        </Tabs>
+      <Tabs aria-label="basic tabs example">
+        <Tab label="Home" component={Link} to="/blogs" />
+        <Tab label="About" component={Link} to="/about" />
+        <Tab label="Sign In" component={Link} to="/signin" />
+        <Tab label="Sign Up" component={Link} to="/signup" />
+      </Tabs>
     </Box>
   );
 
@@ -195,47 +171,46 @@ function Header() {
           <Typography
             variant="h6"
             noWrap
-            component={Link} // Use Link component here
-            to="/blogs" // This points to the home route
-            sx={{ display: { xs: 'none', sm: 'block' }, color: 'inherit', textDecoration: 'none' }} // Remove default Link styles
+            component={Link}
+            to="/blogs"
+            sx={{ display: { xs: 'none', sm: 'block' }, color: 'inherit', textDecoration: 'none' }}
           >
             BlogiFY
           </Typography>
-          {isSignin && (
+          {isAuth && (
             <Search>
-                <SearchIconWrapper>
+              <SearchIconWrapper>
                 <SearchIcon />
-                </SearchIconWrapper>
-                <StyledInputBase placeholder="Search…" inputProps={{ 'aria-label': 'search' }} />
+              </SearchIconWrapper>
+              <StyledInputBase placeholder="Search…" inputProps={{ 'aria-label': 'search' }} />
             </Search>
           )}
           <Box sx={{ flexGrow: 1 }} />
-          <Box sx={{ flexGrow: 1 }} />
-          {isSignin ? (
+          {isAuth ? (
             <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-            <IconButton size="large" aria-label="show 4 new mails" color="inherit">
-              <Badge badgeContent={4} color="error">
-                <MailIcon />
-              </Badge>
-            </IconButton>
-            <IconButton size="large" aria-label="show 17 new notifications" color="inherit">
-              <Badge badgeContent={17} color="error">
-                <NotificationsIcon />
-              </Badge>
-            </IconButton>
-            <IconButton
-              size="large"
-              edge="end"
-              aria-label="account of current user"
-              aria-controls={menuId}
-              aria-haspopup="true"
-              onClick={handleProfileMenuOpen}
-              color="inherit"
-            >
-              <AccountCircle />
-            </IconButton>
-          </Box>
-          ) : singinSinupTabs}
+              <IconButton size="large" aria-label="show 4 new mails" color="inherit">
+                <Badge badgeContent={4} color="error">
+                  <MailIcon />
+                </Badge>
+              </IconButton>
+              <IconButton size="large" aria-label="show 17 new notifications" color="inherit">
+                <Badge badgeContent={17} color="error">
+                  <NotificationsIcon />
+                </Badge>
+              </IconButton>
+              <IconButton
+                size="large"
+                edge="end"
+                aria-label="account of current user"
+                aria-controls={menuId}
+                aria-haspopup="true"
+                onClick={handleProfileMenuOpen}
+                color="inherit"
+              >
+                <Avatar username={currentUser?.username ?? 'Guest'} />
+              </IconButton>
+            </Box>
+          ) : signInSignUpTabs}
           <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
             <IconButton
               size="large"
