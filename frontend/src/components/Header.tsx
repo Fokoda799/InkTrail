@@ -149,7 +149,7 @@ function Header() {
       <MenuItem onClick={handleProfileMenuOpen}>
         <IconButton size="large" aria-label="account of current user" aria-controls={menuId} aria-haspopup="true" color="inherit">
           <Stack direction="row" spacing={1}>
-            <Avatar  >
+            <Avatar sx={{ width: 60, height: 60  }} >
               {currentUser?.username[0].toUpperCase()}
             </Avatar>
           </Stack>
@@ -227,7 +227,11 @@ function Header() {
                 onClick={handleProfileMenuOpen}
                 color="inherit"
               >
-                <Avatar username={currentUser?.username ?? 'Guest'} />
+                <Stack direction="row" spacing={1}>
+                  <Avatar sx={{ width: 60, height: 60  }} >
+                    {currentUser?.username[0].toUpperCase()}
+                  </Avatar>
+                </Stack>
               </IconButton>
             </Box>
           ) : signInSignUpTabs}

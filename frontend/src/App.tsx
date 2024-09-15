@@ -18,14 +18,14 @@ function App() {
       <BrowserRouter>
         <Header />
         <Routes>
-          <Route path="/blogs" element={<Home />} />
           <Route path="/signin" element={<SingIn />} />
           <Route path="/signup" element={<SingUp />} />
-          <Route path="/myaccount" element={<MyAcount />} />
           <Route path="/about" element={<About />} />
-          <PrivateRoute element={<Profile />} >
+          <Route element={<PrivateRoute />} >
+            <Route path="/blogs" element={<Home />} />
             <Route path="/profile" element={<Profile />} />
-          </PrivateRoute>
+            <Route path="/myaccount" element={<MyAcount />} />
+          </Route>
           <Route path="*" element={<NotFound />} />
           <Route path="/admin" element={<AdminPage />} />
         </Routes>
