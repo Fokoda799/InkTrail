@@ -12,9 +12,9 @@ import Menu from '@mui/material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import MoreIcon from '@mui/icons-material/MoreVert';
+import Avatar from '@mui/material/Avatar';
 import { Link, useNavigate } from 'react-router-dom';
-import { Tabs, Tab } from '@mui/material';
-import Avatar from './Avatar';
+import { Tabs, Tab, Stack } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../redux/hooks';
 import { selectUserState } from '../redux/reducers/userReducer';
 import { logout } from '../actions/userAction';
@@ -148,7 +148,11 @@ function Header() {
       </MenuItem>
       <MenuItem onClick={handleProfileMenuOpen}>
         <IconButton size="large" aria-label="account of current user" aria-controls={menuId} aria-haspopup="true" color="inherit">
-          <Avatar username={currentUser?.username ?? 'Guest'} />
+          <Stack direction="row" spacing={1}>
+            <Avatar  >
+              {currentUser?.username[0].toUpperCase()}
+            </Avatar>
+          </Stack>
         </IconButton>
         <p>Avatar</p>
       </MenuItem>
