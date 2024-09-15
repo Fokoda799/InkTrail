@@ -6,6 +6,7 @@ import Home from './pages/Home';
 import Profile from './pages/Profile';
 import About from './pages/About';
 import MyAcount from './pages/MyAcount';
+import AdminePage from './pages/Admin';
 
 // import NotFound from './pages/NotFound'; // Optional: Separate NotFound component
 
@@ -21,6 +22,7 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/myaccount" element={<MyAcount />} />
           <Route path="/about" element={<About />} />
+          <Route path="/admine" element={<AdminePage />} />
           {/* <Route path="*" element={<NotFound />} /> */} {/* Optional: Separate NotFound component */}
         </Routes>
       </BrowserRouter>

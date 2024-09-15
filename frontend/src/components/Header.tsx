@@ -10,7 +10,6 @@ import Badge from '@mui/material/Badge';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
-import MailIcon from '@mui/icons-material/Mail';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import MoreIcon from '@mui/icons-material/MoreVert';
 import { Link, useNavigate } from 'react-router-dom';
@@ -64,10 +63,13 @@ function Header() {
   const dispatch = useAppDispatch();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [notificationsAnchorEl, setNotificationsAnchorEl] = React.useState<null | HTMLElement>(null);
+
   const navigate = useNavigate();
 
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
+  const isNotificationsOpen = Boolean(notificationsAnchorEl);
 
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -100,6 +102,14 @@ function Header() {
     setMobileMoreAnchorEl(event.currentTarget);
   };
 
+  const handleNotificationsClick = (event: React.MouseEvent<HTMLElement>) => {
+    setNotificationsAnchorEl(event.currentTarget);
+  };
+
+  const handleNotificationsClose = () => {
+    setNotificationsAnchorEl(null);
+  };
+
   const menuId = 'primary-search-account-menu';
   const renderMenu = (
     <Menu
@@ -129,15 +139,7 @@ function Header() {
       onClose={handleMobileMenuClose}
     >
       <MenuItem>
-        <IconButton size="large" aria-label="show 4 new mails" color="inherit">
-          <Badge badgeContent={4} color="error">
-            <MailIcon />
-          </Badge>
-        </IconButton>
-        <p>Messages</p>
-      </MenuItem>
-      <MenuItem>
-        <IconButton size="large" aria-label="show 17 new notifications" color="inherit">
+        <IconButton size="large" aria-label="show 17 new notifications" color="inherit" onClick={handleNotificationsClick}>
           <Badge badgeContent={17} color="error">
             <NotificationsIcon />
           </Badge>
@@ -150,6 +152,20 @@ function Header() {
         </IconButton>
         <p>Avatar</p>
       </MenuItem>
+    </Menu>
+  );
+
+  // Notifications dropdown menu
+  const renderNotificationsMenu = (
+    <Menu
+      anchorEl={notificationsAnchorEl}
+      anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      open={isNotificationsOpen}
+      onClose={handleNotificationsClose}
+    >
+      <MenuItem onClick={handleNotificationsClose}>Notification 1</MenuItem>
+      <MenuItem onClick={handleNotificationsClose}>Notification 2</MenuItem>
+      <MenuItem onClick={handleNotificationsClose}>Notification 3</MenuItem>
     </Menu>
   );
 
@@ -188,12 +204,12 @@ function Header() {
           <Box sx={{ flexGrow: 1 }} />
           {isAuth ? (
             <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-              <IconButton size="large" aria-label="show 4 new mails" color="inherit">
-                <Badge badgeContent={4} color="error">
-                  <MailIcon />
-                </Badge>
-              </IconButton>
-              <IconButton size="large" aria-label="show 17 new notifications" color="inherit">
+              <IconButton
+                size="large"
+                aria-label="show 17 new notifications"
+                color="inherit"
+                onClick={handleNotificationsClick}
+              >
                 <Badge badgeContent={17} color="error">
                   <NotificationsIcon />
                 </Badge>
@@ -227,6 +243,7 @@ function Header() {
       </AppBar>
       {renderMobileMenu}
       {renderMenu}
+      {renderNotificationsMenu}
     </Box>
   );
 }
