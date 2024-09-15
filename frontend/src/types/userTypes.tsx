@@ -7,6 +7,12 @@ export interface FormData {
     password: string;
 };
 
+export interface UpdateData {
+    username: string;
+    bio: string;
+    avatar: string |  undefined;
+}
+
 interface User {
     fullName?: string;
     username: string;
@@ -19,7 +25,7 @@ interface User {
 
 // User state types
 export interface UserState {
-    currentUser: User;
+    currentUser: User | null;
     isAuth: boolean;
     loading: boolean;
     error: string | null;
@@ -28,7 +34,7 @@ export interface UserState {
 // User response types
 export interface AuthResponse {
     success: true;
-    user: object;
+    user: User;
     token: string;
 }
 

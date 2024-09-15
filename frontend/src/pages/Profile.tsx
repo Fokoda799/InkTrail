@@ -16,7 +16,7 @@ import EditProfile from '../components/EditProfile';
 import { Link } from 'react-router-dom';
 
 const Profile = () => {
-  const { currentUser, isAuth } = useAppSelector(selectUserState);
+  const { currentUser } = useAppSelector(selectUserState);
   const [open, setOpen] = React.useState(false);
 
   const handleClick = () => {
@@ -27,7 +27,7 @@ const Profile = () => {
     setOpen(false);
   };
 
-  if (!isAuth) {
+  if (!currentUser) {
     return (
       <Container maxWidth="md">
         <Typography variant="h5" align="center" sx={{ marginTop: '2rem' }}>
@@ -64,7 +64,7 @@ const Profile = () => {
               @{currentUser.username}
             </Typography>
             <Typography variant="body2" color="textSecondary" sx={{ marginTop: '0.5rem' }}>
-              Passionate developer with a love for creating web experiences. Always learning.
+              {currentUser.bio}
             </Typography>
           </Grid>
         </Grid>

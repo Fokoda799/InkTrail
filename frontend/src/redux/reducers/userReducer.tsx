@@ -40,12 +40,26 @@ const userSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     },
+    signOutStart: (state) => {
+      state.loading = true
+    },
     signOutSuccess: (state) => {
       state.currentUser = null;
-      state.isAuth = false;
+      state.loading = false;
     },
     signOutFailure: (state, action) => {
       state.error = action.payload;
+    },
+    updateUserStart: (state) => {
+      state.loading = true;
+    },
+    updateUserSuccess: (state, action) => {
+      state.currentUser = action.payload;
+      state.loading = false;
+    },
+    updateUserFailure: (state, action) => {
+      state.error = action.payload;
+      state.loading = false;
     },
     clearError: (state) => {
       state.error = null;
@@ -57,7 +71,9 @@ const userSlice = createSlice({
 export const {
   signInStart, signInSuccess, signInFailure,
   signUpStart, signUpSuccess, signUpFailure,
-  signOutSuccess, signOutFailure, clearError
+  signOutSuccess, signOutFailure, clearError, 
+  signOutStart, updateUserFailure, updateUserStart,
+  updateUserSuccess
 } = userSlice.actions;
 
 // Selector to get authentication state

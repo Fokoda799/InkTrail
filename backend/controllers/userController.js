@@ -22,8 +22,11 @@ class UserController {
     static async getUserById(req, res) {
         try {
             const { id } = req.params;
-            const user = await User.findOne({ _id: id });
+            if (!idValidation(id)) return res.status(400).json({ message: "Invalid ID" });
+
+            const user = await User.findById(id);
             if (!user) return res.status(404).json({ message: "User not found" });
+
             res.status(200).json(user);
         } catch (error) {
             res.status(500).json({ message: error.message });
@@ -35,18 +38,13 @@ class UserController {
     // @access  User
     static async createUser(req, res) {
         try {
-            const {
-                full_name, username,
-                email, password,
-                role
-            } = req.body;
+            const { full_name, username, email, password, role } = req.body;
+
             const newUser = new User({
-                full_name, username,
-                email, password,
-                role
+                full_name, username, email, password, role
             });
+
             await newUser.save();
-            if (!newUser) return res.status(400).json({ message: "User not created" });
             sendToken(newUser, 201, res);
         } catch (error) {
             res.status(500).json({ message: error.message });
@@ -59,17 +57,18 @@ class UserController {
     static async updateUser(req, res) {
         try {
             const { id } = req.params;
-            const {
-                full_name, username,
-                password,
-            } = req.body;
-            const user = await User.findOne({ _id: id });
+            if (!idValidation(id)) return res.status(400).json({ message: "Invalid ID" });
+
+            const { full_name, username, password } = req.body;
+
+            const user = await User.findByIdAndUpdate(
+                id,
+                { full_name, username, password },
+                { new: true, runValidators: true }
+            );
+
             if (!user) return res.status(404).json({ message: "User not found" });
-            user.updateOne({
-                full_name, username,
-                password
-            });
-            await user.save();
+
             res.status(200).json({
                 id: user._id,
                 username: user.username,
@@ -87,26 +86,32 @@ class UserController {
     static async deleteUser(req, res) {
         try {
             const { id } = req.params;
-            const user = await User.findOne({ _id: id });
+            if (!idValidation(id)) return res.status(400).json({ message: "Invalid ID" });
+
+            const user = await User.findByIdAndDelete(id);
             if (!user) return res.status(404).json({ message: "User not found" });
-            await user.deleteOne()
+
             res.status(200).json({ message: "User removed" });
         } catch (error) {
             res.status(500).json({ message: error.message });
         }
     }
 
+    // @desc    Update user role
+    // @route   PUT /users/:id/role
+    // @access  Admin
     static async updateUserRole(req, res) {
         try {
-            const { id } = req.params
+            const { id } = req.params;
             if (!idValidation(id)) return res.status(400).json({ message: "Invalid ID" });
 
             const { role } = req.body;
             if (!role) return res.status(400).json({ message: "Role is required" });
-            const roles = ["user", "admin"];
-            if (!roles.includes(role)) return res.status(400).json({ message: "Invalid role" });
-        
-            const user = await User.findByIdAndUpdate(id, { role });
+
+            const validRoles = ["user", "admin"];
+            if (!validRoles.includes(role)) return res.status(400).json({ message: "Invalid role" });
+
+            const user = await User.findByIdAndUpdate(id, { role }, { new: true });
             if (!user) return res.status(404).json({ message: "User not found" });
 
             return res.status(200).json({ message: "User role updated" });
@@ -116,19 +121,15 @@ class UserController {
     }
 
     // @desc    Get the connected user
-    // @route   Get /users/me
-    //@ access  User
+    // @route   GET /users/me
+    // @access  User
     static async getMe(req, res) {
         try {
             const userId = req.user._id;
-    
-            // Find the user by ID
-            const user = await User.findOne({ _id: userId });
-            if (!user) {
-                return res.status(404).json({ message: "User not found" });
-            }
-    
-            // Respond with user details
+
+            const user = await User.findById(userId);
+            if (!user) return res.status(404).json({ message: "User not found" });
+
             return res.status(200).json({
                 message: "Welcome back",
                 user: {
@@ -139,10 +140,42 @@ class UserController {
                 }
             });
         } catch (error) {
-            console.error(error);
             return res.status(500).json({ message: "Internal server error" });
         }
-    }    
+    }
+
+    // @desc    Update the connected user
+    // @route   PUT /users/me
+    // @access  User
+    static async updateMe(req, res) {
+        try {
+            const { id } = req.user;
+            const { username, bio, avatar } = req.body;
+
+            const user = await User.findByIdAndUpdate(
+                id,
+                { username, bio, avatar },
+                { new: true, runValidators: true }
+            );
+
+            if (!user) return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+
+            return res.status(200).json({
+                success: true,
+                user: {
+                    id: user._id,
+                    username: user.username,
+                    bio: user.bio,
+                    avatar: user.avatar
+                }
+            });
+        } catch (error) {
+            return res.status(500).json({ message: error.message });
+        }
+    }
 };
 
 export default UserController;

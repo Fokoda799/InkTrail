@@ -4,28 +4,22 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
 const userSchema = new mongoose.Schema({
-    full_name: {
-        type: String,
-        required: false,
-        maxlength: [30, "Full name cannot exceed 30 characters"],
-        minlength: [5, "Full name must be at least 5 characters"] // Updated from 3 to 5
-    },
     username: {
         type: String,
         required: [true, "Username is required"],
         unique: [true, "Username is already taken"],
-        maxlength: [50, "Username cannot exceed 20 characters"],
+        maxlength: [50, "Username cannot exceed 50 characters"],  // Corrected the error message
         minlength: [5, "Username must be at least 5 characters"]
     },
     email: {
         type: String,
         required: [true, "Email is required"],
-        unique: [true, "Email already exists"], // Changed from "Email is already exists" to "Email already exists"
+        unique: [true, "Email already exists"],
         validate: [validator.isEmail, "Please enter a valid email"]
     },
     password: {
         type: String,
-        required: false,
+        required: false,  // Keep false if passwords can be optional for your use case
         minlength: [6, "Password must be at least 6 characters"],
         maxlength: [20, "Password cannot exceed 20 characters"],
         select: false

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { 
   Box, 
   Button, 
@@ -9,9 +9,14 @@ import {
   Stack, 
   Backdrop 
 } from '@mui/material';
-import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
+import EditIcon from '@mui/icons-material/Edit';
 import { selectUserState } from '../redux/reducers/userReducer';
 import { useAppSelector } from '../redux/hooks';
+import { getDownloadURL, getStorage, ref, uploadBytesResumable } from 'firebase/storage';
+import { app } from '../firebase';
+import { useAppDispatch } from '../redux/hooks';
+import { updateUser } from '../actions/userAction';
+import { useNavigate } from 'react-router-dom';
 
 interface EditProfileProps {
   open: boolean;
@@ -20,26 +25,63 @@ interface EditProfileProps {
 
 export default function EditProfile({ open, handleClose }: EditProfileProps) {
   const { currentUser } = useAppSelector(selectUserState);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
 
-  // State to store user inputs
+  // State to manage hover and form inputs
+  const [hover, setHover] = useState(false);
   const [username, setUsername] = useState('');
   const [bio, setBio] = useState('');
-  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [image, setImage] = useState<File | undefined>(undefined);
+  const [avatar, setAvatar] = useState<string | undefined>(currentUser?.avatar);
 
-  // Handle image upload
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      const file = event.target.files[0];
-      const imageUrl = URL.createObjectURL(file);
-      setProfileImage(imageUrl);
+  // Pre-fill user data when component opens
+  useEffect(() => {
+    if (currentUser) {
+      setUsername(currentUser.username || '');
+      setBio(currentUser.bio || '');
     }
+  }, [currentUser]);
+
+  // Image upload effect
+  useEffect(() => {
+    if (image) {
+      handleUploadImage(image);
+    }
+  }, [image]);
+
+  const handleUploadImage = async (image: File) => {
+    const storage = getStorage(app);
+    const fileName = new Date().getTime() + '-' + image.name;
+    const storageRef = ref(storage, `avatars/${fileName}`);
+    const uploadTask = uploadBytesResumable(storageRef, image);
+
+    uploadTask.on(
+      'state_changed',
+      (snapshot) => {
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        console.log('Upload is ' + progress + '% done');
+      },
+      (error) => {
+        console.error('Upload failed:', error);
+      },
+      () => {
+        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+          setAvatar(downloadURL);
+        });
+      },
+    );
   };
 
-  // Handle form submission (example, add your own logic to save the data)
-  const handleSubmit = () => {
-    console.log('Updated Info:', { username, bio, profileImage });
+  // Handle form submission
+  const handleSubmit = () => {  
+    dispatch(updateUser({ username, bio, avatar }));
     handleClose();
+    navigate('/profile');
   };
+
+  if (!currentUser) return null;
 
   return (
     <>
@@ -52,22 +94,22 @@ export default function EditProfile({ open, handleClose }: EditProfileProps) {
           backdropFilter: 'blur(5px)',
         }}
       />
-      
+
       {/* Popover in the center */}
       <Popover
         id="edit-profile-popover"
         open={open}
         onClose={handleClose}
-        anchorReference="none" // Ensure the popover is not anchored to a specific element
+        anchorReference="none"
         PaperProps={{
           sx: {
             position: 'fixed',
             top: '67px',
-            left: '389.5px',
-            transform: 'translate(-50%, -50%)', // Center it horizontally and vertically
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
             width: '500px',
             padding: '1rem',
-            zIndex: 2, // Ensure popover appears above backdrop
+            zIndex: 2,
           }
         }}
       >
@@ -76,32 +118,61 @@ export default function EditProfile({ open, handleClose }: EditProfileProps) {
             Edit Profile
           </Typography>
           
-          {/* Profile Image Section */}
-          <Stack direction="column" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-            {currentUser.avatar ? (
-              <Avatar
-                  src={currentUser.avatar}
-                  sx={{ width: 56, height: 56 }}
-                  alt="Profile Image"
-              />
-              ) : (
-              <Avatar sx={{ width: 56, height: 56 }}>
-                {currentUser.username[0].toUpperCase()}
-              </Avatar>
-            )}
-            <Button
-              variant="contained"
-              component="label"
-              startIcon={<PhotoCameraIcon />}
+          {/* Profile Image Section with Hover Effect */}
+          <Stack 
+            direction="column" 
+            spacing={2} 
+            alignItems="center" 
+            sx={{ mb: 2 }}
+          >
+            <Box 
+              sx={{ width: 60, height: 60, position: 'relative' }}
+              onMouseEnter={() => setHover(true)}
+              onMouseLeave={() => setHover(false)}
             >
-              Update Image
-              <input
-                type="file"
-                hidden
-                accept="image/*"
-                onChange={handleImageUpload}
-              />
-            </Button>
+              {avatar ? (
+                <Avatar
+                  src={avatar}
+                  sx={{ width: '100%', height: '100%' }}
+                  alt="Profile Image"
+                />
+              ) : (
+                <Avatar sx={{ width: '100%', height: '100%' }}>
+                  {currentUser.username[0].toUpperCase()}
+                </Avatar>
+              )}
+
+              {/* Show EditIcon on hover */}
+              {hover && (
+                <EditIcon 
+                  sx={{
+                    position: 'absolute',
+                    top: '0',
+                    left: '0',
+                    width: '100%',
+                    height: '100%',
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    color: 'white',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 3,
+                    cursor: 'pointer',
+                  }}
+                  onClick={() => fileRef.current?.click()}
+                />
+              )}
+            </Box>
+
+            <input
+              type="file"
+              hidden
+              accept="image/*"
+              onChange={(e) => setImage(e.target.files ? e.target.files[0] : undefined)}
+              ref={fileRef}
+              aria-label="Profile image upload"
+            />
           </Stack>
           
           {/* Username Input */}
