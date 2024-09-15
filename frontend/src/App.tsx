@@ -6,6 +6,8 @@ import Home from './pages/Home';
 import Profile from './pages/Profile';
 import About from './pages/About';
 import MyAcount from './pages/MyAcount';
+import PrivateRoute from './components/PrivateRoute';
+import NotFound from './pages/NotFound';
 
 // import NotFound from './pages/NotFound'; // Optional: Separate NotFound component
 
@@ -18,10 +20,12 @@ function App() {
           <Route path="/blogs" element={<Home />} />
           <Route path="/signin" element={<SingIn />} />
           <Route path="/signup" element={<SingUp />} />
-          <Route path="/profile" element={<Profile />} />
           <Route path="/myaccount" element={<MyAcount />} />
           <Route path="/about" element={<About />} />
-          {/* <Route path="*" element={<NotFound />} /> */} {/* Optional: Separate NotFound component */}
+          <PrivateRoute element={<Profile />} >
+            <Route path="/profile" element={<Profile />} />
+          </PrivateRoute>
+          <Route path="*" element={<NotFound />} /> {/* Optional: Separate NotFound component */}
         </Routes>
       </BrowserRouter>
     </>
