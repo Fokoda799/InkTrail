@@ -36,10 +36,31 @@ const userSchema = new mongoose.Schema({
         default: 'user'
     },
     avatar: {
-        public_id: String,
-        url: String
+        type: String,
     },
+    bio: {
+        type: String,
+        maxlength: [150, "Bio cannot exceed 150 characters"]
+    },
+    following: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+        }
+    ],
+    followers: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+        }
+    ],
     blogs: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Blog',
+        }
+    ],
+    history: [
         {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Blog',

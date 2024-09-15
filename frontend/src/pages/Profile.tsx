@@ -2,7 +2,6 @@ import React from 'react';
 import {
   Avatar,
   Box,
-  Button,
   Container,
   Grid,
   Paper,
@@ -11,15 +10,23 @@ import {
   IconButton
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import EmailIcon from '@mui/icons-material/Email';
-import FollowersIcon from '@mui/icons-material/People';
-import FollowingIcon from '@mui/icons-material/PersonAdd';
 import { useAppSelector } from '../redux/hooks';
 import { selectUserState } from '../redux/reducers/userReducer';
+import EditProfile from '../components/EditProfile';
+import { Link } from 'react-router-dom';
 
 const Profile = () => {
-  const {currentUser, isAuth } = useAppSelector(selectUserState);
+  const { currentUser, isAuth } = useAppSelector(selectUserState);
+  const [open, setOpen] = React.useState(false);
+
+  const handleClick = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
   if (!isAuth) {
     return (
       <Container maxWidth="md">
@@ -29,16 +36,19 @@ const Profile = () => {
       </Container>
     );
   }
+
   return (
     <Container maxWidth="md" sx={{ marginTop: '2rem' }}>
       {/* Profile Header Section */}
-      <Paper elevation={3} sx={{ padding: '2rem' }}>
+      <Paper elevation={3} sx={{ padding: '2rem', marginBottom: '2rem' }}>
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={12} sm={4}>
-            <Stack direction="row" spacing={2}>
-              <Avatar sx={{ width: 120, height: 120, margin: 'auto' }}
-              >{currentUser.username.charAt(0).toUpperCase()}
-              </Avatar>
+            <Stack direction="row" spacing={1}>
+              {currentUser.avatar ? (
+                <Avatar sx={{ width: 120, height: 120 }} src={currentUser.avatar} />
+              ) : (
+                <Avatar sx={{ width: 120, height: 120 }}>{currentUser.username[0].toUpperCase()}</Avatar>
+              )}
             </Stack>
           </Grid>
           <Grid item xs={12} sm={8}>
@@ -46,7 +56,7 @@ const Profile = () => {
               <Typography variant="h5" gutterBottom>
                 {currentUser.fullName}
               </Typography>
-              <IconButton aria-label="edit profile">
+              <IconButton aria-label="edit profile" onClick={handleClick}>
                 <EditIcon />
               </IconButton>
             </Box>
@@ -60,8 +70,10 @@ const Profile = () => {
         </Grid>
       </Paper>
 
+      <EditProfile open={open} handleClose={handleClose} />
+
       {/* Stats Section */}
-      <Paper elevation={1} sx={{ marginTop: '2rem', padding: '1rem' }}>
+      <Paper elevation={1} sx={{ marginBottom: '2rem', padding: '1rem' }}>
         <Grid container spacing={2}>
           <Grid item xs={4} textAlign="center">
             <Typography variant="h6">Posts</Typography>
@@ -78,37 +90,20 @@ const Profile = () => {
         </Grid>
       </Paper>
 
-      {/* Personal Information Section */}
-      <Paper elevation={1} sx={{ marginTop: '2rem', padding: '1.5rem' }}>
+      {/* My Blogs Section */}
+      <Paper elevation={1} sx={{ marginBottom: '2rem', padding: '1.5rem' }}>
         <Typography variant="h6" gutterBottom>
-          Personal Information
+          My Blogs
         </Typography>
-        <Stack spacing={2}>
-          <Box display="flex" alignItems="center">
-            <EmailIcon color="action" sx={{ marginRight: '0.5rem' }} />
-            <Typography variant="body1">{currentUser.email}</Typography>
-          </Box>
-          <Box display="flex" alignItems="center">
-            <LocationOnIcon color="action" sx={{ marginRight: '0.5rem' }} />
-            <Typography variant="body1">San Francisco, CA</Typography>
-          </Box>
-          <Box display="flex" alignItems="center">
-            <FollowersIcon color="action" sx={{ marginRight: '0.5rem' }} />
-            <Typography variant="body1">Followers: 2500</Typography>
-          </Box>
-          <Box display="flex" alignItems="center">
-            <FollowingIcon color="action" sx={{ marginRight: '0.5rem' }} />
-            <Typography variant="body1">Following: 180</Typography>
-          </Box>
+        <Stack spacing={1} display={'flex'} justifyContent={'center'} alignItems={'center'}>
+          <Typography variant="body1" sx={{ margin: 'auto' }}>
+            Post your first blog today!
+          </Typography>
+          <Typography variant="body1" component={Link} to="/create">
+            Write
+          </Typography>
         </Stack>
       </Paper>
-
-      {/* Edit Profile Button */}
-      <Box sx={{ marginTop: '2rem', textAlign: 'center' }}>
-        <Button variant="contained" color="primary" startIcon={<EditIcon />}>
-          Edit Profile
-        </Button>
-      </Box>
     </Container>
   );
 };

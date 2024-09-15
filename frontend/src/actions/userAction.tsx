@@ -63,8 +63,9 @@ export const signInWithGoogle = () => async (dispatch: AppDispatch) => {
     const auth = getAuth(app);
     const result = await signInWithPopup(auth, provider);
     const config = { headers: { "Content-Type": 'application/json' } };
+    const username = result.user.email?.split('@')[0];
     const signInData = {
-      username: result.user.displayName,
+      username,
       email: result.user.email,
       avatar: result.user.photoURL,
     }

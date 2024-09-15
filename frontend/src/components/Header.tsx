@@ -110,6 +110,8 @@ function Header() {
     setNotificationsAnchorEl(null);
   };
 
+
+
   const menuId = 'primary-search-account-menu';
   const renderMenu = (
     <Menu
@@ -228,9 +230,11 @@ function Header() {
                 color="inherit"
               >
                 <Stack direction="row" spacing={1}>
-                  <Avatar sx={{ width: 60, height: 60  }} >
-                    {currentUser?.username[0].toUpperCase()}
-                  </Avatar>
+                  {currentUser.avatar ? (
+                    <Avatar sx={{ width: 40, height: 40 }} src={currentUser.avatar} />
+                  ) : (
+                    <Avatar sx={{ width: 40, height: 40 }}>{currentUser.username[0].toUpperCase()}</Avatar>
+                  )}
                 </Stack>
               </IconButton>
             </Box>
