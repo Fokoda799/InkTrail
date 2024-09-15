@@ -8,6 +8,7 @@ import About from './pages/About';
 import MyAcount from './pages/MyAcount';
 import PrivateRoute from './components/PrivateRoute';
 import NotFound from './pages/NotFound';
+import AdminPage from './pages/Admin';
 
 // import NotFound from './pages/NotFound'; // Optional: Separate NotFound component
 
@@ -25,7 +26,8 @@ function App() {
           <PrivateRoute element={<Profile />} >
             <Route path="/profile" element={<Profile />} />
           </PrivateRoute>
-          <Route path="*" element={<NotFound />} /> {/* Optional: Separate NotFound component */}
+          <Route path="*" element={<NotFound />} />
+          <Route path="/admin" element={<AdminPage />} />
         </Routes>
       </BrowserRouter>
     </>
