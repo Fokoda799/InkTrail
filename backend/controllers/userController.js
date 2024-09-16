@@ -9,7 +9,7 @@ class UserController {
     // @access  Admin
     static async getAllUsers(req, res) {
         try {
-            const users = await User.find();
+            const users = await User.find().populate('blogs', 'title content image');
             res.status(200).json(users);
         } catch (error) {
             res.status(500).json({ message: error.message });
@@ -38,10 +38,10 @@ class UserController {
     // @access  User
     static async createUser(req, res) {
         try {
-            const { full_name, username, email, password, role } = req.body;
+            const { username, email, password } = req.body;
 
             const newUser = new User({
-                full_name, username, email, password, role
+                username, email, password
             });
 
             await newUser.save();

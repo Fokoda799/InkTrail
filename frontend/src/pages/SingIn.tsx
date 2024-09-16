@@ -18,8 +18,8 @@ export default function SignIn() {
   const alert = useAlert();
   const location = useLocation();
 
-  const { error, isAuth, loading } = useAppSelector(selectUserState);
-  const redirect = location.search ? location.search.split("=")[1] : "/blogs";
+  const { error, currentUser, loading } = useAppSelector(selectUserState);
+  const redirect = location.search ? location.search.split("=")[1] : "/profile";
 
   useEffect(() => {
     if (error) {
@@ -27,10 +27,10 @@ export default function SignIn() {
       dispatch(clearError());
     }
 
-    if (isAuth) {
+    if (currentUser) {
       navigate(redirect);
     }
-  }, [dispatch, error, alert, isAuth, navigate, redirect]);
+  }, [dispatch, error, alert, currentUser, navigate, redirect]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

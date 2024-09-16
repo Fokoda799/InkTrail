@@ -24,6 +24,11 @@ const userSchema = new mongoose.Schema({
         maxlength: [20, "Password cannot exceed 20 characters"],
         select: false
     },
+    withPassword: {
+        type: Boolean,
+        require: true,
+        default: false
+    },
     role: {
         type: String,
         enum: ['user', 'admin'],
@@ -70,6 +75,7 @@ userSchema.pre('save', async function (next) {
     try {
         const hashedPassword = await bcrypt.hash(this.password, 10);
         this.password = hashedPassword;
+        this.withPassword = true;
         next();
     } catch (error) {
         next(error);
@@ -79,6 +85,15 @@ userSchema.pre('save', async function (next) {
 // Compare password
 userSchema.methods.comparePassword = async function (password) {
     return await bcrypt.compare(password, this.password);
+}
+
+userSchema.methods.updatePassword = async function (newPassword) {
+    try {
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        this.password = hashedPassword;
+    } catch (error) {
+        throw new Error(error.message);
+    }
 }
 
 // Generate JWT Token

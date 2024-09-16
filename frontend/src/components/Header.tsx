@@ -13,11 +13,15 @@ import SearchIcon from '@mui/icons-material/Search';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import MoreIcon from '@mui/icons-material/MoreVert';
 import Avatar from '@mui/material/Avatar';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Tabs, Tab, Stack } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../redux/hooks';
 import { selectUserState } from '../redux/reducers/userReducer';
+import { selectBlogState } from '../redux/reducers/blogReducer';
 import { logout } from '../actions/userAction';
+import HistoryEduIcon from '@mui/icons-material/HistoryEdu';
+import SendTwoToneIcon from '@mui/icons-material/SendTwoTone';
+import { createBlog } from '../actions/blogAction';
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
@@ -59,13 +63,15 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 function Header() {
-  const { isAuth, currentUser } = useAppSelector(selectUserState);
+  const { currentUser } = useAppSelector(selectUserState);
+  const { readyBlog } = useAppSelector(selectBlogState);
   const dispatch = useAppDispatch();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState<null | HTMLElement>(null);
   const [notificationsAnchorEl, setNotificationsAnchorEl] = React.useState<null | HTMLElement>(null);
 
   const navigate = useNavigate();
+  const location = useLocation(); // Use the useLocation hook
 
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
@@ -85,8 +91,8 @@ function Header() {
     handleMobileMenuClose();
   };
 
-  const handleMyAccount = () => {
-    navigate('/myaccount');
+  const handleSettings = () => {
+    navigate('/settings');
     setAnchorEl(null);
     handleMobileMenuClose();
   };
@@ -110,7 +116,15 @@ function Header() {
     setNotificationsAnchorEl(null);
   };
 
-
+  const handlePublish = () => {
+    if (readyBlog) {
+      console.log(readyBlog);
+      dispatch(createBlog(readyBlog));
+      navigate('/');
+    } else {
+      console.error('No blog data to publish');
+    }
+  }
 
   const menuId = 'primary-search-account-menu';
   const renderMenu = (
@@ -124,7 +138,7 @@ function Header() {
       onClose={() => setAnchorEl(null)}
     >
       <MenuItem onClick={handleProfile}>Profile</MenuItem>
-      <MenuItem onClick={handleMyAccount}>My account</MenuItem>
+      <MenuItem onClick={handleSettings}>Settings</MenuItem>
       <MenuItem onClick={handleLogout}>Logout</MenuItem>
     </Menu>
   );
@@ -151,8 +165,8 @@ function Header() {
       <MenuItem onClick={handleProfileMenuOpen}>
         <IconButton size="large" aria-label="account of current user" aria-controls={menuId} aria-haspopup="true" color="inherit">
           <Stack direction="row" spacing={1}>
-            <Avatar sx={{ width: 60, height: 60  }} >
-              {currentUser?.username[0].toUpperCase()}
+            <Avatar sx={{ width: 60, height: 60 }}>
+              {currentUser?.username?.[0].toUpperCase() || ''}
             </Avatar>
           </Stack>
         </IconButton>
@@ -161,7 +175,6 @@ function Header() {
     </Menu>
   );
 
-  // Notifications dropdown menu
   const renderNotificationsMenu = (
     <Menu
       anchorEl={notificationsAnchorEl}
@@ -175,13 +188,18 @@ function Header() {
     </Menu>
   );
 
-  const signInSignUpTabs = (
+  // Conditionally render the Sign In and Sign Up tabs based on the current route
+  const tabs = (
     <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
       <Tabs aria-label="basic tabs example">
         <Tab label="Home" component={Link} to="/blogs" />
         <Tab label="About" component={Link} to="/about" />
-        <Tab label="Sign In" component={Link} to="/signin" />
-        <Tab label="Sign Up" component={Link} to="/signup" />
+        {location.pathname !== '/signin' && (
+          <Tab label="Sign In" component={Link} to="/signin" />
+        )}
+        {location.pathname !== '/signup' && (
+          <Tab label="Sign Up" component={Link} to="/signup" />
+        )}
       </Tabs>
     </Box>
   );
@@ -194,12 +212,12 @@ function Header() {
             variant="h6"
             noWrap
             component={Link}
-            to="/blogs"
+            to="/"
             sx={{ display: { xs: 'none', sm: 'block' }, color: 'inherit', textDecoration: 'none' }}
           >
             BlogiFY
           </Typography>
-          {isAuth && (
+          {currentUser && (
             <Search>
               <SearchIconWrapper>
                 <SearchIcon />
@@ -208,8 +226,27 @@ function Header() {
             </Search>
           )}
           <Box sx={{ flexGrow: 1 }} />
-          {isAuth ? (
+          {currentUser ? (
             <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
+              {location.pathname === '/new-fact' ? (
+                <IconButton
+                size="large"
+                aria-label="show 17 new notifications"
+                color="inherit"
+                onClick={handlePublish}
+                >
+                  <SendTwoToneIcon/>
+                </IconButton>
+              ) : (
+                <IconButton
+                size="large"
+                aria-label="show 17 new notifications"
+                color="inherit"
+                onClick={() => navigate('/new-fact')}
+                >
+                  <HistoryEduIcon/>
+                </IconButton>
+              )}
               <IconButton
                 size="large"
                 aria-label="show 17 new notifications"
@@ -230,15 +267,19 @@ function Header() {
                 color="inherit"
               >
                 <Stack direction="row" spacing={1}>
-                  {currentUser.avatar ? (
-                    <Avatar sx={{ width: 40, height: 40 }} src={currentUser.avatar} />
+                  {currentUser?.avatar ? (
+                    <Avatar alt={currentUser.username} src={currentUser.avatar} />
                   ) : (
-                    <Avatar sx={{ width: 40, height: 40 }}>{currentUser.username[0].toUpperCase()}</Avatar>
+                    <Avatar sx={{ width: 60, height: 60 }}>
+                      {currentUser.username?.[0].toUpperCase() || ''}
+                    </Avatar>
                   )}
                 </Stack>
               </IconButton>
             </Box>
-          ) : signInSignUpTabs}
+          ) : (
+            tabs
+          )}
           <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
             <IconButton
               size="large"

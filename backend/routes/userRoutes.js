@@ -21,5 +21,6 @@ userRouter.get('/me', isAuthenticatedUser, UserController.getMe);
 userRouter.put('/me', isAuthenticatedUser, UserController.updateMe);
 userRouter.get('/user/logout', AuthController.disconnectUser);
 userRouter.post('/user/google', AuthController.signinWithGoogle);
+userRouter.put('/me/update-password', isAuthenticatedUser, AuthController.updatePassword);
 
 export default userRouter;

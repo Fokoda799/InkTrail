@@ -6,7 +6,10 @@ import {
   signInFailure, signInSuccess, signInStart,
   signUpFailure, signUpSuccess, signUpStart,
   signOutStart, signOutSuccess, signOutFailure,
-  updateUserStart, updateUserSuccess, updateUserFailure
+  updateUserStart, updateUserSuccess, updateUserFailure,
+  updatePasswordStart,
+  updatePasswordFailure,
+  updatePasswordSuccess
 } from '../redux/reducers/userReducer';
 import axios from 'axios';
 import { SignInData, SignUpData, UpdateData } from '../types/userTypes';
@@ -125,4 +128,27 @@ export const updateUser = (updateData: UpdateData) => async (dispatch: AppDispat
     console.log('Error:', message);
     dispatch(updateUserFailure(message)); // Corrected the dispatch here
   }
-};
+}
+
+export const updatePassword = (newPassword: string, currentPassword?: string) => async (dispatch: AppDispatch) => {
+  try {
+    dispatch(updatePasswordStart());
+    
+    const { data }: { data: AuthResponse | ErrorResponse} = await axios.put(
+      '/api/v1/me/update-password',
+      { currentPassword, newPassword }
+    );
+
+    if (!data.success) {
+      console.log(data.message);
+      dispatch(updatePasswordFailure(data.message));
+      return;
+    }
+    dispatch(updatePasswordSuccess(data.user))
+  } catch (error) {
+    const message = axios.isAxiosError(error) ? error.response?.data.message : String(error);
+    console.log('Error:', message);
+    dispatch(updateUserFailure(message));
+  }
+}
+

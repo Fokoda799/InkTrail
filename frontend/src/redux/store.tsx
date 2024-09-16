@@ -1,11 +1,13 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import userReducer from './reducers/userReducer';
+import blogReducer from './reducers/blogReducer';
 import { persistReducer, persistStore } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 
 // Combine reducers if there are multiple slices
 const rootReducer = combineReducers({
-  user: userReducer, // use 'users' if you named the slice users
+  user: userReducer,
+  blog: blogReducer,
 });
 
 // Persist configuration

@@ -1,6 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { RootState } from '../store';
 import type { UserState } from '../../types/userTypes';
+import { setLoading, setSuccess, setFailure } from '../../helpers/userHelper';
 
 // Define the initial state using that type
 const initialState: UserState = {
@@ -14,53 +15,29 @@ const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    signInStart: (state) => {
-      state.loading = true;
-    },
-    signInSuccess: (state, action) => {
-      state.currentUser = action.payload;
-      state.isAuth = true;
-      state.loading = false;
-      state.error = null;
-    },
-    signInFailure: (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    },
-    signUpStart: (state) => {
-      state.loading = true;
-    },
-    signUpSuccess: (state, action) => {
-      state.currentUser = action.payload;
-      state.isAuth = true;
-      state.loading = false;
-      state.error = null;
-    },
-    signUpFailure: (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    },
-    signOutStart: (state) => {
-      state.loading = true
-    },
+    signInStart: setLoading,
+    signInSuccess: setSuccess,
+    signInFailure: setFailure,
+    
+    signUpStart: setLoading,
+    signUpSuccess: setSuccess,
+    signUpFailure: setFailure,
+
+    updateUserStart: setLoading,
+    updateUserSuccess: setSuccess,
+    updateUserFailure: setFailure,
+
+    updatePasswordStart: setLoading,
+    updatePasswordSuccess: setSuccess,
+    updatePasswordFailure: setFailure,
+    
+    signOutStart: setLoading,
     signOutSuccess: (state) => {
       state.currentUser = null;
       state.loading = false;
+      state.error = null;
     },
-    signOutFailure: (state, action) => {
-      state.error = action.payload;
-    },
-    updateUserStart: (state) => {
-      state.loading = true;
-    },
-    updateUserSuccess: (state, action) => {
-      state.currentUser = action.payload;
-      state.loading = false;
-    },
-    updateUserFailure: (state, action) => {
-      state.error = action.payload;
-      state.loading = false;
-    },
+    signOutFailure: setFailure,
     clearError: (state) => {
       state.error = null;
     }
@@ -73,7 +50,8 @@ export const {
   signUpStart, signUpSuccess, signUpFailure,
   signOutSuccess, signOutFailure, clearError, 
   signOutStart, updateUserFailure, updateUserStart,
-  updateUserSuccess
+  updateUserSuccess, updatePasswordStart, updatePasswordSuccess,
+  updatePasswordFailure
 } = userSlice.actions;
 
 // Selector to get authentication state

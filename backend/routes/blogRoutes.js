@@ -5,20 +5,20 @@ import { isAuthenticatedUser, authorizeRoles } from '../middlewares/auth.js';
 // Create a new router
 const blogRouter = Router();
 
-// Define blog routes
+// Public routes
 blogRouter.get('/blogs', BlogController.getAllBlogs);
 blogRouter.get('/blogs/:id', BlogController.getBlogById);
+
+// Authenticated user routes
 blogRouter.post('/blogs', isAuthenticatedUser, BlogController.postBlog);
-blogRouter.post('/admin/blogs', isAuthenticatedUser, authorizeRoles("admin"), BlogController.postBlogAsAdmin);
 blogRouter.put('/blogs/:id', isAuthenticatedUser, BlogController.updateBlog);
 blogRouter.delete('/blogs/:id', isAuthenticatedUser, BlogController.deleteBlog);
-
-// Get blogs for users
-blogRouter.get('/admin/:id/blogs', isAuthenticatedUser, authorizeRoles("admin"), BlogController.getUserBlogs);
-blogRouter.get('/admin/:userId/blogs/:id', isAuthenticatedUser, authorizeRoles("admin"), BlogController.getUserBlogs);
-
-// Get blogs for auth users
 blogRouter.get('/user/me/blogs', isAuthenticatedUser, BlogController.getAuthUserBlogs);
 blogRouter.get('/user/me/blogs/:id', isAuthenticatedUser, BlogController.getAuthUserBlogById);
+
+// Admin routes
+blogRouter.post('/admin/blogs', isAuthenticatedUser, authorizeRoles('admin'), BlogController.postBlogAsAdmin);
+blogRouter.get('/admin/users/:id/blogs', isAuthenticatedUser, authorizeRoles('admin'), BlogController.getUserBlogs);
+blogRouter.get('/admin/users/:userId/blogs/:id', isAuthenticatedUser, authorizeRoles('admin'), BlogController.getUserBlogById);
 
 export default blogRouter;

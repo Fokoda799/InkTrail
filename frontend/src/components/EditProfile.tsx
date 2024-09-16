@@ -12,7 +12,7 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 import { selectUserState } from '../redux/reducers/userReducer';
 import { useAppSelector } from '../redux/hooks';
-import { getDownloadURL, getStorage, ref, uploadBytesResumable } from 'firebase/storage';
+import { getDownloadURL, getStorage, ref, uploadBytesResumable, deleteObject } from 'firebase/storage';
 import { app } from '../firebase';
 import { useAppDispatch } from '../redux/hooks';
 import { updateUser } from '../actions/userAction';
@@ -35,6 +35,7 @@ export default function EditProfile({ open, handleClose }: EditProfileProps) {
   const [bio, setBio] = useState('');
   const [image, setImage] = useState<File | undefined>(undefined);
   const [avatar, setAvatar] = useState<string | undefined>(currentUser?.avatar);
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null); // Track uploaded file name
 
   // Pre-fill user data when component opens
   useEffect(() => {
@@ -54,6 +55,7 @@ export default function EditProfile({ open, handleClose }: EditProfileProps) {
   const handleUploadImage = async (image: File) => {
     const storage = getStorage(app);
     const fileName = new Date().getTime() + '-' + image.name;
+    setUploadedFileName(fileName); // Track uploaded file name
     const storageRef = ref(storage, `avatars/${fileName}`);
     const uploadTask = uploadBytesResumable(storageRef, image);
 
@@ -74,11 +76,33 @@ export default function EditProfile({ open, handleClose }: EditProfileProps) {
     );
   };
 
+  // Handle image deletion from Firebase
+  const handleDeleteImage = async () => {
+    if (uploadedFileName) {
+      const storage = getStorage(app);
+      const storageRef = ref(storage, `avatars/${uploadedFileName}`);
+      deleteObject(storageRef)
+        .then(() => {
+          setAvatar(undefined);
+          console.log('Image deleted successfully');
+        })
+        .catch((error) => {
+          console.error('Error deleting image:', error);
+        });
+    }
+  };
+
   // Handle form submission
   const handleSubmit = () => {  
     dispatch(updateUser({ username, bio, avatar }));
     handleClose();
     navigate('/profile');
+  };
+
+  // Handle cancel or close
+  const handleCancel = () => {
+    handleDeleteImage(); // Delete image if not saved
+    handleClose();
   };
 
   if (!currentUser) return null;
@@ -99,7 +123,7 @@ export default function EditProfile({ open, handleClose }: EditProfileProps) {
       <Popover
         id="edit-profile-popover"
         open={open}
-        onClose={handleClose}
+        onClose={handleCancel}
         anchorReference="none"
         PaperProps={{
           sx: {
@@ -149,8 +173,9 @@ export default function EditProfile({ open, handleClose }: EditProfileProps) {
                     position: 'absolute',
                     top: '0',
                     left: '0',
-                    width: '100%',
-                    height: '100%',
+                    width: '99%',
+                    height: '99%',
+                    padding: 1,
                     backgroundColor: 'rgba(0, 0, 0, 0.5)',
                     color: 'white',
                     borderRadius: '50%',

@@ -21,7 +21,9 @@ class AuthController {
             }
 
             // Find user by email
-            const user = await User.findOne({ email }).select('+password');
+            const user = await User.findOne({ email }).select('+password').populate('blogs',
+                'title content image category tags isPublished claps comments'
+            );
             if (!user) {
                 return res.status(400).json({ message: 'User not found' });
             }
@@ -29,14 +31,14 @@ class AuthController {
             // Compare password
             const isMatch = await user.comparePassword(password);
             if (!isMatch) {
-                return res.status(400).json({ message: 'Invalid credentials' });
+                return res.status(400).json({ message: 'Invalid password' });
             }
 
             // Send token
             sendToken(user, 200, res);
         } catch (error) {
             console.error('Error during user connection:', error);
-            return res.status(500).json({ message: 'Internal server error' });
+            return res.status(500).json({ message: error.message });
         }
     }
 
@@ -62,7 +64,9 @@ class AuthController {
     static async signinWithGoogle(req, res) {
         try {
             const { username, email, avatar } = req.body;
-            let user = await User.findOne({ email });
+            let user = await User.findOne({ email }).populate('blogs',
+                'title content image category tags isPublished claps comments'
+            );
 
             if (user) {
                 sendToken(user, 200, res);
@@ -71,11 +75,38 @@ class AuthController {
                     username,
                     email,
                     avatar,
-                });
+                })
                 sendToken(user, 200, res);
             }
         } catch (error) {
             console.error('Error during Google sign-in:', error);
+            return res.status(500).json({ message: error.message });
+        }
+    }
+
+    static updatePassword = async (req, res) => {
+        try {
+            const { currentPassword, newPassword } = req.body;
+            const user = await User.findById(req.user.id);
+            if (!user) return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+
+            const isMatch = await user.comparePassword(currentPassword);
+            if (!isMatch) return res.status(400).json({
+                success: false,
+                message: 'Invalid password'
+            });
+            const updatedUser = await user.updatePassword(newPassword);
+            if (!updatedUser) return res.status(400).json({
+                success: false,
+                message: 'Password update failed: ' + error.message
+            });
+
+            sendToken(updatedUser, 200, res);
+        } catch (error) {
+            console.error('Error during password update:', error);
             return res.status(500).json({ message: error.message });
         }
     }

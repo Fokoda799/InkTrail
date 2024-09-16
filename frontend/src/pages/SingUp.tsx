@@ -32,8 +32,8 @@ export default function SignUp() {
     });
   };
 
-  const { error, isAuth } = useAppSelector(selectUserState);
-  const redirect = location.search ? location.search.split("=")[1] : "/blogs";
+  const { error, currentUser } = useAppSelector(selectUserState);
+  const redirect = location.search ? location.search.split("=")[1] : "/profile";
 
   useEffect(() => {
     if (error) {
@@ -41,10 +41,10 @@ export default function SignUp() {
       dispatch(clearError());
     }
 
-    if (isAuth) {
+    if (currentUser) {
       navigate(redirect);
     }
-  }, [dispatch, error, alert, isAuth, navigate, redirect]);
+  }, [dispatch, error, alert, currentUser, navigate, redirect]);
 
   return (
     <AppProvider theme={theme}>
@@ -57,15 +57,6 @@ export default function SignUp() {
               Create an Account
             </Typography>
             <form style={{ width: '100%' }} onSubmit={handleSubmit}>
-              <TextField
-                label="Full Name"
-                name="fullName"
-                value={formData.fullName || ''}
-                onChange={handleChange}
-                variant="outlined"
-                fullWidth
-                margin="normal"
-              />
               <TextField
                 label="Username"
                 name="username"

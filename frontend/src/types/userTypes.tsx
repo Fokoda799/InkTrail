@@ -1,3 +1,5 @@
+import { Blog } from './blogTypes';
+
 
 // User sign-up types
 export interface FormData {
@@ -20,7 +22,7 @@ interface User {
     password?: string;
     avatar?: string;
     bio?: string;
-    blogs?: string[];
+    blogs?: Blog[];
 }
 
 // User state types
@@ -55,4 +57,14 @@ export interface SignUpData {
     email: string;
     password?: string;
     avatar?: string;
+}
+
+export interface UserAction {
+    type: string;
+    payload: User | null;
+}
+
+export interface ErrorAction {
+    type: string;
+    payload: string;
 }

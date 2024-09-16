@@ -14,6 +14,7 @@ import { useAppSelector } from '../redux/hooks';
 import { selectUserState } from '../redux/reducers/userReducer';
 import EditProfile from '../components/EditProfile';
 import { Link } from 'react-router-dom';
+import { Blog } from '../types/blogTypes';
 
 const Profile = () => {
   const { currentUser } = useAppSelector(selectUserState);
@@ -36,6 +37,8 @@ const Profile = () => {
       </Container>
     );
   }
+
+  console.log(currentUser);
 
   return (
     <Container maxWidth="md" sx={{ marginTop: '2rem' }}>
@@ -95,7 +98,8 @@ const Profile = () => {
         <Typography variant="h6" gutterBottom>
           My Blogs
         </Typography>
-        <Stack spacing={1} display={'flex'} justifyContent={'center'} alignItems={'center'}>
+        {currentUser?.blogs?.length === 0 ? (
+          <Stack spacing={1} display={'flex'} justifyContent={'center'} alignItems={'center'}>
           <Typography variant="body1" sx={{ margin: 'auto' }}>
             Post your first blog today!
           </Typography>
@@ -103,6 +107,22 @@ const Profile = () => {
             Write
           </Typography>
         </Stack>
+        ) : (
+          <Grid container spacing={2}>
+            {currentUser?.blogs?.map((blog: Blog) => (
+              <Grid item xs={12} sm={6} key={blog._id}>
+                <Paper elevation={0} sx={{ padding: '1rem', cursor: 'pointer' }}>
+                  <Typography variant="h6" gutterBottom>
+                    {blog.title}
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    {blog.content.substring(0, 20)}
+                  </Typography>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+        )}
       </Paper>
     </Container>
   );
