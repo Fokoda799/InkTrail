@@ -1,8 +1,4 @@
-Here's a structured `README.md` file template for your project. You can fill in the specific details related to your project where needed.
-
----
-
-# Project Name
+# InkTrial
 
 ## Description
 
