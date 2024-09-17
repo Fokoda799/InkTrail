@@ -1,10 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Typography, Grid, Card, CardContent, CardMedia, CircularProgress, Button } from '@mui/material';
+import { useState, useEffect, useCallback } from 'react';
+import { Box, Typography, Grid, CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { Blog } from '../types/blogTypes';
 import { fetchBlogs } from '../actions/blogAction';
 import { useAppSelector, useAppDispatch } from '../redux/hooks';
 import { selectBlogState } from '../redux/reducers/blogReducer';
+import BlogCard from '../components/Card';
+import BasicBreadcrumbs from '../components/BasicBreadcrumbs';
 
 const BlogsPage = () => {
   const { blogs, pagination, loading } = useAppSelector(selectBlogState);
@@ -48,31 +50,15 @@ const BlogsPage = () => {
 
   return (
     <Box sx={{ padding: 2 }}>
-      <Typography variant="h4" gutterBottom>
-        Blogs
-      </Typography>
-      <Grid container spacing={2}>
+      <Grid item sx={{ display: 'flex', justifyContent: 'center'}}>
+        <BasicBreadcrumbs />
+      </Grid>
+      <Grid container spacing={-1}/>
+      <Grid container spacing={2} sx={{margin: 'auto'}}>
         {blogList.map((blog) => (
-          <Grid item xs={12} sm={6} md={4} key={blog._id}>
-            <Card sx={{ maxWidth: 345 }}>
-              <CardMedia
-                component="img"
-                height="140"
-                image={blog.image}
-                alt={blog.title}
-              />
-              <CardContent>
-                <Typography gutterBottom variant="h5" component="div">
-                  {blog.title}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {blog.content}
-                </Typography>
-                <Button variant="contained" color="primary" onClick={() => navigate(`/blog/@${blog?.userId?.username}/${blog._id}`)}>
-                  Read More
-                </Button>
-              </CardContent>
-            </Card>
+          <Grid item xs={12} sm={6} md={4} key={blog._id}
+          onClick={() => navigate(`/blog/${blog?.userId?.username}/${blog?._id}`)}>
+            <BlogCard {...blog} />
           </Grid>
         ))}
       </Grid>

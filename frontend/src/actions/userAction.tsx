@@ -42,10 +42,8 @@ export const signIn = ({ email, password }: SignInData) => async (dispatch: AppD
 export const signUp = (signUpData: SignUpData) => async (dispatch: AppDispatch) => {
   try {
     dispatch(signUpStart());
-
-    const config = { headers: { "Content-Type": "multipart/form-data" } };
-
-    const { data }: { data: AuthResponse | ErrorResponse } = await axios.post(`/api/v1/user/sign-up`, signUpData, config);
+    
+    const { data }: { data: AuthResponse | ErrorResponse } = await axios.post(`/api/v1/user/sign-up`, signUpData);
 
     if (!data.success) {
       console.log('Error:', data.message);

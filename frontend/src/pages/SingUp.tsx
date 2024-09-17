@@ -46,6 +46,8 @@ export default function SignUp() {
     }
   }, [dispatch, error, alert, currentUser, navigate, redirect]);
 
+  console.log(formData);
+
   return (
     <AppProvider theme={theme}>
       {successAlert && <SuccessAlert onClose={() => setSuccessAlert(false)} />}

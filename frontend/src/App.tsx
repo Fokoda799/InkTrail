@@ -1,5 +1,5 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import Header from './components/Header';
+//import Header from './components/Header';
 import SignIn from './pages/SingIn'; // Fixed the spelling error
 import SignUp from './pages/SingUp'; // Fixed the spelling error
 import LandingPage from './pages/LandingPage';
@@ -11,6 +11,8 @@ import NotFound from './pages/NotFound';
 import AdminPage from './pages/Admin';
 import BlogDetail from './pages/ReadBlog'; // Ensure the correct import
 import WriteBlog from './pages/WriteBlog';
+import Header from './components/Header'; // Ensure the correct import
+import Footer from './components/Footer';
 
 function App() {
   return (
@@ -30,6 +32,7 @@ function App() {
         <Route path="*" element={<NotFound />} />
         <Route path="/admin" element={<AdminPage />} />
       </Routes>
+      <Footer />
     </BrowserRouter>
   );
 }

@@ -2,15 +2,14 @@
 
 export interface UserId {
     _id?: string;
-    username?: string;
-    avatar?: string;
-    blogs?: Blog[];
+    username?: string | undefined;
+    avatar?: string | undefined;
+    blogs?: Blog[] | undefined;
 }
 
 export interface Blog {
-    body: ReactNode;
     _id?: string;
-    userId?: UserId;
+    userId: UserId;
     title: string;
     content: string;
     image?: string;

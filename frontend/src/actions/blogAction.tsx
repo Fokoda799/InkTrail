@@ -115,6 +115,19 @@ export const deleteBlog = (id: string) => async (dispatch: AppDispatch) => {
   }
 };
 
+// export const searchBlogs = (query: string) => async (dispatch: Dispatch) => {
+//   try {
+//     dispatch(searchstart());
+
+//     // Send a request to the backend to fetch blogs based on the search query
+//     const { data } = await axios.get(`/api/blogs/search?query=${query}`);
+
+//     dispatch(searchSuccess(data.blogs));
+//   } catch (error: string) {
+//     dispatch(searchFailure(error.message));
+//   }
+// };
+
 // Clear errors
 export const clearBlogError = () => (dispatch: AppDispatch) => {
   dispatch(clearError());

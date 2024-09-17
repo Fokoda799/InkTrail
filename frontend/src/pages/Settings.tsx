@@ -111,7 +111,7 @@ const Settings = () => {
       </Paper>
 
       {/* Update Password Section - Only show if currentUser has a password */}
-      {currentUser?.password && (
+      {currentUser?.withPassword && (
         <Paper elevation={1} sx={{ marginTop: '2rem', padding: '2rem' }}>
           <Typography variant="h6" gutterBottom>
             Update Password

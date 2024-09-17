@@ -3,7 +3,6 @@ import { Blog } from './blogTypes';
 
 // User sign-up types
 export interface FormData {
-    fullName?: string;
     username?: string;
     email: string;
     password: string;
@@ -20,6 +19,7 @@ interface User {
     username: string;
     email: string;
     password?: string;
+    withPassword: boolean;
     avatar?: string;
     bio?: string;
     blogs?: Blog[];
@@ -52,7 +52,6 @@ export interface SignInData {
 }
   
 export interface SignUpData {
-    fullName?: string;
     username: string;
     email: string;
     password?: string;
