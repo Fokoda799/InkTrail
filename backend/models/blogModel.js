@@ -33,10 +33,12 @@ const blogSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
-    claps: {
-        type: Number,
-        default: 0,
-    },
+    likes: [
+        {
+            type: mongoose.Types.ObjectId,
+            ref: 'User',
+        }
+    ],
     comments: [
         {
             userId: {

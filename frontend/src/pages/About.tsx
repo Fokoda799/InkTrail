@@ -1,11 +1,11 @@
-import React from 'react';
 import { Container, Box, Typography, Grid, Card, CardContent, Avatar } from '@mui/material';
 
 const About = () => {
+  const handleRedirect = () => {
+    window.open('https://www.linkedin.com/in/fokoda-code/', '_blank');
+  };
   const teamMembers = [
-    { name: 'John Doe', role: 'CEO', avatar: 'https://via.placeholder.com/150' },
-    { name: 'Jane Smith', role: 'CTO', avatar: 'https://via.placeholder.com/150' },
-    { name: 'Emily Johnson', role: 'Lead Developer', avatar: 'https://via.placeholder.com/150' }
+    { name: 'Abdellah Nait Hadid', role: 'CEO', avatar: 'https://via.placeholder.com/150' },
   ];
 
   return (
@@ -17,7 +17,7 @@ const About = () => {
         </Typography>
         <Typography variant="body1" align="center" sx={{ mx: 'auto', maxWidth: '800px' }}>
           Welcome to our platform! We are committed to delivering exceptional services and fostering an engaging community.
-          Our goal is to revolutionize the way you experience [product/service]. With a dedicated team and innovative 
+          Our goal is to revolutionize the way you experience InkTrail. With a dedicated team and innovative 
           solutions, we are constantly striving to push boundaries.
         </Typography>
       </Box>
@@ -39,7 +39,7 @@ const About = () => {
           Our Vision
         </Typography>
         <Typography variant="body1" align="center" sx={{ mx: 'auto', maxWidth: '800px' }}>
-          To be a global leader in [industry/sector], recognized for our commitment to innovation and excellence.
+          To be a global leader in Tech, recognized for our commitment to innovation and excellence.
         </Typography>
       </Box>
 
@@ -51,7 +51,7 @@ const About = () => {
         <Grid container spacing={3} justifyContent="center">
           {teamMembers.map((member, index) => (
             <Grid item xs={12} sm={6} md={4} key={index}>
-              <Card>
+              <Card onClick={handleRedirect} sx={{ cursor: 'pointer' }}>
                 <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                   <Avatar alt={member.name} src={member.avatar} sx={{ width: 80, height: 80, mb: 2 }} />
                   <Typography variant="h6">{member.name}</Typography>

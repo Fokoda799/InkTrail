@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Avatar,
   Box,
@@ -16,9 +16,9 @@ import EditProfile from '../components/EditProfile';
 import { Link } from 'react-router-dom';
 import { Blog } from '../types/blogTypes';
 
-const Profile = () => {
+const Profile: React.FC = () => {
   const { currentUser } = useAppSelector(selectUserState);
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
 
   const handleClick = () => {
     setOpen(true);
@@ -47,11 +47,12 @@ const Profile = () => {
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={12} sm={4}>
             <Stack direction="row" spacing={1}>
-              {currentUser.avatar ? (
-                <Avatar sx={{ width: 120, height: 120 }} src={currentUser.avatar} />
-              ) : (
-                <Avatar sx={{ width: 120, height: 120 }}>{currentUser.username[0].toUpperCase()}</Avatar>
-              )}
+              <Avatar 
+                sx={{ width: 120, height: 120 }} 
+                src={currentUser.avatar || undefined}
+              >
+                {!currentUser.avatar && currentUser.username[0].toUpperCase()}
+              </Avatar>
             </Stack>
           </Grid>
           <Grid item xs={12} sm={8}>
@@ -67,7 +68,7 @@ const Profile = () => {
               @{currentUser.username}
             </Typography>
             <Typography variant="body2" color="textSecondary" sx={{ marginTop: '0.5rem' }}>
-              {currentUser.bio}
+              {currentUser.bio || 'No bio available'}
             </Typography>
           </Grid>
         </Grid>
@@ -79,7 +80,7 @@ const Profile = () => {
       <Paper elevation={1} sx={{ marginBottom: '2rem', padding: '1rem' }}>
         <Grid container spacing={2}>
           <Grid item xs={4} textAlign="center">
-            <Typography variant="h6">Posts</Typography>
+            <Typography variant="h6">Blogs</Typography>
             <Typography variant="h5" color="primary">120</Typography>
           </Grid>
           <Grid item xs={4} textAlign="center">
@@ -98,25 +99,25 @@ const Profile = () => {
         <Typography variant="h6" gutterBottom>
           My Blogs
         </Typography>
-        {currentUser?.blogs?.length === 0 ? (
-          <Stack spacing={1} display={'flex'} justifyContent={'center'} alignItems={'center'}>
-          <Typography variant="body1" sx={{ margin: 'auto' }}>
-            Post your first blog today!
-          </Typography>
-          <Typography variant="body1" component={Link} to="/create">
-            Write
-          </Typography>
-        </Stack>
+        {currentUser.blogs && currentUser.blogs.length === 0 ? (
+          <Stack spacing={1} display="flex" justifyContent="center" alignItems="center">
+            <Typography variant="body1" sx={{ margin: 'auto' }}>
+              Post your first blog today!
+            </Typography>
+            <Typography variant="body1" component={Link} to="/create">
+              Write
+            </Typography>
+          </Stack>
         ) : (
           <Grid container spacing={2}>
-            {currentUser?.blogs?.map((blog: Blog) => (
+            {currentUser.blogs?.map((blog: Blog) => (
               <Grid item xs={12} sm={6} key={blog._id}>
                 <Paper elevation={0} sx={{ padding: '1rem', cursor: 'pointer' }}>
                   <Typography variant="h6" gutterBottom>
                     {blog.title}
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
-                    {blog.content.substring(0, 20)}
+                    {blog.content && blog.content.length > 20 ? blog.content.substring(0, 20) + '...' : blog.content || 'No content'}
                   </Typography>
                 </Paper>
               </Grid>

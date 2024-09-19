@@ -8,7 +8,9 @@ const initialState: BlogState = {
   currentBlog: null,
   pagination: null,
   readyBlog: null,
+  selectedBlog: null,
   loading: false,
+  likes: [],
   error: null,
 };
 
@@ -17,8 +19,12 @@ const blogSlice = createSlice({
   name: 'blog',
   initialState,
   reducers: {
-    fetchBlogsStart: (state) => {
+    loadingState: (state) => {
       state.loading = true;
+    },
+    failureState: (state, action) => {
+      state.loading = false;
+      state.error = action.payload
     },
     fetchBlogsSuccess: (state, action) => {
       state.blogs = action.payload.blogs;
@@ -26,36 +32,15 @@ const blogSlice = createSlice({
       state.loading = false;
       state.error = null;
     },
-    fetchBlogsFailure: (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    },
-    fetchBlogByIdStart: (state) => {
-      state.loading = true;
-    },
     fetchBlogByIdSuccess: (state, action) => {
-      state.currentBlog = action.payload;
+      state.selectedBlog = action.payload;
       state.loading = false;
       state.error = null;
-    },
-    fetchBlogByIdFailure: (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    },
-    createBlogStart: (state) => {
-      state.loading = true;
     },
     createBlogSuccess: (state, action) => {
       state.blogs.push(action.payload);
       state.loading = false;
       state.error = null;
-    },
-    createBlogFailure: (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    },
-    updateBlogStart: (state) => {
-      state.loading = true;
     },
     updateBlogSuccess: (state, action) => {
       const index = state.blogs.findIndex(blog => blog._id === action.payload._id);
@@ -65,24 +50,32 @@ const blogSlice = createSlice({
       state.loading = false;
       state.error = null;
     },
-    updateBlogFailure: (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    },
-    deleteBlogStart: (state) => {
-      state.loading = true;
-    },
     deleteBlogSuccess: (state, action) => {
       state.blogs = state.blogs.filter(blog => blog._id !== action.payload);
       state.loading = false;
       state.error = null;
     },
-    deleteBlogFailure: (state, action) => {
+    likeBlogSuccess: (state, action) => {
+      // Update likes only for the selectedBlog
+      if (state.selectedBlog && state.selectedBlog._id === action.payload._id) {
+        state.selectedBlog.likes = action.payload.likes; // Update likes of the selected blog
+      }
+    
+      // Also update the corresponding blog in the blogs array if necessary
+      const index = state.blogs.findIndex(blog => blog._id === action.payload._id);
+      if (index !== -1) {
+        state.blogs[index].likes = action.payload.likes; // Update likes for the blog in the list
+      }
+    
       state.loading = false;
-      state.error = action.payload;
+      state.error = null;
     },
     publishBlog: (state, action) => {
       state.readyBlog = action.payload;
+    },
+    clearBlogs: (state) => {
+      state.blogs = [];
+      state.pagination = null;
     },
     clearError: (state) => {
       state.error = null;
@@ -92,12 +85,10 @@ const blogSlice = createSlice({
 
 // Action creators
 export const {
-  fetchBlogsStart, fetchBlogsSuccess, fetchBlogsFailure,
-  fetchBlogByIdStart, fetchBlogByIdSuccess, fetchBlogByIdFailure,
-  createBlogStart, createBlogSuccess, createBlogFailure,
-  updateBlogStart, updateBlogSuccess, updateBlogFailure,
-  deleteBlogStart, deleteBlogSuccess, deleteBlogFailure,
-  clearError, publishBlog
+  fetchBlogsSuccess, fetchBlogByIdSuccess,
+  createBlogSuccess, updateBlogSuccess,
+  deleteBlogSuccess, loadingState, failureState,
+  clearError, publishBlog, likeBlogSuccess, clearBlogs
 } = blogSlice.actions;
 
 // Selector to get blog state

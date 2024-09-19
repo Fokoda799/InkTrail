@@ -176,6 +176,44 @@ class UserController {
             return res.status(500).json({ message: error.message });
         }
     }
+
+    static async followUser(req, res) {
+        try {
+            const userId = req.params.id;
+            if (!userId) return res.status(400).json({ success: false, message: 'Missing id' });
+    
+            // Find the user to be followed
+            const user = await User.findById(userId);
+            if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    
+            const me = req.user;
+    
+            // Check if the current user is already following the other user
+            const isFollowing = user.followers.includes(me.id);
+    
+            if (isFollowing) {
+                // Unfollow user
+                user.followers.pull(me.id);
+                me.following.pull(user.id);
+            } else {
+                // Follow user
+                user.followers.push(me.id);
+                me.following.push(user.id);
+            }
+    
+            // Save both the user being followed/unfollowed and the current user
+            await Promise.all([user.save(), me.save()]);
+    
+            return res.status(200).json({
+                success: true,
+                user: me, // The current user
+                message: isFollowing ? 'Unfollowed successfully' : 'Followed successfully',
+            });
+        } catch (error) {
+            return res.status(500).json({ message: error.message, success: false });
+        }
+    }
+    
 };
 
 export default UserController;

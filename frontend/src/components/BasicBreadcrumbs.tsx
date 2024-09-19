@@ -2,26 +2,51 @@ import * as React from 'react';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
 
-function handleClick(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
-  event.preventDefault();
-  console.info('You clicked a breadcrumb.');
+interface BasicBreadcrumbsProps {
+  setViewType: (view: 'feeds' | 'following') => void; // Function to change view type
 }
 
-export default function BasicBreadcrumbs() {
+const BasicBreadcrumbs: React.FC<BasicBreadcrumbsProps> = ({ setViewType }) => {
+  const [feDecoration, setFeDecoration] = React.useState('underline');
+  const [foDecoration, setFoDecoration] = React.useState('none');
+
+  const handleClick = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>, view: 'feeds' | 'following') => {
+    event.preventDefault();
+    setViewType(view);
+  };
+
   return (
-    <div role="presentation" onClick={handleClick}>
+    <div role="presentation">
       <Breadcrumbs aria-label="breadcrumb">
-        <Link underline="hover" color="inherit" href="/">
+        <Link
+          underline="none" // Remove MUI's default underline behavior
+          sx={{ textDecoration: feDecoration }}
+          color="inherit"
+          href="#"
+          onClick={(event) => {
+            handleClick(event, 'feeds');
+            setFeDecoration('underline');
+            setFoDecoration('none');
+          }}
+        >
           Feeds
         </Link>
         <Link
-          underline="hover"
+          underline="none" // Remove MUI's default underline behavior
+          sx={{ textDecoration: foDecoration }}
           color="inherit"
-          href="/material-ui/getting-started/installation/"
+          href="#"
+          onClick={(event) => {
+            handleClick(event, 'following');
+            setFeDecoration('none');
+            setFoDecoration('underline');
+          }}
         >
           Following
         </Link>
       </Breadcrumbs>
     </div>
   );
-}
+};
+
+export default BasicBreadcrumbs;

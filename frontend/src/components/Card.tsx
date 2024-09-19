@@ -1,61 +1,84 @@
 import Card from '@mui/material/Card';
-import CardHeader from '@mui/material/CardHeader';
 import CardMedia from '@mui/material/CardMedia';
 import CardContent from '@mui/material/CardContent';
-import CardActions from '@mui/material/CardActions';
 import Avatar from '@mui/material/Avatar';
-import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
+import { Grid, Box, Stack } from '@mui/material';
 import { red } from '@mui/material/colors';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import ShareIcon from '@mui/icons-material/Share';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { Blog } from '../types/blogTypes';
 import { format } from 'date-fns';
+import ThumbUpTwoToneIcon from '@mui/icons-material/ThumbUpTwoTone';
 
 export default function BlogCard({ title, content, image, userId, createdAt }: Blog) {
   const date = createdAt ? format(new Date(createdAt), 'MMMM dd, yyyy') : 'Unknown Date';
 
-  // Check if userId exists and has a username
-  const avatar = userId && userId.username ? (
-    <Avatar alt={userId.username} src={userId.avatar || ''} />
-  ) : (
-    <Avatar sx={{ bgcolor: red[500] }} aria-label="recipe">
-      {userId?.username?.[0]?.toUpperCase() || 'U'}
-    </Avatar>
-  );
-
   return (
-    <Card sx={{ maxWidth: 345 }}>
-      <CardHeader
-        avatar={avatar}
-        action={
-          <IconButton aria-label="settings">
-            <MoreVertIcon />
-          </IconButton>
-        }
-        title={title}
-        subheader={date}
-      />
+    <Card sx={{ maxWidth: 570, borderRadius: 3 }}>
+      {/* Blog image */}
       <CardMedia
         component="img"
-        height="194"
+        height="250"
         image={image || 'https://via.placeholder.com/800x400'}
         alt={title}
+        sx={{ borderRadius: '8px 8px 0 0' }} // Rounded corners for the top of the image
       />
-      <CardContent>
-        <Typography variant="body2" color="text.secondary">
-          {content.slice(0, 100)}...
+      
+      <CardContent sx={{ padding: 2 }}>
+        {/* Blog category and like button (moved to right) */}
+        <Grid container justifyContent="space-between" alignItems="center" sx={{ marginBottom: 1 }}>
+          <Grid item>
+            <Typography variant="caption" color="textSecondary" sx={{ textTransform: 'uppercase' }}>
+              Engineering {/* Replace with a dynamic category */}
+            </Typography>
+          </Grid>
+          <Grid item>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <ThumbUpTwoToneIcon fontSize="small" />
+              <Typography variant="body1" color="textSecondary">
+                10 {/* Replace with a dynamic number */}
+              </Typography>
+            </Stack>
+          </Grid>
+        </Grid>
+
+        {/* Blog title */}
+        <Typography variant="h6" component="div" gutterBottom sx={{ fontWeight: 'bold' }}>
+          {title}
         </Typography>
+
+        {/* Blog summary */}
+        <Typography variant="body2" color="text.secondary" sx={{ marginBottom: 2, maxHeight: 60, minHeight: 60 }}>
+          {content.slice(0, 100)}... {/* Show a short preview of the content */}
+        </Typography>
+
+        {/* Blog footer: Author and Date */}
+        <Grid container justifyContent="space-between" alignItems="center" sx={{ marginBottom: 0 }}>
+          <Grid item>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              {/* Author avatar and name */}
+              { 
+                userId && userId.username ? (
+                  <Avatar alt={userId.username} src={userId.avatar || ''} sx={{ height: 20, width: 20 }} />
+                ) : (
+                  <Avatar sx={{ bgcolor: red[500], height: 20, width: 20 }} aria-label="recipe">
+                    {userId?.username?.[0]?.toUpperCase() || 'U'}
+                  </Avatar>
+                )
+              }
+              <Typography variant="body2" sx={{ marginLeft: 1 }}>
+                {userId?.username || 'Unknown'}
+              </Typography>
+            </Box>
+          </Grid>
+
+          {/* Post date */}
+          <Grid item>
+            <Typography variant="body2" color="textSecondary">
+              {date}
+            </Typography>
+          </Grid>
+        </Grid>
       </CardContent>
-      <CardActions disableSpacing>
-        <IconButton aria-label="add to favorites">
-          <FavoriteIcon />
-        </IconButton>
-        <IconButton aria-label="share">
-          <ShareIcon />
-        </IconButton>
-      </CardActions>
     </Card>
   );
 }

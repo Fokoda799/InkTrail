@@ -1,37 +1,52 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-//import Header from './components/Header';
-import SignIn from './pages/SingIn'; // Fixed the spelling error
-import SignUp from './pages/SingUp'; // Fixed the spelling error
-import LandingPage from './pages/LandingPage';
-import Profile from './pages/Profile';
-import About from './pages/About';
-import Settings from './pages/Settings'; // Fixed the spelling error
+import { lazy, Suspense } from 'react';  // Add lazy and Suspense for code splitting
 import PrivateRoute from './components/PrivateRoute';
-import NotFound from './pages/NotFound';
-import AdminPage from './pages/Admin';
-import BlogDetail from './pages/ReadBlog'; // Ensure the correct import
-import WriteBlog from './pages/WriteBlog';
-import Header from './components/Header'; // Ensure the correct import
+import Header from './components/Header/Header';
 import Footer from './components/Footer';
+import NotFound from './pages/NotFound';
+
+// Lazy load pages to optimize performance
+const SignIn = lazy(() => import('./pages/SingIn'));
+const SignUp = lazy(() => import('./pages/SingUp'));
+const LandingPage = lazy(() => import('./pages/LandingPage'));
+const Profile = lazy(() => import('./pages/Profile'));
+const About = lazy(() => import('./pages/About'));
+const Settings = lazy(() => import('./pages/Settings'));
+const AdminPage = lazy(() => import('./pages/Admin'));
+const BlogDetail = lazy(() => import('./pages/ReadBlog'));
+const WriteBlog = lazy(() => import('./pages/WriteBlog'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 
 function App() {
   return (
     <BrowserRouter>
       <Header />
-      <Routes>
-        <Route path="/signin" element={<SignIn />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/blog/:username/:id" element={<BlogDetail />} />
-        <Route element={<PrivateRoute />}>
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/new-fact" element={<WriteBlog />} />
-        </Route>
-        <Route path="*" element={<NotFound />} />
-        <Route path="/admin" element={<AdminPage />} />
-      </Routes>
+
+      {/* Add Suspense for lazy-loaded components */}
+      <Suspense fallback={<div>Loading...</div>}>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/signin" element={<SignIn />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/blog/:username/:id" element={<BlogDetail />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+
+          {/* Grouping Private Routes */}
+          <Route element={<PrivateRoute />}>
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/new-fact" element={<WriteBlog />} />
+          </Route>
+
+          {/* Admin Route */}
+          <Route path="/admin" element={<AdminPage />} />
+
+          {/* 404 Page - Catch-all route */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
+
       <Footer />
     </BrowserRouter>
   );

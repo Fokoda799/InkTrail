@@ -14,7 +14,8 @@ export interface UpdateData {
     avatar: string |  undefined;
 }
 
-interface User {
+export interface User {
+    _id: string;
     fullName?: string;
     username: string;
     email: string;
@@ -23,12 +24,13 @@ interface User {
     avatar?: string;
     bio?: string;
     blogs?: Blog[];
+    following: string[];
+    followers: string[];
 }
 
 // User state types
 export interface UserState {
     currentUser: User | null;
-    isAuth: boolean;
     loading: boolean;
     error: string | null;
 }

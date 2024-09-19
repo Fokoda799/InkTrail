@@ -110,6 +110,69 @@ class AuthController {
             return res.status(500).json({ message: error.message });
         }
     }
+
+    // @desc    Request password reset
+    // @route   POST /forgot-password
+    // @access  Public
+    static async forgotPassword(req, res) {
+        const { email } = req.body;
+
+        try {
+            const user = await User.findOne({ email });
+            if (!user) return res.status(404).json({ message: 'No user found with this email' });
+
+            // Get reset token
+            const resetToken = user.getResetPasswordToken();
+            await user.save();
+
+            // Create reset URL
+            const resetUrl = `${req.protocol}://${req.get('host')}/reset-password/${resetToken}`;
+
+            // Send email
+            const transporter = nodemailer.createTransport({
+                service: 'Gmail',
+                auth: {
+                    user: process.env.EMAIL_USER,
+                    pass: process.env.EMAIL_PASS
+                }
+            });
+
+            const mailOptions = {
+                from: process.env.EMAIL_USER,
+                to: email,
+                subject: 'Password Reset Request',
+                text: `You are receiving this email because you (or someone else) has requested a password reset for your account. Please make a PUT request to:\n\n${resetUrl}`
+            };
+
+            await transporter.sendMail(mailOptions);
+
+            res.status(200).json({ message: 'Password reset link sent to your email', user, success: true });
+        } catch (error) {
+            console.error('Error during password reset request:', error);
+            res.status(500).json({ message: error.message });
+        }
+    }
+
+    // @desc    Reset password
+    // @route   PUT /reset-password/:token
+    // @access  Public
+    static async resetPassword(req, res) {
+        const resetToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
+
+        try {
+            const user = await User.findOne({ resetPasswordToken: resetToken, resetPasswordExpire: { $gt: Date.now() } });
+            if (!user) return res.status(400).json({ message: 'Invalid or expired token' });
+
+            user.password = req.body.password;
+            await user.updatePassword(req.body.password);
+
+            sendToken(user, 200, res);
+        } catch (error) {
+            console.error('Error during password reset:', error);
+            res.status(500).json({ message: error.message });
+        }
+    }
 }
+
 
 export default AuthController;
