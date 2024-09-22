@@ -6,8 +6,7 @@ const setLoading = (state: UserState) => {
 };
 
 const setSuccess = (state: UserState, action: UserAction) => {
-    state.currentUser = action.payload;
-    state.isAuth = true;
+    state.me = action.payload;
     state.loading = false;
     state.error = null;
 };

@@ -1,10 +1,10 @@
 import mongoose from 'mongoose';
 
 const blogSchema = new mongoose.Schema({
-    userId: {
+    author: {
         type: mongoose.Types.ObjectId,
         ref: 'User',
-        required: true, // Consider adding `required: true` to enforce relationship integrity
+        required: true,
     },
     title: {
         type: String,
@@ -55,7 +55,7 @@ const blogSchema = new mongoose.Schema({
                 type: Date,
                 default: Date.now,
             },
-        },
+        }
     ],
 }, { timestamps: true });
 

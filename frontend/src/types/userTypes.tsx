@@ -30,7 +30,8 @@ export interface User {
 
 // User state types
 export interface UserState {
-    currentUser: User | null;
+    me: User | null;
+    selectedUser: User | null;
     loading: boolean;
     error: string | null;
 }
@@ -40,6 +41,12 @@ export interface AuthResponse {
     success: true;
     user: User;
     token: string;
+}
+
+export interface UserResponse {
+    success: true;
+    user: User;
+    isFollowing: boolean;
 }
 
 // Erorr response types

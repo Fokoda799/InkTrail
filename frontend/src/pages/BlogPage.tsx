@@ -7,9 +7,11 @@ import { useAppSelector, useAppDispatch } from '../redux/hooks';
 import { selectBlogState } from '../redux/reducers/blogReducer';
 import BlogCard from '../components/Card';
 import BasicBreadcrumbs from '../components/BasicBreadcrumbs';
+import { selectUserState } from '../redux/reducers/userReducer';
 
 const BlogsPage: React.FC = () => {
   const { blogs, pagination, loading } = useAppSelector(selectBlogState);
+  const { me } = useAppSelector(selectUserState);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
@@ -81,7 +83,7 @@ const BlogsPage: React.FC = () => {
             sm={6}
             md={4}
             key={blog._id}
-            onClick={() => navigate(`/blog/${blog.userId?.username}/${blog._id}`)}
+            onClick={() => navigate(`/blog/${blog.author?.username}/${blog._id}`)}
             sx={{ cursor: 'pointer', transition: 'transform 0.2s', '&:hover': { transform: 'scale(1.02)' } }}
           >
             <BlogCard {...blog} />

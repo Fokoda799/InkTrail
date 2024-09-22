@@ -4,35 +4,29 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { positions, Provider as AlertProvider } from 'react-alert';
 import AlertTemplate from 'react-alert-template-basic';
+import store, { persistor } from './redux/store';
+//import AppRouter from './router';
+import App from "./App";
+import CircularProgress from '@mui/material/CircularProgress';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 
-import App from './App';
-import store, { persistor } from './redux/store'; // Group store imports
-
-// MUI theme configuration
 const theme = createTheme({
   palette: {
-    primary: {
-      main: '#1976d2',
-    },
-    background: {
-      default: '#f5f5f5',
-      paper: '#ffffff', // Use the built-in background.paper
-    },
+    primary: { main: '#1976d2' },
+    background: { paper: '#f5f5f5' },
   },
 });
 
-// Alert options for react-alert
 const alertOptions = {
   timeout: 10000,
   position: positions.TOP_RIGHT,
 };
 
-// Root rendering using React 18 API
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 
 root.render(
   <Provider store={store}>
-    <PersistGate loading={null} persistor={persistor}>
+    <PersistGate loading={<CircularProgress />} persistor={persistor}>
       <AlertProvider template={AlertTemplate} {...alertOptions}>
         <ThemeProvider theme={theme}>
           <App />

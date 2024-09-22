@@ -11,10 +11,9 @@ import {
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import { selectUserState } from '../redux/reducers/userReducer';
-import { useAppSelector } from '../redux/hooks';
+import { useAppSelector, useAppDispatch } from '../redux/hooks';
 import { getDownloadURL, getStorage, ref, uploadBytesResumable, deleteObject } from 'firebase/storage';
 import { app } from '../firebase';
-import { useAppDispatch } from '../redux/hooks';
 import { updateUser } from '../actions/userAction';
 import { useNavigate } from 'react-router-dom';
 
@@ -24,26 +23,27 @@ interface EditProfileProps {
 }
 
 export default function EditProfile({ open, handleClose }: EditProfileProps) {
-  const { currentUser } = useAppSelector(selectUserState);
-  const fileRef = useRef<HTMLInputElement>(null);
+  const { me } = useAppSelector(selectUserState);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const fileRef = useRef<HTMLInputElement>(null);
 
   // State to manage hover and form inputs
   const [hover, setHover] = useState(false);
-  const [username, setUsername] = useState('');
-  const [bio, setBio] = useState('');
-  const [image, setImage] = useState<File | undefined>(undefined);
-  const [avatar, setAvatar] = useState<string | undefined>(currentUser?.avatar);
+  const [username, setUsername] = useState(me?.username || '');
+  const [bio, setBio] = useState(me?.bio || '');
+  const [image, setImage] = useState<File | null>(null);
+  const [avatar, setAvatar] = useState<string | undefined>(me?.avatar);
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null); // Track uploaded file name
 
   // Pre-fill user data when component opens
   useEffect(() => {
-    if (currentUser) {
-      setUsername(currentUser.username || '');
-      setBio(currentUser.bio || '');
+    if (me) {
+      setUsername(me.username || '');
+      setBio(me.bio || '');
+      setAvatar(me.avatar);
     }
-  }, [currentUser]);
+  }, [me]);
 
   // Image upload effect
   useEffect(() => {
@@ -53,47 +53,49 @@ export default function EditProfile({ open, handleClose }: EditProfileProps) {
   }, [image]);
 
   const handleUploadImage = async (image: File) => {
-    const storage = getStorage(app);
-    const fileName = new Date().getTime() + '-' + image.name;
-    setUploadedFileName(fileName); // Track uploaded file name
-    const storageRef = ref(storage, `avatars/${fileName}`);
-    const uploadTask = uploadBytesResumable(storageRef, image);
+    try {
+      const storage = getStorage(app);
+      const fileName = new Date().getTime() + '-' + image.name;
+      setUploadedFileName(fileName); // Track uploaded file name
+      const storageRef = ref(storage, `avatars/${fileName}`);
+      const uploadTask = uploadBytesResumable(storageRef, image);
 
-    uploadTask.on(
-      'state_changed',
-      (snapshot) => {
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        console.log('Upload is ' + progress + '% done');
-      },
-      (error) => {
-        console.error('Upload failed:', error);
-      },
-      () => {
-        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+      uploadTask.on(
+        'state_changed',
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          console.log('Upload is ' + progress + '% done');
+        },
+        (error) => {
+          console.error('Upload failed:', error);
+        },
+        async () => {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
           setAvatar(downloadURL);
-        });
-      },
-    );
+        }
+      );
+    } catch (error) {
+      console.error('Error uploading image:', error);
+    }
   };
 
   // Handle image deletion from Firebase
   const handleDeleteImage = async () => {
     if (uploadedFileName) {
-      const storage = getStorage(app);
-      const storageRef = ref(storage, `avatars/${uploadedFileName}`);
-      deleteObject(storageRef)
-        .then(() => {
-          setAvatar(undefined);
-          console.log('Image deleted successfully');
-        })
-        .catch((error) => {
-          console.error('Error deleting image:', error);
-        });
+      try {
+        const storage = getStorage(app);
+        const storageRef = ref(storage, `avatars/${uploadedFileName}`);
+        await deleteObject(storageRef);
+        setAvatar(undefined);
+        console.log('Image deleted successfully');
+      } catch (error) {
+        console.error('Error deleting image:', error);
+      }
     }
   };
 
   // Handle form submission
-  const handleSubmit = () => {  
+  const handleSubmit = () => {
     dispatch(updateUser({ username, bio, avatar }));
     handleClose();
     navigate('/profile');
@@ -105,7 +107,7 @@ export default function EditProfile({ open, handleClose }: EditProfileProps) {
     handleClose();
   };
 
-  if (!currentUser) return null;
+  if (!me) return null;
 
   return (
     <>
@@ -162,7 +164,7 @@ export default function EditProfile({ open, handleClose }: EditProfileProps) {
                 />
               ) : (
                 <Avatar sx={{ width: '100%', height: '100%' }}>
-                  {currentUser.username[0].toUpperCase()}
+                  {me.username[0].toUpperCase()}
                 </Avatar>
               )}
 
@@ -173,8 +175,8 @@ export default function EditProfile({ open, handleClose }: EditProfileProps) {
                     position: 'absolute',
                     top: '0',
                     left: '0',
-                    width: '99%',
-                    height: '99%',
+                    width: '75%',
+                    height: '75%',
                     padding: 1,
                     backgroundColor: 'rgba(0, 0, 0, 0.5)',
                     color: 'white',
@@ -194,7 +196,7 @@ export default function EditProfile({ open, handleClose }: EditProfileProps) {
               type="file"
               hidden
               accept="image/*"
-              onChange={(e) => setImage(e.target.files ? e.target.files[0] : undefined)}
+              onChange={(e) => setImage(e.target.files ? e.target.files[0] : null)}
               ref={fileRef}
               aria-label="Profile image upload"
             />

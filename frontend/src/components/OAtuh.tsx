@@ -2,22 +2,21 @@ import { useState } from 'react';
 import Button from '@mui/material/Button';
 import GoogleIcon from '@mui/icons-material/Google';
 import CircularProgress from '@mui/material/CircularProgress';
-import { useAppDispatch } from '../redux/hooks';
+import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { signInWithGoogle } from '../actions/userAction';
+import { selectUserState } from '../redux/reducers/userReducer';
 
 function OAuth() {
+  const { error } = useAppSelector(selectUserState);
   const [loading, setLoading] = useState(false); // Custom loading state
   const dispatch = useAppDispatch();
 
   const handleGoogleSignIn = async () => {
     setLoading(true); // Set loading to true when signing in
-    try {
-      await dispatch(signInWithGoogle()); // Dispatch Google sign-in action
-      // Handle redirect or success here
-    } catch (error) {
-      // Handle any errors
-      console.error(error);
-      setLoading(false); // Stop loading if an error occurs
+    await dispatch(signInWithGoogle()); // Dispatch the action to sign in with Google
+    if (error) {
+      console.log(error);
+      setLoading(false); // Set loading to false when error occurs
     }
   }
 

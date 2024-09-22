@@ -9,6 +9,7 @@ const initialState: BlogState = {
   pagination: null,
   readyBlog: null,
   selectedBlog: null,
+  items: [],
   loading: false,
   likes: [],
   error: null,
@@ -19,6 +20,21 @@ const blogSlice = createSlice({
   name: 'blog',
   initialState,
   reducers: {
+    clearData: (state) => {
+      state.blogs = [];
+      state.currentBlog = null;
+      state.pagination = null;
+      state.readyBlog = null;
+      state.selectedBlog = null;
+      state.items = [];
+    },
+    clearBlog: (state) => {
+      state.selectedBlog = null;
+      state.readyBlog = null;
+    },
+    clearLike: (state) => {
+      state.likes = [];
+    },
     loadingState: (state) => {
       state.loading = true;
     },
@@ -34,6 +50,7 @@ const blogSlice = createSlice({
     },
     fetchBlogByIdSuccess: (state, action) => {
       state.selectedBlog = action.payload;
+      state.currentBlog = action.payload;
       state.loading = false;
       state.error = null;
     },
@@ -73,9 +90,20 @@ const blogSlice = createSlice({
     publishBlog: (state, action) => {
       state.readyBlog = action.payload;
     },
-    clearBlogs: (state) => {
-      state.blogs = [];
+    clearBlogs: () => {
+      return initialState;
+    },
+    searchBlogs: (state, action) => {
+      state.blogs = action.payload;
       state.pagination = null;
+      state.loading = false;
+      state.error = null;
+    },
+    clearTitles: (state) => {
+      state.items = [];
+    },
+    clearReadyBlog: (state) => {
+      state.readyBlog = null;
     },
     clearError: (state) => {
       state.error = null;
@@ -88,7 +116,9 @@ export const {
   fetchBlogsSuccess, fetchBlogByIdSuccess,
   createBlogSuccess, updateBlogSuccess,
   deleteBlogSuccess, loadingState, failureState,
-  clearError, publishBlog, likeBlogSuccess, clearBlogs
+  clearError, publishBlog, likeBlogSuccess, clearBlogs,
+  searchBlogs, clearTitles, clearBlog, clearLike,
+  clearData, clearReadyBlog
 } = blogSlice.actions;
 
 // Selector to get blog state

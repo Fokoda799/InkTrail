@@ -57,9 +57,8 @@ class UserController {
     static async updateUser(req, res) {
         try {
             const { id } = req.params;
-            if (!idValidation(id)) return res.status(400).json({ message: "Invalid ID" });
 
-            const { full_name, username, password } = req.body;
+            const { username, password } = req.body;
 
             const user = await User.findByIdAndUpdate(
                 id,
@@ -125,19 +124,14 @@ class UserController {
     // @access  User
     static async getMe(req, res) {
         try {
-            const userId = req.user._id;
+            const { id: userId } = req.user;
 
-            const user = await User.findById(userId);
+            const user = await User.findById(userId).populate('blogs', 'title content image');
             if (!user) return res.status(404).json({ message: "User not found" });
 
             return res.status(200).json({
                 message: "Welcome back",
-                user: {
-                    id: user._id,
-                    username: user.username,
-                    email: user.email,
-                    role: user.role
-                }
+                user
             });
         } catch (error) {
             return res.status(500).json({ message: "Internal server error" });
@@ -156,7 +150,7 @@ class UserController {
                 id,
                 { username, bio, avatar },
                 { new: true, runValidators: true }
-            );
+            ).populate('blogs', 'title content image');
 
             if (!user) return res.status(404).json({
                 success: false,
@@ -165,12 +159,7 @@ class UserController {
 
             return res.status(200).json({
                 success: true,
-                user: {
-                    id: user._id,
-                    username: user.username,
-                    bio: user.bio,
-                    avatar: user.avatar
-                }
+                user
             });
         } catch (error) {
             return res.status(500).json({ message: error.message });
@@ -179,41 +168,54 @@ class UserController {
 
     static async followUser(req, res) {
         try {
-            const userId = req.params.id;
-            if (!userId) return res.status(400).json({ success: false, message: 'Missing id' });
+            const { id: userId } = req.params; // Destructure userId from params
+            if (!userId) {
+                return res.status(400).json({ success: false, message: 'Missing id' });
+            }
     
             // Find the user to be followed
             const user = await User.findById(userId);
-            if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+            if (!user) {
+                return res.status(404).json({ success: false, message: 'User not found' });
+            }
     
-            const me = req.user;
+            const { id: meId } = req.user; // Destructure the ID of the current user
+    
+            if (user.id === meId) {
+                return res.status(400).json({ success: false, message: 'Cannot follow yourself' });
+            }
     
             // Check if the current user is already following the other user
-            const isFollowing = user.followers.includes(me.id);
+            const isFollowing = user.followers.includes(meId);
     
             if (isFollowing) {
                 // Unfollow user
-                user.followers.pull(me.id);
-                me.following.pull(user.id);
+                user.followers = user.followers.filter(follower => follower.toString() !== meId);
+                req.user.following = req.user.following.filter(followed => followed.toString() !== user.id);
             } else {
                 // Follow user
-                user.followers.push(me.id);
-                me.following.push(user.id);
+                user.followers.push(meId);
+                req.user.following.push(user.id);
             }
     
             // Save both the user being followed/unfollowed and the current user
-            await Promise.all([user.save(), me.save()]);
+            await Promise.all([user.save(), req.user.save()]);
     
             return res.status(200).json({
                 success: true,
-                user: me, // The current user
+                user: req.user,
+                isFollowing: !isFollowing,
                 message: isFollowing ? 'Unfollowed successfully' : 'Followed successfully',
             });
         } catch (error) {
+            console.error('Error following user:', error); // Log the error for debugging
             return res.status(500).json({ message: error.message, success: false });
         }
     }
     
+    
 };
+
+
 
 export default UserController;

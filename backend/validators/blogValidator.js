@@ -1,4 +1,4 @@
-import { body, param } from 'express-validator';
+import { body, param, query } from 'express-validator';
 
 // Validator for creating and updating blogs
 export const createOrUpdateBlogValidator = [
@@ -19,3 +19,9 @@ export const blogIdValidator = [
     .notEmpty().withMessage('Blog ID is required')
     .isMongoId().withMessage('Invalid Blog ID format'),
 ];
+
+export const searchBlogsValidator = [
+  query('q')
+    .notEmpty().withMessage('Search query is required')
+    .isString().withMessage('Search query must be a string'), 
+]

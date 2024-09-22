@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Avatar,
   Box,
@@ -7,18 +7,28 @@ import {
   Paper,
   Stack,
   Typography,
-  IconButton
+  IconButton,
+  Button,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
-import { useAppSelector } from '../redux/hooks';
+import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { selectUserState } from '../redux/reducers/userReducer';
 import EditProfile from '../components/EditProfile';
 import { Link } from 'react-router-dom';
 import { Blog } from '../types/blogTypes';
+import { loadUser } from '../actions/userAction';
 
 const Profile: React.FC = () => {
-  const { currentUser } = useAppSelector(selectUserState);
+  const { me } = useAppSelector(selectUserState);
   const [open, setOpen] = useState(false);
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    if (!me) {
+      dispatch(loadUser());
+      console.log('Loading user...' );
+    }
+  }, [dispatch, me]);
 
   const handleClick = () => {
     setOpen(true);
@@ -28,7 +38,7 @@ const Profile: React.FC = () => {
     setOpen(false);
   };
 
-  if (!currentUser) {
+  if (!me) {
     return (
       <Container maxWidth="md">
         <Typography variant="h5" align="center" sx={{ marginTop: '2rem' }}>
@@ -37,8 +47,6 @@ const Profile: React.FC = () => {
       </Container>
     );
   }
-
-  console.log(currentUser);
 
   return (
     <Container maxWidth="md" sx={{ marginTop: '2rem' }}>
@@ -49,31 +57,32 @@ const Profile: React.FC = () => {
             <Stack direction="row" spacing={1}>
               <Avatar 
                 sx={{ width: 120, height: 120 }} 
-                src={currentUser.avatar || undefined}
+                src={me.avatar || undefined}
               >
-                {!currentUser.avatar && currentUser.username[0].toUpperCase()}
+                {!me.avatar && me.username[0].toUpperCase()}
               </Avatar>
             </Stack>
           </Grid>
           <Grid item xs={12} sm={8}>
             <Box display="flex" alignItems="center" justifyContent="space-between">
               <Typography variant="h5" gutterBottom>
-                {currentUser.fullName}
+                {me.fullName}
               </Typography>
               <IconButton aria-label="edit profile" onClick={handleClick}>
                 <EditIcon />
               </IconButton>
             </Box>
             <Typography variant="body1" color="textSecondary">
-              @{currentUser.username}
+              @{me.username}
             </Typography>
             <Typography variant="body2" color="textSecondary" sx={{ marginTop: '0.5rem' }}>
-              {currentUser.bio || 'No bio available'}
+              {me.bio || 'No bio available'}
             </Typography>
           </Grid>
         </Grid>
       </Paper>
 
+      {/* Edit Profile Component */}
       <EditProfile open={open} handleClose={handleClose} />
 
       {/* Stats Section */}
@@ -81,15 +90,15 @@ const Profile: React.FC = () => {
         <Grid container spacing={2}>
           <Grid item xs={4} textAlign="center">
             <Typography variant="h6">Blogs</Typography>
-            <Typography variant="h5" color="primary">120</Typography>
+            <Typography variant="h5" color="primary">{me?.blogs?.length || 0}</Typography>
           </Grid>
           <Grid item xs={4} textAlign="center">
             <Typography variant="h6">Followers</Typography>
-            <Typography variant="h5" color="primary">2.5k</Typography>
+            <Typography variant="h5" color="primary">{me?.followers?.length || 0}</Typography>
           </Grid>
           <Grid item xs={4} textAlign="center">
             <Typography variant="h6">Following</Typography>
-            <Typography variant="h5" color="primary">180</Typography>
+            <Typography variant="h5" color="primary">{me?.following?.length || 0}</Typography>
           </Grid>
         </Grid>
       </Paper>
@@ -99,26 +108,41 @@ const Profile: React.FC = () => {
         <Typography variant="h6" gutterBottom>
           My Blogs
         </Typography>
-        {currentUser.blogs && currentUser.blogs.length === 0 ? (
+        {me.blogs && me.blogs.length === 0 ? (
           <Stack spacing={1} display="flex" justifyContent="center" alignItems="center">
             <Typography variant="body1" sx={{ margin: 'auto' }}>
               Post your first blog today!
             </Typography>
-            <Typography variant="body1" component={Link} to="/create">
+            <Button
+              component={Link}
+              to="/create"
+              variant="contained"
+              color="primary"
+              size="small"
+            >
               Write
-            </Typography>
+            </Button>
           </Stack>
         ) : (
           <Grid container spacing={2}>
-            {currentUser.blogs?.map((blog: Blog) => (
+            {me.blogs?.map((blog: Blog) => (
               <Grid item xs={12} sm={6} key={blog._id}>
-                <Paper elevation={0} sx={{ padding: '1rem', cursor: 'pointer' }}>
-                  <Typography variant="h6" gutterBottom>
-                    {blog.title}
-                  </Typography>
-                  <Typography variant="body2" color="textSecondary">
-                    {blog.content && blog.content.length > 20 ? blog.content.substring(0, 20) + '...' : blog.content || 'No content'}
-                  </Typography>
+                <Paper elevation={0} sx={{ cursor: 'pointer', padding: '1rem' }}>
+                  <img
+                    src={blog.image || '/default-image.jpg'}
+                    alt={blog.title}
+                    style={{ width: '100%', height: '200px', borderRadius: '4px' }}
+                  />
+                  <Box sx={{ marginTop: '1rem' }}>
+                    <Typography variant="h6" gutterBottom>
+                      {blog.title}
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                      {blog.content && blog.content.length > 50
+                        ? `${blog.content.substring(0, 50)}...`
+                        : blog.content || 'No content'}
+                    </Typography>
+                  </Box>
                 </Paper>
               </Grid>
             ))}

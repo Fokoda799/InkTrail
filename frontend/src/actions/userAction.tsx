@@ -9,7 +9,10 @@ import {
   updateUserStart, updateUserSuccess, updateUserFailure,
   updatePasswordStart, updatePasswordFailure, updatePasswordSuccess,
   forgotPasswordStart, forgotPasswordSuccess, forgotPasswordFailure,
-  resetPasswordStart, resetPasswordSuccess, resetPasswordFailure
+  resetPasswordStart, resetPasswordSuccess, resetPasswordFailure,
+  loadUserStart,
+  loadUserSuccess,
+  loadUserFailure
 } from '../redux/reducers/userReducer';
 import axios from 'axios';
 import { SignInData, SignUpData, UpdateData } from '../types/userTypes';
@@ -23,7 +26,7 @@ export const signIn = ({ email, password }: SignInData) => async (dispatch: AppD
     const encoded = btoa(`${email}:${password}`);
     const config = { headers: { Authorization: `Basic ${encoded}` } };
 
-    const { data }: { data: AuthResponse | ErrorResponse } = await axios.get(`/api/v1/user/sign-in`, config);
+    const { data }: { data: AuthResponse | ErrorResponse } = await axios.get(`/api/v1/auth/sign-in`, config);
 
     if (!data.success) {
       console.log('Error:', data.message);
@@ -44,7 +47,7 @@ export const signUp = (signUpData: SignUpData) => async (dispatch: AppDispatch) 
   try {
     dispatch(signUpStart());
     
-    const { data }: { data: AuthResponse | ErrorResponse } = await axios.post(`/api/v1/user/sign-up`, signUpData);
+    const { data }: { data: AuthResponse | ErrorResponse } = await axios.post(`/api/v1/auth/sign-up`, signUpData);
 
     if (!data.success) {
       console.log('Error:', data.message);
@@ -59,6 +62,26 @@ export const signUp = (signUpData: SignUpData) => async (dispatch: AppDispatch) 
     dispatch(signUpFailure(message));
   }
 };
+
+export const loadUser = () => async (dispatch: AppDispatch) => {
+  try {
+    dispatch(loadUserStart());
+
+    const { data }: { data: AuthResponse | ErrorResponse } = await axios.get('/api/v1/user/me');
+
+    if (!data.success) {
+      console.log('Error:', data.message);
+      dispatch(loadUserFailure(data.message));
+      return;
+    }
+
+    dispatch(loadUserSuccess(data.user));
+  } catch (error: unknown) {
+    const message = axios.isAxiosError(error) ? error.response?.data.message : String(error);
+    console.log('Error:', message);
+    dispatch(loadUserFailure(message));
+  }
+}
 
 // Sign In with Google
 export const signInWithGoogle = () => async (dispatch: AppDispatch) => {
@@ -79,10 +102,9 @@ export const signInWithGoogle = () => async (dispatch: AppDispatch) => {
     console.log(result.user);
     console.log(signInData);
 
-    const { data }: { data: AuthResponse | ErrorResponse } = await axios.post(`/api/v1/user/google`, signInData, config);
+    const { data }: { data: AuthResponse | ErrorResponse } = await axios.post(`/api/v1/auth/google`, signInData, config);
 
     if (!data.success) {
-      console.log('Error:', data.message);
       dispatch(signInFailure(data.message));
       return;
     }
@@ -96,12 +118,14 @@ export const signInWithGoogle = () => async (dispatch: AppDispatch) => {
 };
 
 // Logout User
+// src/actions/userActions.ts
 export const logout = () => async (dispatch: AppDispatch) => {
   try {
     dispatch(signOutStart());
-    await axios.get(`/api/v1/user/logout`);
+    await axios.get(`/api/v1/auth/logout`); // Optional API call to log out the user on the server side
+
+    dispatch(signOutSuccess());
     dispatch(clearBlogs());
-  dispatch(signOutSuccess());
   } catch (error: unknown) {
     const message = axios.isAxiosError(error) ? error.response?.data.message : String(error);
     console.log('Error:', message);
@@ -109,12 +133,13 @@ export const logout = () => async (dispatch: AppDispatch) => {
   }
 };
 
+
 // Update User Profile
 export const updateUser = (updateData: UpdateData) => async (dispatch: AppDispatch) => {
   try {
     dispatch(updateUserStart());
 
-    const { data }: { data: AuthResponse | ErrorResponse } = await axios.put('/api/v1/me', updateData);
+    const { data }: { data: AuthResponse | ErrorResponse } = await axios.put('/api/v1/user/me', updateData);
 
     if (!data.success) {
       console.log(data.message);
@@ -155,7 +180,7 @@ export const updatePassword = (newPassword: string, currentPassword?: string) =>
 export const forgotPassword = (email: string) => async (dispatch: AppDispatch) => {
   try {
       dispatch(forgotPasswordStart());
-      const { data }: { data: AuthResponse | ErrorResponse } = await axios.post('/api/v1/user/forgot-password', { email });
+      const { data }: { data: AuthResponse | ErrorResponse } = await axios.post('/api/v1/auth/forgot-password', { email });
 
       if (!data.success) {
           console.log('Error:', data.message);
@@ -175,7 +200,7 @@ export const forgotPassword = (email: string) => async (dispatch: AppDispatch) =
 export const resetPassword = (token: string, newPassword: string) => async (dispatch: AppDispatch) => {
   try {
       dispatch(resetPasswordStart());
-      const { data }: { data: AuthResponse | ErrorResponse } = await axios.patch('/api/v1/user/reset-password', { token, newPassword });
+      const { data }: { data: AuthResponse | ErrorResponse } = await axios.patch('/api/v1/auth/reset-password', { token, newPassword });
 
       if (!data.success) {
           console.log('Error:', data.message);
@@ -203,7 +228,7 @@ export const followUser = (id: string) => async (dispatch: AppDispatch) => {
       return;
     }
 
-    dispatch(updateUserSuccess(data.user));
+    dispatch(loadUser());
   } catch (error) {
     let message = 'An unexpected error occurred';
 
@@ -219,3 +244,32 @@ export const followUser = (id: string) => async (dispatch: AppDispatch) => {
     dispatch(updateUserFailure(message)); // Ensure the correct action is dispatched
   }
 };
+
+export const unfollowUser = (id: string) => async (dispatch: AppDispatch) => {
+  try {
+    dispatch(updateUserStart());
+
+    const { data }: { data: AuthResponse | ErrorResponse } = await axios.put(`/api/v1/user/unfollow/${id}`);
+
+    if (!data.success) {
+      console.log(data.message);
+      dispatch(updateUserFailure(data.message));
+      return;
+    }
+
+    dispatch(loadUser());
+  } catch (error) {
+    let message = 'An unexpected error occurred';
+
+    if (axios.isAxiosError(error)) {
+      message = error.response?.data?.message || 'A network error occurred';
+    } else if (error instanceof Error) {
+      message = error.message;
+    } else {
+      message = String(error);
+    }
+
+    console.log('Error:', message);
+    dispatch(updateUserFailure(message)); // Ensure the correct action is dispatched
+  }
+}

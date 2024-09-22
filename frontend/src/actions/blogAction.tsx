@@ -1,11 +1,12 @@
 import type { AppDispatch } from '../redux/store';
 import type { Blog, BlogResponse, ErrorResponse } from '../types/blogTypes';
+import { createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import {
   fetchBlogsSuccess, fetchBlogByIdSuccess,
   createBlogSuccess, updateBlogSuccess,
   deleteBlogSuccess, loadingState, failureState,
-  clearError, likeBlogSuccess
+  clearError, likeBlogSuccess, searchBlogs
 } from '../redux/reducers/blogReducer';
 
 // Fetch all blogs
@@ -32,9 +33,10 @@ export const fetchBlogs = (page: number) => async (dispatch: AppDispatch) => {
 // Fetch a single blog by ID
 export const fetchBlogById = (id: string) => async (dispatch: AppDispatch) => {
   try {
+    console.log(`Dispatching loading state for blog ID: ${id}`);
     dispatch(loadingState());
 
-    const { data }: { data: BlogResponse | ErrorResponse } = await axios.get(`/api/v1/blogs/${id}`);
+    const { data }: { data: BlogResponse | ErrorResponse } = await axios.get(`/api/v1/blog/${id}`);
 
     if (!data.success) {
       console.log('Error:', data.message);
@@ -42,7 +44,13 @@ export const fetchBlogById = (id: string) => async (dispatch: AppDispatch) => {
       return;
     }
 
-    dispatch(fetchBlogByIdSuccess(data.blog)); // Use fallback if blog is null
+    console.log('Fetched blog data:', data.blog); // Check if data.blog is not null/undefined
+    if (data.blog) {
+      dispatch(fetchBlogByIdSuccess(data.blog)); // Ensure blog data is valid before dispatching
+    } else {
+      console.log('Blog data is null or undefined');
+      dispatch(failureState('Blog not found or data is invalid'));
+    }
   } catch (error: unknown) {
     const message = axios.isAxiosError(error) ? error.response?.data.message : String(error);
     console.log('Error:', message);
@@ -143,7 +151,7 @@ export const likeBlog = (id: string) => async (dispatch: AppDispatch) => {
     dispatch(loadingState());
 
     // Call the API to like/unlike the blog
-    const { data }: { data: BlogResponse | ErrorResponse } = await axios.put(`/api/v1/blogs/like/${id}`);
+    const { data }: { data: BlogResponse | ErrorResponse } = await axios.put(`/api/v1/blog/like/${id}`);
 
     if (!data.success) {
       console.log('Error:', data.message);
@@ -162,8 +170,31 @@ export const likeBlog = (id: string) => async (dispatch: AppDispatch) => {
   }
 };
 
+export const sendQuery = createAsyncThunk(
+  'blog/sendQuery',
+  async (query: string, { dispatch }) => {
+    try {
+      dispatch(loadingState());
+      const response = await axios.get(`/api/v1/blogs/search?q=${query}`);
+      const data = response.data;
+
+      if (data.success) {
+        dispatch(searchBlogs(data.blogs));
+      } else {
+        dispatch(failureState(data.message));
+      }
+    } catch (error: unknown) {
+      const message = axios.isAxiosError(error) ? error.response?.data.message : String(error);
+      console.log('Error:', message);
+
+      // Dispatch failure state with the error message
+      dispatch(failureState(message));
+    }
+  }
+);
+
+
 // Clear errors action
 export const clearBlogError = () => (dispatch: AppDispatch) => {
   dispatch(clearError());
 };
-

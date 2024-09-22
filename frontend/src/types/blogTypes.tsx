@@ -1,15 +1,16 @@
 // types/blogTypes.ts
 
-export interface UserId {
+export interface Author {
   _id?: string;
   username?: string;
   avatar?: string;
   blogs?: Blog[];
+  followers?: string[];
 }
 
 export interface Blog {
-  _id?: string;
-  userId: UserId;
+  _id: string;
+  author: Author;
   title: string;
   content: string;
   image?: string;
@@ -19,11 +20,12 @@ export interface Blog {
   likes?: string[];
   comments?: Comment[];
   createdAt?: string;
+  url: string;
 }
 
 export interface Comment {
   _id?: string;
-  userId: UserId;
+  author: Author;
   content: string;
   createdAt: string;
 }
@@ -59,7 +61,21 @@ export interface BlogState {
   pagination: Pagination | null;
   readyBlog: Blog | null;
   selectedBlog: Blog | null;
+  items: Item[];
   likes: string[];
   loading: boolean;
   error: string | null; // Changed from Error to string to match the action payload
 }
+
+export interface Item {
+  id: string;
+  title: string;
+}
+
+export interface ItemsResponse {
+  success: true;
+  items: Item[];
+}
+
+// actions/actionTypes.ts
+export const BLOGS_FETCHED = 'BLOGS_FETCHED';

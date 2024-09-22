@@ -1,199 +1,104 @@
-import { useCallback, useEffect, useState } from 'react';
-import {
-  Box,
-  Typography,
-  Avatar,
-  IconButton,
-  Stack,
-  Divider,
-  Button,
-  CircularProgress,
-} from '@mui/material';
-import ThumbUpIcon from '@mui/icons-material/ThumbUp';
-import ThumbUpOutlinedIcon from '@mui/icons-material/ThumbUpOutlined';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../redux/hooks';
-import { selectBlogState } from '../redux/reducers/blogReducer';
-import { fetchBlogById, likeBlog } from '../actions/blogAction';
-import { followUser } from '../actions/userAction';
-import { format } from 'date-fns';
-import { RootState } from '../redux/store';
+import React, { useEffect } from 'react';
+import './styles/RaedBlog.css'; 
+import { useParams } from 'react-router-dom';
+import axios from 'axios';
+import { Blog, BlogResponse, ErrorResponse } from '../types/blogTypes';
+import { useAppSelector } from '../redux/hooks';
+import { selectUserState } from '../redux/reducers/userReducer';
+import { UserResponse } from '../types/userTypes';
 
-function BlogDetail() {
-  const { likes, selectedBlog, loading, error } = useAppSelector(selectBlogState);
-  const { currentUser } = useAppSelector((state: RootState) => state.user);
-  const dispatch = useAppDispatch();
-  const { id: blogId } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const [variant, setVariant] = useState<'text' | 'outlined' | 'contained'>('contained');
-  const [follow, setFollow] = useState('Follow');
-  const [likeIcon, setLikeIcon] = useState(<ThumbUpOutlinedIcon />);
-  const [likeCount, setLikeCount] = useState(likes?.length || 0);
+const RaedBlog: React.FC = () => {
+  const { me } = useAppSelector(selectUserState);
+  const { id } = useParams<{ id: string }>();
+  const [blog, setBlog] = React.useState<Blog | null>(null);
+  const [loading, setLoading] = React.useState<boolean>(true);
+  const [error, setError] = React.useState<string>('');
+  const [follow, setFollow] = React.useState<boolean>(false);
 
-  // Fetch blog by ID
-  const fetchBlog = useCallback(async () => {
-    if (!blogId) {
-      navigate('/not-found');
-      console.error('No blog ID found.');
-      return;
-    }
+
+  const fetchBlog = async (id: string | undefined) => {
+    setLoading(true);
     try {
-      await dispatch(fetchBlogById(blogId));
-    } catch (err) {
-      console.error('Error fetching blog:', err);
-      navigate('/not-found');
+      const { data }: { data: BlogResponse | ErrorResponse } = await axios.get(`/api/v1/blog/${id}`);
+      if (!data.success) throw new Error(data.message);
+      setBlog(data.blog);
+      console.log(data.blog?.author?.followers);
+      if (data.blog?.author?.followers && me?._id) {
+        setFollow(!data.blog.author.followers.includes(me?._id));
+      }
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Error fetching blog');
+    } finally {
+      setLoading(false);
     }
-  }, [blogId, dispatch, navigate]);
+  };
 
-  // Update follow state based on current user
-  const updateUser = useCallback(() => {
-    if (!selectedBlog?.userId?._id || !currentUser?._id) {
-      console.error('User not found.');
+  const followUser = async (id: string | undefined) => {
+    if (!id) return;
+    setLoading(true);
+    try {
+      const { data }: { data: UserResponse | ErrorResponse } = await axios.put(`/api/v1/user/follow/${id}`);
+      if (!data.success) throw new Error(data.message);
+      setFollow(data.isFollowing); // Toggle follow state
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Error following user');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchBlog(id);
+  }, [id]);
+
+  const handleClick = async () => {
+    if (me?._id === blog?.author?._id) {
+      alert('You cannot follow yourself');
       return;
     }
-    if (currentUser?.following.includes(selectedBlog.userId._id)) {
-      setFollow('Following');
-      setVariant('outlined');
-    } else {
-      setFollow('Follow');
-      setVariant('contained');
-    }
-  }, [selectedBlog, currentUser]);
+    
+    followUser(blog?.author?._id).then(() => {
+      console.log('Follow user:', follow);
+    })
+  };
 
-  // Update like icon based on current user's likes
-  const updateBlog = useCallback(() => {
-    if (!currentUser?._id || !likes) {
-      console.error('Blog not found or likes not available.');
-      return;
-    }
-    if (likes.includes(currentUser._id)) {
-      setLikeIcon(<ThumbUpIcon />);
-    } else {
-      setLikeIcon(<ThumbUpOutlinedIcon />);
-    }
-  }, [likes, currentUser]);
-
-  useEffect(() => {
-    fetchBlog(); // Fetch blog initially
-  }, [fetchBlog]);
-
-  useEffect(() => {
-    updateUser();
-  }, [updateUser]);
-
-  useEffect(() => {
-    updateBlog();
-  }, [updateBlog]);
-
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <CircularProgress />
-      </Box>
-    );
+  if (error) {
+    return <div className="error-message">{error}</div>;
   }
 
-  if (error || !selectedBlog) {
-    return <Typography variant="h6" align="center">Blog not found</Typography>;
+  if (!blog) {
+    return <div>No blog found.</div>;
   }
-
-  // Toggle follow/unfollow logic
-  const handleFollowToggle = async () => {
-    setFollow('Processing...');
-    if (!selectedBlog?.userId?._id) {
-      console.error('No user ID found.');
-      return;
-    }
-
-    try {
-      await dispatch(followUser(selectedBlog.userId._id));
-
-      setFollow((prevFollow) => (prevFollow === 'Follow' ? 'Following' : 'Follow'));
-      setVariant((prevVariant) => (prevVariant === 'contained' ? 'outlined' : 'contained'));
-    } catch (error) {
-      console.error('Error following user:', error);
-      setFollow('Follow'); // Revert state on failure
-    }
-  };
-
-  // Like/Unlike blog post
-  const handleLike = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    if (!selectedBlog?._id) {
-      console.error('No blog ID found.');
-      return;
-    }
-
-    try {
-      await dispatch(likeBlog(selectedBlog._id));
-
-      // Optimistically update the like icon and count
-      setLikeIcon((prevIcon) =>
-        prevIcon.type === ThumbUpOutlinedIcon ? <ThumbUpIcon /> : <ThumbUpOutlinedIcon />
-      );
-      setLikeCount((prevCount) =>
-        likeIcon.type === ThumbUpOutlinedIcon ? prevCount + 1 : prevCount - 1
-      );
-    } catch (error) {
-      console.error('Error liking blog:', error);
-    }
-  };
-
-  const blogTitle = selectedBlog?.title || 'Untitled Blog';
-  const ownerAvatar = selectedBlog?.userId?.avatar || 'https://via.placeholder.com/150';
-  const ownerUsername = selectedBlog?.userId?.username || 'Anonymous';
-  const postedDate = selectedBlog?.createdAt
-    ? format(new Date(selectedBlog.createdAt), 'MMMM dd, yyyy')
-    : 'Unknown Date';
-
-  const blog = {
-    title: blogTitle,
-    owner: {
-      avatar: ownerAvatar,
-      username: ownerUsername,
-    },
-    postedDate,
-    period: '5 min read',
-    likeCount,
-    commentCount: selectedBlog?.comments?.length || 0,
-    image: selectedBlog?.image || 'https://via.placeholder.com/800x400',
-    content: selectedBlog?.content || 'No content available.',
-    comments: selectedBlog?.comments || [],
-  };
 
   return (
-    <Box sx={{ padding: 4, maxWidth: '700px', margin: '0 auto' }}>
-      <Typography variant="h3" component="h1" gutterBottom>{blog.title}</Typography>
+    <div className="blog-page">
+      <div className="blog-header">
+        <div className="blog-category">NATURE</div>
+        <h1 className="blog-title">{blog.title}</h1>
+        <p className="blog-subtitle">A philanthropist and local government have protected this gem</p>
+        <div className="blog-author-section">
+          <img src={blog.author?.avatar} alt="Author" className="author-image" />
+          <div className="author-details">
+            <div className='author'>
+              <span className="author-name">{blog.author?.username}</span> •  
+              <span className={follow ? 'Unfollow' : 'Follow'} onClick={handleClick}>
+                {follow ? 'Unfollow' : 'Follow'}
+              </span>
+            </div> 
+            <span className="author-info">Published in Simply Wild • 5 min read • 3 days ago</span>
+          </div>
+        </div>
+      </div>
 
-      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-        <Stack direction="row" alignItems="center" spacing={2}>
-          <Avatar src={blog.owner.avatar} alt={blog.owner.username} />
-          <Box>
-            <Typography variant="body2">{blog.owner.username}</Typography>
-            <Button variant={variant} sx={{ mt: 0.5, height: 25, width: 80, fontSize: 10 }} onClick={handleFollowToggle}>
-              {follow}
-            </Button>
-          </Box>
-        </Stack>
-        <Typography variant="body2" color="textSecondary">{blog.period} • {blog.postedDate}</Typography>
-      </Stack>
-
-      <Divider sx={{ my: 2 }} />
-      <Box sx={{ mb: 3 }}>
-        <img src={blog.image} alt="Blog" width="100%" height="auto" style={{ borderRadius: 8 }} />
-      </Box>
-
-      <Typography variant="body1" sx={{ mb: 5, whiteSpace: 'pre-line' }}>{blog.content}</Typography>
-      <Divider sx={{ mb: 2 }} />
-
-      <Stack direction="row" alignItems="center" spacing={3} sx={{ mb: 2 }}>
-        <Stack direction="row" alignItems="center" spacing={1} onClick={handleLike}>
-          <IconButton>{likeIcon}</IconButton>
-          <Typography>{blog.likeCount}</Typography>
-        </Stack>
-      </Stack>
-    </Box>
+      <div className="blog-content">
+        <img src={blog.image} alt="Blog" className="blog-main-image" />
+        <p>{blog.content}</p>
+      </div>
+      <div className="actions">
+        {/* Add any additional actions or buttons here */}
+      </div>
+    </div>
   );
-}
+};
 
-export default BlogDetail;
+export default RaedBlog;

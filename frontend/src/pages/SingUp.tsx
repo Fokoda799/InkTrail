@@ -48,7 +48,7 @@ export default function SignUp() {
     });
   };
 
-  const { error, currentUser } = useAppSelector(selectUserState);
+  const { error, me } = useAppSelector(selectUserState);
   const redirect = location.search ? location.search.split('=')[1] : '/';
 
   useEffect(() => {
@@ -57,16 +57,17 @@ export default function SignUp() {
       dispatch(clearError());
     }
 
-    if (currentUser) {
+    if (me) {
       navigate(redirect);
+      alert.success(`Welcome, ${me.username}! to InkTrail`);
     }
-  }, [dispatch, error, alert, currentUser, navigate, redirect]);
+  }, [dispatch, error, alert, me, navigate, redirect]);
 
   return (
     <AppProvider theme={theme}>
       {successAlert && <SuccessAlert onClose={() => setSuccessAlert(false)} />}
       {errorAlert && <ErrorAlert message={errorAlert} onClose={() => setErrorAlert(null)} />}
-      <Grid container justifyContent="center" sx={{ minHeight: '100vh', padding: 2 }}>
+      <Grid container justifyContent="center" sx={{ minHeight: '100vh', paddingBottom: '50px', }}>
         <Grid item xs={12} sm={8} md={6} lg={4}>
           <Box display="flex" flexDirection="column" alignItems="center" mt={4} px={3} py={4} boxShadow={3} borderRadius={2} bgcolor="white">
             <Typography variant="h5" component="h1" gutterBottom>

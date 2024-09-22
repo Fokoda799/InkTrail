@@ -21,19 +21,22 @@ import { createBlog } from '../../actions/blogAction';
 import NotificationsMenu from './NotificationsMenu';
 import { User } from '../../types/userTypes';
 import AccountMenu from './AccountMenu';
-import ParentComponent from './ParentComponent';
+import SearchBar from '../SearchBar';
 import { SxProps } from '@mui/material';
+import { useAlert } from 'react-alert';
+import { clearReadyBlog } from '../../redux/reducers/blogReducer';
 
 // Define a constant for icon size
 const iconSize = { width: 40, height: 40 };
 
 const Header = () => {
-  const { currentUser } = useAppSelector(selectUserState);
+  const { me } = useAppSelector(selectUserState);
   const { readyBlog } = useAppSelector(selectBlogState);
   const dispatch = useAppDispatch();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [notificationsAnchorEl, setNotificationsAnchorEl] = React.useState<null | HTMLElement>(null);
   const [drawerOpen, setDrawerOpen] = React.useState(false);
+  const alert = useAlert();
 
   const navigate = useNavigate();
   const { pathname } = useLocation(); // Destructure pathname for cleaner code
@@ -57,8 +60,11 @@ const Header = () => {
 
   const handlePublish = () => {
     if (readyBlog) {
+      console.log('Publishing blog:', readyBlog);
       dispatch(createBlog(readyBlog));
       navigate('/');
+      alert.success("Blog published successfully");
+      dispatch(clearReadyBlog());
     } else {
       console.error('No blog data to publish');
     }
@@ -112,10 +118,10 @@ const Header = () => {
         />
 
         {/* Display ParentComponent only for logged-in users */}
-        {currentUser && <ParentComponent />}
+        {me && <SearchBar />}
 
         {/* Display Tabs or User actions based on login state */}
-        {currentUser ? (
+        {me ? (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             {pathname === '/new-fact' ? (
               <IconButton size="large" color="inherit" onClick={handlePublish}>
@@ -132,7 +138,7 @@ const Header = () => {
               color="inherit"
               onClick={handleNotificationsClick}
             >
-              <Badge badgeContent={17} color="error">
+              <Badge badgeContent={0} color="error">
                 <NotificationsIcon />
               </Badge>
             </IconButton>
@@ -143,7 +149,7 @@ const Header = () => {
               color="inherit"
               sx={{ display: { xs: 'none', md: 'flex' } }}
             >
-              {avatar(currentUser, iconSize)}
+              {avatar(me, iconSize)}
             </IconButton>
           </Box>
         ) : (
@@ -167,15 +173,14 @@ const Header = () => {
             onClick={toggleDrawer(false)}
             onKeyDown={toggleDrawer(false)}
           >
-            {currentUser ? (
+            {me ? (
               <>
                 <MenuItem>
-                  {avatar(currentUser, { width: 50, height: 50 })}
-                  <Typography variant="body1" sx={{ marginLeft: 2 }}>{`@${currentUser.username}`}</Typography>
+                  {avatar(me, { width: 50, height: 50 })}
+                  <Typography variant="body1" sx={{ marginLeft: 2 }}>{`@${me.username}`}</Typography>
                 </MenuItem>
                 <MenuItem onClick={() => navigate('/profile')}>Profile</MenuItem>
                 <MenuItem onClick={handleLogout}>Logout</MenuItem>
-                <MenuItem onClick={() => navigate('/settings')}>Settings</MenuItem>
               </>
             ) : (
               <>

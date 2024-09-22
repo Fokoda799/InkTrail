@@ -1,11 +1,16 @@
 import Blog from '../models/blogModel.js';
 import User from '../models/userModel.js';
 import mongoose from 'mongoose';
+import { v4 as uuidv4 } from 'uuid';
 
 class BlogController {
+    
+
     static async postBlog(req, res) {
         try {
             const { title, content, image } = req.body;
+            
+            // Validate required fields
             if (!title || !content) {
                 return res.status(400).json({ 
                     success: false, 
@@ -13,29 +18,42 @@ class BlogController {
                 });
             }
 
-            const userId = req.user.id;
+            // Retrieve author ID from authenticated user
+            const author = req.user.id
 
-            const newBlog = new Blog({ userId, title, content, image });
+            // Create new blog document
+            const newBlog = new Blog({
+                author,
+                title,
+                content,
+                image,
+            });
+
+            // Save the new blog to the database
             await newBlog.save();
 
-            const user = await User.findById(userId);
+            // Add the new blog ID to the user's blogs array
+            const user = await User.findById(author);
             if (user) {
                 user.blogs.push(newBlog._id);
                 await user.save();
             }
 
+            // Respond with the created blog
             return res.status(201).json({ 
                 success: true, 
                 blog: newBlog 
             });
         } catch (error) {
             console.error('Error creating blog:', error);
+            // Respond with a generic error message
             return res.status(500).json({
                 success: false,
                 message: 'Internal server error'
             });
         }
     }
+
 
     static async postBlogAsAdmin(req, res) {
         try {
@@ -93,26 +111,26 @@ class BlogController {
             let blogsQuery = {};
             
             if (req.query.following) {
-                const user = req.user;
-                if (!user) return res.status(401).json({ success: false, message: 'Unauthorized' });
+                const {id} = req.user;
+                const user = await User.findById(id);
 
-                const followingList = user.following;
+                const following = user.following;
                 
-                if (!followingList || followingList.length === 0) {
+                if (following.length === 0) {
                     return res.status(404).json({ success: false, message: 'No blogs found from the users you are following' });
                 }
 
-                blogsQuery = { userId: { $in: followingList } };
+                blogsQuery = { author: { $in: following } };
             }
 
             const blogs = await Blog.find(blogsQuery)
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit)
-                .populate('userId', 'username avatar blogs');
+                .populate('author', 'username avatar blogs following');
 
             if (blogs.length === 0) {
-                return res.status(404).json({ success: false, message: 'Blogs not found' });
+                return res.status(404).json({ success: false, message: `Blogs not found ${req.user.following.length}` });
             }
 
             const totalBlogs = await Blog.countDocuments(blogsQuery);
@@ -139,7 +157,7 @@ class BlogController {
                 });
             }
 
-            const blog = await Blog.findById(id).populate('userId', 'username avatar blogs ');
+            const blog = await Blog.findById(id).populate('author', 'username avatar blogs followers');
             if (!blog) {
                 return res.status(404).json({ 
                     success: false, 
@@ -296,14 +314,6 @@ class BlogController {
         try {
             const { id } = req.params;
     
-            // Validate blog ID
-            if (!mongoose.Types.ObjectId.isValid(id)) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Invalid blog ID'
-                });
-            }
-    
             // Find the blog by ID
             const blog = await Blog.findById(id);
             if (!blog) {
@@ -388,37 +398,68 @@ class BlogController {
 
     static async searchBlogs(req, res) {
         try {
-            const { query } = req.query;
-            if (!query || query.trim() === '') {
-                return res.status(400).json({ 
-                    success: false, 
-                    message: 'Search query is required' 
-                });
-            }
-
-            const blogs = await Blog.find({
-                title: { $regex: query, $options: 'i' }
+          const { term, sort = 'desc', category, limit = 10, page = 1 } = req.query;
+      
+          // Validate and sanitize search term
+          if (!term || typeof term !== 'string' || term.trim() === '') {
+            return res.status(400).json({
+              success: false,
+              message: 'A valid search term is required.',
             });
-
-            if (blogs.length === 0) {
-                return res.status(404).json({ 
-                    success: false, 
-                    message: 'No blogs found' 
-                });
-            }
-
-            return res.status(200).json({ 
-                success: true, 
-                blogs 
+          }
+      
+          // Construct the search query object
+          const searchQuery = {
+            title: { $regex: term, $options: 'i' }, // Trim and use case-insensitive search
+          };
+      
+          // Add category filter if provided and not 'all'
+          if (category && category !== 'all') {
+            searchQuery.category = category;
+          }
+      
+          // Determine sort order and options for pagination
+          const sortOrder = sort === 'asc' ? 1 : -1;
+          const options = {
+            sort: { createdAt: sortOrder },
+            limit: parseInt(limit, 10), // Limit the number of results per page
+            skip: (parseInt(page, 10) - 1) * parseInt(limit, 10), // Skip documents for pagination
+          };
+      
+          // Fetch blogs with search filters, sorting, pagination, and populate author fields
+          const blogs = await Blog.find(searchQuery, null, options)
+            .populate('author', 'username avatar blogs')
+            .exec();
+      
+          // Check if any blogs are found
+          if (!blogs.length) {
+            return res.status(404).json({
+              success: false,
+              message: 'No blogs found for the given search criteria.',
             });
+          }
+      
+          // Count total documents matching the search criteria (for pagination info)
+          const totalBlogs = await Blog.countDocuments(searchQuery);
+      
+          return res.status(200).json({
+            success: true,
+            totalBlogs, // Total matching blogs count
+            currentPage: parseInt(page, 10),
+            totalPages: Math.ceil(totalBlogs / parseInt(limit, 10)),
+            blogs,
+          });
         } catch (error) {
-            console.error('Error searching blogs:', error.message);
-            return res.status(500).json({
-                success: false,
-                message: error.message
-            });
+          console.error('Error searching blogs:', error.message);
+          return res.status(500).json({
+            success: false,
+            message: 'Server Error. Please try again later.',
+          });
         }
-    }
+      }
+      
+      
+      
 
     static async getTrendingBlogs(req, res) {
         try {

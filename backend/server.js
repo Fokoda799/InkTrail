@@ -5,7 +5,7 @@ import colors from 'colors';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import connectDB from './config/db.js';
-import userRouter from './routes/userRoutes.js';
+import {userRouter, authRouter, adminRouter} from './routes/userRoutes.js';
 import blogRouter from './routes/blogRoutes.js';
 
 // Load env variables
@@ -26,8 +26,19 @@ app.get('/', (req, res) => {
 });
 
 // Import routes
-app.use('/api/v1/', userRouter);
+app.use('/api/v1/user', userRouter);
+app.use('/api/v1/auth', authRouter);
+app.use('/api/v1/admin', adminRouter);
 app.use('/api/v1/', blogRouter);
+
+// Centralized error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(err.status || 500).json({
+        success: false,
+        message: err.message || 'Internal Server Error'
+    });
+});
 
 // Connect to MongoDB
 connectDB();
@@ -36,5 +47,5 @@ connectDB();
 const PORT = process.env.PORT || 8080;
 const DEV_MODE = process.env.DEV_MODE || 'development';
 app.listen(PORT, () => {
-    console.log(`Server is running on ${DEV_MODE} mode, port N ${PORT}`.bgWhite);
+    console.log(`Server is running on ${DEV_MODE} mode, port ${PORT}`.bgWhite);
 });

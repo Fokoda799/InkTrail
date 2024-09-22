@@ -5,7 +5,8 @@ import { setLoading, setSuccess, setFailure } from '../../helpers/userHelper';
 
 // Define the initial state using that type
 const initialState: UserState = {
-  currentUser: null,
+  me: null,
+  selectedUser: null,
   loading: false,
   error: null,
 };
@@ -21,6 +22,13 @@ const userSlice = createSlice({
     signUpStart: setLoading,
     signUpSuccess: setSuccess,
     signUpFailure: setFailure,
+
+    loadUserStart: setLoading,
+    loadUserSuccess: setSuccess,
+    loadUserFailure: (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    },
 
     updateUserStart: setLoading,
     updateUserSuccess: setSuccess,
@@ -39,10 +47,8 @@ const userSlice = createSlice({
     resetPasswordFailure: setFailure,
     
     signOutStart: setLoading,
-    signOutSuccess: (state) => {
-      state.currentUser = null;
-      state.loading = false;
-      state.error = null;
+    signOutSuccess: () => {
+      return initialState;
     },
     signOutFailure: setFailure,
     clearError: (state) => {
@@ -59,7 +65,8 @@ export const {
   signOutStart, updateUserFailure, updateUserStart,
   updateUserSuccess, updatePasswordStart, updatePasswordSuccess,
   updatePasswordFailure, forgotPasswordStart, forgotPasswordSuccess, forgotPasswordFailure,
-  resetPasswordStart, resetPasswordSuccess, resetPasswordFailure
+  resetPasswordStart, resetPasswordSuccess, resetPasswordFailure, loadUserStart, loadUserSuccess, 
+  loadUserFailure
 } = userSlice.actions;
 
 // Selector to get authentication state

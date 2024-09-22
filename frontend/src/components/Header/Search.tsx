@@ -1,11 +1,15 @@
-// src/components/Search.tsx
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { styled, alpha } from '@mui/material/styles';
-import { InputBase, IconButton } from '@mui/material';
+import { InputBase, IconButton, Box, ListItemButton, Paper, List, ListItem, ListItemText, Divider, Typography } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import { useAppSelector, useAppDispatch } from '../../redux/hooks';
+import { selectBlogState } from '../../redux/reducers/blogReducer';
+import { sendQuery, fetchBlogById } from '../../actions/blogAction';
+// import { useNavigate } from 'react-router-dom';
+// import { clearBlog } from '../../redux/reducers/blogReducer';
 
-// Define static colors for styling
-const commonWhite = '#ffffff'; // You can replace this with your own color or a hex code
+// Color variable
+const commonWhite = '#ffffff';
 
 // Styled components
 const SearchContainer = styled('div')(({ theme }) => ({
@@ -47,17 +51,76 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-// Component
-const Search = ({ onSearch }: { onSearch: (query: string) => void }) => {
-  const [query, setQuery] = useState('');
+const DropdownContainer = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  top: '100%',
+  left: 0,
+  right: 0,
+  zIndex: 1,
+  backgroundColor: theme.palette.background.default,
+  border: `1px solid ${theme.palette.primary.main}`,
+  boxShadow: theme.shadows[3],
+  marginTop: theme.spacing(1),
+}));
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+// Main component
+const Search = ({ onSearch }: { onSearch: (query: string) => void }) => {
+  const { items, selectedBlog } = useAppSelector(selectBlogState);
+  const dispatch = useAppDispatch();
+  // const navigate = useNavigate();
+  const [query, setQuery] = useState('');
+  const [showDropdown, setShowDropdown] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Handle input change
+  const handleChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(event.target.value);
+
+    if (event.target.value.trim() !== '') {
+      setShowDropdown(true);
+      await dispatch(sendQuery(event.target.value));
+    } else {
+      setShowDropdown(false);
+    }
   };
 
+  // Execute search
   const handleSearch = () => {
     onSearch(query);
+    setShowDropdown(false);
   };
+
+  // Handle item click
+  const handleItemClick = (item: { id: string; title: string }) => {
+    console.log('Clicked item:', item);
+    dispatch(fetchBlogById(item.id)).then(() => {
+      console.log('Dispatched fetchBlogById, current selectedBlog:', selectedBlog);
+      setShowDropdown(false);
+    });
+  };
+
+  // // Navigate when selectedBlog updates
+  // useEffect(() => {
+  //   console.log('selectedBlog updated:', selectedBlog);
+  //   if (selectedBlog) {
+  //     navigate(`/blog/${selectedBlog.author.username}/${selectedBlog._id}`);
+  //     dispatch(clearBlog());
+  //   }
+  // }, [selectedBlog, navigate, dispatch]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (inputRef.current && !inputRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   return (
     <SearchContainer>
@@ -67,6 +130,7 @@ const Search = ({ onSearch }: { onSearch: (query: string) => void }) => {
         </IconButton>
       </SearchIconWrapper>
       <StyledInputBase
+        inputRef={inputRef}
         placeholder="Search…"
         inputProps={{ 'aria-label': 'search' }}
         value={query}
@@ -77,6 +141,40 @@ const Search = ({ onSearch }: { onSearch: (query: string) => void }) => {
           }
         }}
       />
+      {showDropdown && (
+        <DropdownContainer width={350}>
+          <Paper>
+            <List>
+              <ListItem>
+                <ListItemText primary={`Searching for "${query}"`} />
+              </ListItem>
+              <Divider />
+              <Typography variant="body1" component="h2">
+                Search Results
+              </Typography>
+              <Divider />
+              {items?.length > 0 ? (
+                items.map((item: { id: string; title: string }, index: number) => (
+                  <div key={index}>
+                    {/* Removed console.log and used correct syntax */}
+                    <ListItemButton onClick={() => handleItemClick(item)}>
+                      <ListItemText primary={item.title} />
+                    </ListItemButton>
+                    <Divider />
+                  </div>
+                ))
+              ) : (
+                <div>
+                  <ListItem>
+                    <ListItemText primary={`No results for "${query}"`} />
+                  </ListItem>
+                  <Divider />
+                </div>
+              )}
+            </List>
+          </Paper>
+        </DropdownContainer>
+      )}
     </SearchContainer>
   );
 };

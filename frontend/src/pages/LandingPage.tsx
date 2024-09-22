@@ -19,12 +19,12 @@ interface FeatureCardProps {
 
 const LandingPage = () => {
   const navigate = useNavigate();
-  const { currentUser } = useAppSelector(selectUserState);
+  const { me } = useAppSelector(selectUserState);
   const isMobile = useMediaQuery((theme: Theme) => theme.breakpoints.down('sm'));
   const theme = useTheme();
 
-  if (currentUser) {
-    return <BlogsPage />;
+  if (me) {
+    return <AppProvider theme={theme}><BlogsPage /></AppProvider>;
   }
 
   const handleGetStarted = () => {
@@ -60,7 +60,7 @@ const LandingPage = () => {
             minHeight: '100vh',
             display: 'flex',
             alignItems: 'center',
-            backgroundImage: 'url(../../public/lpbg.jpg)',
+            backgroundImage: 'url(lpbg.jpg)',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',

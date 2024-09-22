@@ -1,29 +1,31 @@
 import { Router } from 'express';
 import UserController from '../controllers/userController.js';
 import AuthController from '../controllers/authController.js';
-import BlogController from '../controllers/blogController.js';
 import { isAuthenticatedUser, authorizeRoles } from '../middlewares/auth.js';
 
-// Create a new router
 const userRouter = Router();
+const authRouter = Router();
+const adminRouter = Router();
 
-// Define user routes
-userRouter.get('/admin/users', isAuthenticatedUser, authorizeRoles('admin'), UserController.getAllUsers);
-userRouter.get('/admin/user/:id', isAuthenticatedUser, authorizeRoles('admin'), UserController.getUserById);
-userRouter.put('/admin/user/:id', isAuthenticatedUser, authorizeRoles('admin'), UserController.updateUser);
-userRouter.put('/admin/user/:id/role', isAuthenticatedUser, authorizeRoles('admin'), UserController.updateUserRole);
-userRouter.delete('/admin/user/:id', isAuthenticatedUser, authorizeRoles('admin'), UserController.deleteUser);
+// Admin routes
+adminRouter.get('/', isAuthenticatedUser, authorizeRoles('admin'), UserController.getAllUsers);
+adminRouter.get('/:id', isAuthenticatedUser, authorizeRoles('admin'), UserController.getUserById);
+adminRouter.put('/:id', isAuthenticatedUser, authorizeRoles('admin'), UserController.updateUser);
+adminRouter.put('/:id/role', isAuthenticatedUser, authorizeRoles('admin'), UserController.updateUserRole);
+adminRouter.delete('/:id', isAuthenticatedUser, authorizeRoles('admin'), UserController.deleteUser);
 
-// Define auth routes
-userRouter.post('/user/sign-up', UserController.createUser);
-userRouter.get('/user/sign-in', AuthController.connectUser);
+// User routes
 userRouter.get('/me', isAuthenticatedUser, UserController.getMe);
 userRouter.put('/me', isAuthenticatedUser, UserController.updateMe);
-userRouter.get('/user/logout', AuthController.disconnectUser);
-userRouter.post('/user/google', AuthController.signinWithGoogle);
 userRouter.put('/me/update-password', isAuthenticatedUser, AuthController.updatePassword);
-userRouter.post('/forgot-password', AuthController.forgotPassword);
-userRouter.put('/reset-password/:token', AuthController.resetPassword);
-userRouter.put('/user/follow/:id', isAuthenticatedUser, UserController.followUser);
+userRouter.put('/follow/:id', isAuthenticatedUser, UserController.followUser);
 
-export default userRouter;
+// Auth routes
+authRouter.post('/sign-up', UserController.createUser);
+authRouter.get('/sign-in', AuthController.connectUser); // Changed to POST for security
+authRouter.post('/google', AuthController.signinWithGoogle);
+authRouter.get('/logout', isAuthenticatedUser, AuthController.disconnectUser);
+authRouter.post('/forgot-password', AuthController.forgotPassword);
+authRouter.put('/reset-password/:token', AuthController.resetPassword);
+
+export { userRouter, authRouter, adminRouter };
