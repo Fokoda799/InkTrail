@@ -2,6 +2,7 @@ import User from '../models/userModel.js';
 import jwt from 'jsonwebtoken';
 import sendToken from '../utils/jwtToken.js';
 import idValidation from '../utils/idValidation.js';
+import {sendVierificationEmail} from '../mailtrap/emails.js';
 
 class UserController {
     // @desc    Get all users
@@ -35,21 +36,41 @@ class UserController {
 
     // @desc    Create a new user
     // @route   POST /users
-    // @access  User
+    // @access  Public
     static async createUser(req, res) {
         try {
             const { username, email, password } = req.body;
 
+            // Check if email already exists
+            const existingUser = await User.findOne({ email });
+            if (existingUser) {
+                return res.status(400).json({ message: "Email already exists" });
+            }
+
+            // Create a new user instance
             const newUser = new User({
-                username, email, password
+                username,
+                email,
+                password,
+                verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000,
             });
 
+            // Generate the verification token and save it to the user instance
+            await newUser.getVerificationToken();
+
+            // Save the new user to the database
             await newUser.save();
+
+            // Send verification email with the generated token
+            await sendVierificationEmail(newUser.email, newUser.verficationToken);
+
+            // Send the JWT token in response
             sendToken(newUser, 201, res);
         } catch (error) {
             res.status(500).json({ message: error.message });
         }
     }
+
 
     // @desc    Update a user
     // @route   PUT /users/:id
@@ -130,11 +151,16 @@ class UserController {
             if (!user) return res.status(404).json({ message: "User not found" });
 
             return res.status(200).json({
-                message: "Welcome back",
-                user
+                success: true,
+                user: {
+                    ...user._doc,
+                    password: undefined,
+                    verificationToken: undefined,
+                    verificationTokenExpires: undefined
+                },
             });
         } catch (error) {
-            return res.status(500).json({ message: "Internal server error" });
+            return res.status(500).json({ message: `Internal server error: ${error.message}` });
         }
     }
 
@@ -212,7 +238,6 @@ class UserController {
             return res.status(500).json({ message: error.message, success: false });
         }
     }
-    
     
 };
 

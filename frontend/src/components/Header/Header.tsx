@@ -3,10 +3,10 @@ import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
-import Badge from '@mui/material/Badge';
+// import Badge from '@mui/material/Badge';
 import Drawer from '@mui/material/Drawer';
 import MenuItem from '@mui/material/MenuItem';
-import NotificationsIcon from '@mui/icons-material/Notifications';
+// import NotificationsIcon from '@mui/icons-material/Notifications';
 import MenuIcon from '@mui/icons-material/Menu';
 import Avatar from '@mui/material/Avatar';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
@@ -45,7 +45,7 @@ const Header = () => {
 
   // Memoized event handlers
   const handleProfileMenuOpen = React.useCallback((event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget), []);
-  const handleNotificationsClick = React.useCallback((event: React.MouseEvent<HTMLElement>) => setNotificationsAnchorEl(event.currentTarget), []);
+  // const handleNotificationsClick = React.useCallback((event: React.MouseEvent<HTMLElement>) => setNotificationsAnchorEl(event.currentTarget), []);
   const handleMenuClose = React.useCallback(() => setAnchorEl(null), []);
   const handleNotificationsClose = React.useCallback(() => setNotificationsAnchorEl(null), []);
   const toggleDrawer = React.useCallback(
@@ -132,16 +132,16 @@ const Header = () => {
                 <HistoryEduIcon />
               </IconButton>
             )}
-            <IconButton
-              size="large"
+            {!me.isVerified && (
+              <IconButton
+              size="small"
               aria-label="open notifications"
               color="inherit"
-              onClick={handleNotificationsClick}
-            >
-              <Badge badgeContent={0} color="error">
-                <NotificationsIcon />
-              </Badge>
-            </IconButton>
+              onClick={() => navigate('/email-verification')}
+              >
+                Verfiy Email
+              </IconButton>
+              )}
             <IconButton
               size="large"
               aria-label="open profile menu"

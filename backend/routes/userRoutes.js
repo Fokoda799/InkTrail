@@ -25,7 +25,9 @@ authRouter.post('/sign-up', UserController.createUser);
 authRouter.get('/sign-in', AuthController.connectUser); // Changed to POST for security
 authRouter.post('/google', AuthController.signinWithGoogle);
 authRouter.get('/logout', isAuthenticatedUser, AuthController.disconnectUser);
-authRouter.post('/forgot-password', AuthController.forgotPassword);
-authRouter.put('/reset-password/:token', AuthController.resetPassword);
+// authRouter.post('/forgot-password', AuthController.forgotPassword);
+// authRouter.put('/reset-password/:token', AuthController.resetPassword);
+authRouter.post('/verify-email', isAuthenticatedUser, AuthController.verifyEmail);
+authRouter.get('/check-auth', isAuthenticatedUser, AuthController.checkAuth);
 
 export { userRouter, authRouter, adminRouter };

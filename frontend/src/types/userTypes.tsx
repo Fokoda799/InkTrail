@@ -21,6 +21,7 @@ export interface User {
     email: string;
     password?: string;
     withPassword: boolean;
+    isVerified: boolean;
     avatar?: string;
     bio?: string;
     blogs?: Blog[];
@@ -30,10 +31,12 @@ export interface User {
 
 // User state types
 export interface UserState {
-    me: User | null;
-    selectedUser: User | null;
-    loading: boolean;
-    error: string | null;
+    user: User | null;
+	isAuthenticated: boolean;
+	error: string | null,
+	isLoading: boolean,
+	isCheckingAuth: boolean,
+	message: string | null,
 }
 
 // User response types

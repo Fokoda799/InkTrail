@@ -1,46 +1,28 @@
+import { sendWelcomeEmail } from '../mailtrap/emails.js';
 import User from '../models/userModel.js';
 import sendToken from '../utils/jwtToken.js';
 
 class AuthController {
     static async connectUser(req, res) {
+        const { email, password } = req.body;
         try {
-            // Get authorization header from request
-            const authHeader = req.headers.authorization;
-            if (!authHeader || !authHeader.startsWith('Basic ')) {
-                return res.status(401).json({ message: 'Unauthorized' });
-            }
-
-            // Extract and decode Base64 credentials (email:password)
-            const base64Credentials = authHeader.split(' ')[1];
-            const credentials = Buffer.from(base64Credentials, 'base64').toString('utf-8');
-            const [email, password] = credentials.split(':');
-
-            // Ensure both email and password exist
-            if (!email || !password) {
-                return res.status(400).json({ message: 'Invalid credentials format' });
-            }
-
-            // Find user by email
-            const user = await User.findOne({ email }).select('+password').populate('blogs',
-                'title content image category tags isPublished claps comments'
-            );
+            const user = await User.findOne({ email });
             if (!user) {
-                return res.status(400).json({ message: 'User not found' });
+                return res.status(400).json({ success: false, message: "Invalid credentials" });
             }
-
-            // Compare password
+            
             const isMatch = await user.comparePassword(password);
-            if (!isMatch) {
-                return res.status(400).json({ message: 'Invalid password' });
-            }
+            if (!isMatch) return res.status(400).json({ success: false, message: "Invalid password`" });
 
-            // Send token
+            user.lastLogin = new Date();
+            await user.save();
+
             sendToken(user, 200, res);
         } catch (error) {
-            console.error('Error during user connection:', error);
-            return res.status(500).json({ message: error.message });
+            console.log("Error in login ", error);
+            res.status(400).json({ success: false, message: error.message });
         }
-    }
+    };
 
     // @desc    Disconnect the user
     // @route   POST /logout
@@ -76,6 +58,13 @@ class AuthController {
                     email,
                     avatar,
                 })
+
+                user.lastLogin = new Date();
+                user.isVerified = true;
+                user.verficationToken = undefined;
+                user.verficationTokenExpiresAt = undefined;
+                await user.save();
+
                 sendToken(user, 200, res);
             }
         } catch (error) {
@@ -172,6 +161,53 @@ class AuthController {
             res.status(500).json({ message: error.message });
         }
     }
+
+    // @desc    Verify email
+    // @route   POST /verify-email
+    // @access  Public
+    static async verifyEmail(req, res) {
+        const { code } = req.body;
+        try {
+            const user = await User.findOne({
+                verficationToken: code,
+                verificationTokenExpiresAt: { $gt: Date.now() },
+            });
+    
+            if (!user) {
+                return res.status(400).json({ success: false, message: "Invalid or expired verification code" });
+            }
+    
+            user.isVerified = true;
+            user.verficationToken = undefined;
+            user.verficationTokenExpire = undefined;
+            await user.save();
+    
+            await sendWelcomeEmail(user.email, user.name);
+    
+            res.status(200).json({
+                success: true,
+                user: {
+                    ...user._doc,
+                    password: undefined,
+                },
+            });
+        } catch (error) {
+            console.log("error in verifyEmail ", error);
+            res.status(500).json({ success: false, message: "Server error" });
+        }
+    };
+
+    static checkAuth = async (req, res) => {
+        try {
+            const user = await User.findById(req.user.id).select('-password');
+            if (!user) return res.status(404).json({ message: 'User not found' });
+            res.status(200).json({success: true, user});
+        } catch (error) {
+            console.error('Error during user check:', error);
+            res.status(500).json({ message: error.message });
+        }
+    };
+
 }
 
 

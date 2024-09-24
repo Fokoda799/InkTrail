@@ -9,6 +9,7 @@ import { AppProvider } from '@toolpad/core';
 import { useTheme } from '@emotion/react';
 import LoadingSpinner from './components/LoadingSpinner';
 import ErrorBoundary from './components/ErrorBoundary';
+import EmailVerification from './pages/VerficationPage';
 
 // Lazy load pages to optimize performance
 const SignIn = lazy(() => import('./pages/SingIn'));
@@ -39,14 +40,16 @@ function App() {
               <Route path="/signup" element={<SignUp />} />
               <Route path="/about" element={<About />} />
               <Route path="/search" element={<Search />} />
-              <Route path="/blog/:username/:id" element={<ReadBlog />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/email-verification" element={<EmailVerification />} />
+
 
               {/* Grouping Private Routes */}
               <Route element={<PrivateRoute />}>
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/new-fact" element={<WriteBlog />} />
+                <Route path="/blog/:username/:id" element={<ReadBlog />} />
               </Route>
 
               {/* Admin Route */}

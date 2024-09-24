@@ -10,7 +10,12 @@ const sendToken = (user, statusCode, res) => {
     };
     res.status(statusCode).cookie("token", token, options).json({
       success: true,
-      user,
+      user: {
+        ...user._doc,
+        password: undefined,
+        verificationToken: undefined,
+        verificationTokenExpires: undefined
+      },
       token,
     });
 };

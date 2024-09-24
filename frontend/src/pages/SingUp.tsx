@@ -36,6 +36,7 @@ export default function SignUp() {
     } catch (error: unknown) {
       const err = error as Error;
       setErrorAlert(err.message); // Handle error and show error alert
+      setLoading(false); // Stop loading on error
     } finally {
       setLoading(false); // Stop loading after completion
     }
@@ -49,7 +50,7 @@ export default function SignUp() {
   };
 
   const { error, me } = useAppSelector(selectUserState);
-  const redirect = location.search ? location.search.split('=')[1] : '/';
+  const redirect = location.search ? location.search.split('=')[1] : '/email-verification';
 
   useEffect(() => {
     if (error) {

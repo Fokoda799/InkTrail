@@ -3,8 +3,8 @@ import { selectUserState } from '../redux/reducers/userReducer'
 import { Outlet, Navigate } from 'react-router-dom'
 
 function PrivetRoute() {
-  const { me } = useSelector(selectUserState);
-  return me ? <Outlet /> : <Navigate to="/signin" />;
+  const { me, isVerified } = useSelector(selectUserState);
+  return me && isVerified ? <Outlet /> : <Navigate to="/signin" />;
 }
 
 export default PrivetRoute
