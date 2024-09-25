@@ -23,27 +23,27 @@ interface EditProfileProps {
 }
 
 export default function EditProfile({ open, handleClose }: EditProfileProps) {
-  const { me } = useAppSelector(selectUserState);
+  const { user } = useAppSelector(selectUserState);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const fileRef = useRef<HTMLInputElement>(null);
 
   // State to manage hover and form inputs
   const [hover, setHover] = useState(false);
-  const [username, setUsername] = useState(me?.username || '');
-  const [bio, setBio] = useState(me?.bio || '');
+  const [username, setUsername] = useState(user?.username || '');
+  const [bio, setBio] = useState(user?.bio || '');
   const [image, setImage] = useState<File | null>(null);
-  const [avatar, setAvatar] = useState<string | undefined>(me?.avatar);
+  const [avatar, setAvatar] = useState<string | undefined>(user?.avatar);
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null); // Track uploaded file name
 
   // Pre-fill user data when component opens
   useEffect(() => {
-    if (me) {
-      setUsername(me.username || '');
-      setBio(me.bio || '');
-      setAvatar(me.avatar);
+    if (user) {
+      setUsername(user.username || '');
+      setBio(user.bio || '');
+      setAvatar(user.avatar);
     }
-  }, [me]);
+  }, [user]);
 
   // Image upload effect
   useEffect(() => {
@@ -107,7 +107,7 @@ export default function EditProfile({ open, handleClose }: EditProfileProps) {
     handleClose();
   };
 
-  if (!me) return null;
+  if (!user) return null;
 
   return (
     <>
@@ -164,7 +164,7 @@ export default function EditProfile({ open, handleClose }: EditProfileProps) {
                 />
               ) : (
                 <Avatar sx={{ width: '100%', height: '100%' }}>
-                  {me.username[0].toUpperCase()}
+                  {user.username[0].toUpperCase()}
                 </Avatar>
               )}
 

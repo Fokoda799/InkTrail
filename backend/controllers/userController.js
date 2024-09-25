@@ -47,22 +47,22 @@ class UserController {
                 return res.status(400).json({ message: "Email already exists" });
             }
 
+            const verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
+
             // Create a new user instance
             const newUser = new User({
                 username,
                 email,
                 password,
+                verificationToken,
                 verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000,
             });
-
-            // Generate the verification token and save it to the user instance
-            await newUser.getVerificationToken();
 
             // Save the new user to the database
             await newUser.save();
 
             // Send verification email with the generated token
-            await sendVierificationEmail(newUser.email, newUser.verficationToken);
+            await sendVierificationEmail(newUser.email, newUser.verificationToken);
 
             // Send the JWT token in response
             sendToken(newUser, 201, res);
@@ -85,7 +85,7 @@ class UserController {
                 id,
                 { full_name, username, password },
                 { new: true, runValidators: true }
-            );
+            ).populate('blogs', 'title content image');
 
             if (!user) return res.status(404).json({ message: "User not found" });
 

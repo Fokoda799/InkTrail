@@ -22,7 +22,7 @@ userRouter.put('/follow/:id', isAuthenticatedUser, UserController.followUser);
 
 // Auth routes
 authRouter.post('/sign-up', UserController.createUser);
-authRouter.get('/sign-in', AuthController.connectUser); // Changed to POST for security
+authRouter.post('/sign-in', AuthController.connectUser); // Changed to POST for security
 authRouter.post('/google', AuthController.signinWithGoogle);
 authRouter.get('/logout', isAuthenticatedUser, AuthController.disconnectUser);
 // authRouter.post('/forgot-password', AuthController.forgotPassword);

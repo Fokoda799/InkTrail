@@ -1,10 +1,24 @@
-import {useSelector} from 'react-redux'
+import {useAppSelector} from '../redux/hooks'
 import { selectUserState } from '../redux/reducers/userReducer'
 import { Outlet, Navigate } from 'react-router-dom'
+import LoadingSpinner from './LoadingSpinner';
 
-function PrivetRoute() {
-  const { me, isVerified } = useSelector(selectUserState);
-  return me && isVerified ? <Outlet /> : <Navigate to="/signin" />;
-}
+const PrivateRoute = () => {
+  const { isAuthenticated, user, isCheckingAuth } = useAppSelector(selectUserState);
 
-export default PrivetRoute
+  if (isCheckingAuth) {
+    return <LoadingSpinner />
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to='/login' replace />;
+  }
+
+  if (!user?.isVerified) {
+    return <Navigate to='/verify-email' replace />;
+  }
+
+  return <Outlet />;
+};
+
+export default PrivateRoute

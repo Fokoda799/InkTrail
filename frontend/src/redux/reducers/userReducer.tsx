@@ -61,6 +61,17 @@ const userSlice = createSlice({
       state.isCheckingAuth = false;
       state.error = null;
     },
+    notAuthenticated: (state) => {
+      state.isCheckingAuth = false;
+      state.isAuthenticated = false;
+    },
+
+    // User Settings
+    setUpdateUser: (state, action) => {
+      state.user = action.payload;
+      state.isLoading = false;
+      state.error = null;
+    },
   },
 });
 
@@ -74,6 +85,8 @@ export const {
   setVerifyEmail,
   isCheckingAuth,
   setCheckAuth,
+  notAuthenticated,
+  setUpdateUser,
 } = userSlice.actions;
 
 // Selector to get authentication state

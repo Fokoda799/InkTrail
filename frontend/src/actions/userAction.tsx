@@ -11,27 +11,28 @@ import {
   setVerifyEmail,
   isCheckingAuth,
   setCheckAuth,
+  notAuthenticated,
+  setUpdateUser,
 } from '../redux/reducers/userReducer';
 import axios from 'axios';
-import { SignInData, SignUpData } from '../types/userTypes';
+import { SignUpData, UpdateData } from '../types/userTypes';
 import { clearBlogs } from '../redux/reducers/blogReducer';
 
 // Auth API URL
-const apiUrl = '/api/v1/auth/';
+const apiUrlAuth = '/api/v1/auth/';
+const apiUrlUser = '/api/v1/user/';
 
 // Sign In User
-export const signIn = ({ email, password }: SignInData) => async (dispatch: AppDispatch) => {
+export const signIn = (email: string, password: string) => async (dispatch: AppDispatch) => {
   // Set loading to true
   dispatch(setLoading());
 
   try {
 
-    // Encode the email and password
-    const encoded = btoa(`${email}:${password}`);
-    const config = { headers: { Authorization: `Basic ${encoded}` } };
-
     // Make a GET request to the server
-    const { data }: { data: AuthResponse } = await axios.get(`${apiUrl}sign-in`, config);
+    const { data }: { data: AuthResponse } = await axios.post(`${apiUrlAuth}sign-in`, {
+      email, password
+    });
     dispatch(setSignin(data.user));
 
   } catch (error: unknown) {
@@ -46,7 +47,7 @@ export const signUp = (signUpData: SignUpData) => async (dispatch: AppDispatch) 
 
   try {
     // Make a POST request to the server
-    const { data }: { data: AuthResponse } = await axios.post(`${apiUrl}sign-up`, signUpData);
+    const { data }: { data: AuthResponse } = await axios.post(`${apiUrlAuth}sign-up`, signUpData);
     dispatch(setSignup(data.user));
 
   } catch (error: unknown) {
@@ -72,7 +73,7 @@ export const signInWithGoogle = () => async (dispatch: AppDispatch) => {
       avatar: result.user.photoURL,
     };
 
-    const { data }: { data: AuthResponse } = await axios.post(`${apiUrl}google`, signInData, config);
+    const { data }: { data: AuthResponse } = await axios.post(`${apiUrlAuth}google`, signInData, config);
     dispatch(setSignin(data.user));
 
   } catch (error: unknown) {
@@ -86,7 +87,7 @@ export const logout = () => async (dispatch: AppDispatch) => {
   dispatch(setLoading());
 
   try {
-    await axios.get(`${apiUrl}logout`);
+    await axios.get(`${apiUrlAuth}logout`);
     dispatch(setSignout());
     dispatch(clearBlogs());
 
@@ -101,7 +102,7 @@ export const verifyEmail = (code: string) => async (dispatch: AppDispatch) => {
   dispatch(setLoading());
 
   try {
-    const { data }: { data: AuthResponse } = await axios.post(`${apiUrl}verify-email`, { code });
+    const { data }: { data: AuthResponse } = await axios.post(`${apiUrlAuth}verify-email`, { code });
     dispatch(setVerifyEmail(data.user));
 
   } catch (error: unknown) {
@@ -115,36 +116,30 @@ export const checkAuth = () => async (dispatch: AppDispatch) => {
   dispatch(isCheckingAuth());
 
   try {
-    const { data }: { data: AuthResponse } = await axios.get(`${apiUrl}check-auth`);
+    const { data }: { data: AuthResponse } = await axios.get(`${apiUrlAuth}check-auth`);
     dispatch(setCheckAuth(data.user));
 
   } catch (error: unknown) {
     const message = axios.isAxiosError(error) ? error.response?.data.message : String(error);
     dispatch(setError(message));
+    dispatch(notAuthenticated());
   }
 };
 
 
 // Update User Profile
-// export const updateUser = (updateData: UpdateData) => async (dispatch: AppDispatch) => {
-//   try {
-//     dispatch(updateUserStart());
+export const updateUser = (updateData: UpdateData) => async (dispatch: AppDispatch) => {
+  dispatch(setLoading());  
 
-//     const { data }: { data: AuthResponse | ErrorResponse } = await axios.put('/api/v1/user/me', updateData);
+  try {
 
-//     if (!data.success) {
-//       console.log(data.message);
-//       dispatch(updateUserFailure(data.message));
-//       return;
-//     }
-
-//     dispatch(updateUserSuccess(data.user));
-//   } catch (error: unknown) {
-//     const message = axios.isAxiosError(error) ? error.response?.data.message : String(error);
-//     console.log('Error:', message);
-//     dispatch(updateUserFailure(message)); // Corrected the dispatch here
-//   }
-// }
+    const { data }: { data: AuthResponse } = await axios.put(`${apiUrlUser}me`, updateData);
+    dispatch(setUpdateUser(data.user));
+  } catch (error: unknown) {
+    const message = axios.isAxiosError(error) ? error.response?.data.message : String(error);
+    dispatch(setError(message)); // Corrected the dispatch here
+  }
+}
 
 // export const updatePassword = (newPassword: string, currentPassword?: string) => async (dispatch: AppDispatch) => {
 //   try {

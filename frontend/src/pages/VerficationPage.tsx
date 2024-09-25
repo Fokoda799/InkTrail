@@ -1,90 +1,128 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import './styles/VerficationPage.css'
-import { useAppDispatch, useAppSelector } from '../redux/hooks';
-import { selectUserState, verifyUserEmail } from '../redux/reducers/userReducer';
-import { useNavigate } from 'react-router-dom';
-import { loadUser } from '../actions/userAction';
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import toast from "react-hot-toast";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import { selectUserState } from "../redux/reducers/userReducer";
+import { verifyEmail } from "../actions/userAction";
 
-const EmailVerification: React.FC = () => {
-  // State variables for verification code, message, and verification status
-  const { me } = useAppSelector(selectUserState);
-  const [code, setCode] = useState<string>('');
-  const [message, setMessage] = useState<string>('');
-  const [isVerifiedEmail, setIsVerifiedEmail] = useState<boolean>(false);
+const EmailVerificationPage = () => {
+	const [code, setCode] = useState(["", "", "", "", "", ""]);
+	const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const dispatch = useAppDispatch();
-  const navigate = useNavigate();
+	const navigate = useNavigate();
 
-  console.log(me?.isVerified)
-  console.log(me)
+	const { error, isLoading } = useAppSelector(selectUserState);
 
-  useEffect(() => {
-    dispatch(loadUser())
-    if (me?.isVerified) {
-      navigate('/');
-    }
-  }, [ me, navigate, dispatch]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post('/api/v1/auth/verify-email', { code });
-      if (!response.data.success) {
-        throw new Error(response.data.message);
+	const handleChange = (index: number, value: string) => {
+    // Ensure the 'code' state is an array of strings
+    const newCode: string[] = [...code];
+  
+    // Handle pasted content
+    if (value.length > 1) {
+      // Extract first 6 characters and split them into an array
+      const pastedCode = value.slice(0, 6).split("");
+  
+      // Fill the newCode array with pasted values
+      for (let i = 0; i < 6; i++) {
+        newCode[i] = pastedCode[i] || ""; // Ensure that undefined slots are filled with empty strings
       }
-      console.log(response.data); 
-      if (!me) {
-        throw new Error('User not found');
+  
+      // Update the state with new code
+      setCode(newCode);
+  
+      // Find the last filled index or focus on the first empty one
+      const lastFilledIndex = newCode.reduce((lastIndex, digit, i) => {
+        return digit ? i : lastIndex;
+      }, -1);
+
+      const focusIndex = lastFilledIndex < 5 ? lastFilledIndex + 1 : 5;
+  
+      // Focus on the appropriate input element
+      inputRefs.current[focusIndex]?.focus();
+    } else {
+      // Update the code at the given index
+      newCode[index] = value;
+      setCode(newCode);
+  
+      // Move focus to the next input field if value is entered
+      if (value && index < 5) {
+        inputRefs.current[index + 1]?.focus();
       }
-      await dispatch(loadUser());
-      dispatch(verifyUserEmail(me.isVerified));
-      setMessage('Your email has been verified successfully!');
-      setIsVerifiedEmail(true);
-    } catch (error) {
-      console.log(error);
-      setMessage('Invalid or expired code. Please try again.');
     }
   };
+  
 
-  return (
-    <div className="min-h-screen flex items-center container bg-gradient-to-br from-blue-100 to-blue-200">
-      <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
-        <h2 className="text-2xl font-bold mb-4 text-center text-blue-600">Email Verification</h2>
-        {!isVerifiedEmail ? (
-          <>
-            <p className="mb-6 text-gray-600 text-center">
-              Please enter the verification code sent to your email to verify your account.
-            </p>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="flex code">
-                <input
-                  type="text"
-                  id="code"
-                  placeholder='Verification Code'
-                  className="mt-1 p-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-300 focus:outline-none"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  required
-                />
-              </div>
-              <button
-                type="submit"
-                className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors"
-              >
-                Verify Email
-              </button>
-            </form>
-            {message && <p className="mt-4 text-red-500 text-center">{message}</p>}
-          </>
-        ) : (
-          <p className="text-center text-green-500 text-lg">
-            🎉 {message}
-          </p>
-        )}
-      </div>
-    </div>
-  );
+	const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Backspace" && !code[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+  
+
+	const handleSubmit = async (e: Event | React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		const verificationCode = code.join("");
+		try {
+			await dispatch(verifyEmail(verificationCode));
+			navigate("/");
+			toast.success("Email verified successfully");
+		} catch (error) {
+			console.log(error);
+		}
+	};
+
+	// Auto submit when all fields are filled
+	useEffect(() => {
+		if (code.every((digit) => digit !== "")) {
+			handleSubmit(new Event("submit"));
+		}
+	}, [code]);
+
+	return (
+		<div
+    style={{ minHeight: '100vh', display: "flex", justifyContent: "center", alignItems: "center" }}
+    className='w-full bg-opacity-50 backdrop-filter backdrop-blur-xl overflow-hidden'>
+			<motion.div
+				initial={{ opacity: 0, y: -50 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ duration: 0.5 }}
+				className='bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-xl rounded-2xl shadow-2xl p-8 w-full max-w-md'
+			>
+				<h2 className='text-3xl font-bold mb-6 text-center bg-amber-300 text-transparent bg-clip-text'>
+					Verify Your Email
+				</h2>
+				<p className='text-center text-gray-300 mb-6'>Enter the 6-digit code sent to your email address.</p>
+
+				<form onSubmit={handleSubmit} className='space-y-6'>
+					<div className='flex justify-between'>
+						{code.map((digit, index) => (
+							<input
+								key={index}
+								ref={(el) => (inputRefs.current[index] = el)}
+								type='text'
+								maxLength={6}
+								value={digit}
+								onChange={(e) => handleChange(index, e.target.value)}
+								onKeyDown={(e) => handleKeyDown(index, e)}
+								className='w-12 h-12 text-center text-2xl font-bold bg-gray-700 text-white border-2 border-gray-600 rounded-lg focus:border-green-500 focus:outline-none'
+							/>
+						))}
+					</div>
+					{error && <p className='text-red-500 font-semibold mt-2'>{error}</p>}
+					<motion.button
+						whileHover={{ scale: 1.05 }}
+						whileTap={{ scale: 0.95 }}
+						type='submit'
+						disabled={isLoading || code.some((digit) => !digit)}
+						className='cursor-pointer w-full bg-amber-300 text-white font-bold py-3 px-4 rounded-lg shadow-lg hover:bg-amber-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 disabled:opacity-50'
+					>
+						{isLoading ? "Verifying..." : "Verify Email"}
+					</motion.button>
+				</form>
+			</motion.div>
+		</div>
+	);
 };
-
-export default EmailVerification;
+export default EmailVerificationPage;

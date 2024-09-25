@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Avatar,
   Box,
@@ -11,24 +11,16 @@ import {
   Button,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
-import { useAppDispatch, useAppSelector } from '../redux/hooks';
+import { useAppSelector } from '../redux/hooks';
 import { selectUserState } from '../redux/reducers/userReducer';
 import EditProfile from '../components/EditProfile';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Blog } from '../types/blogTypes';
-import { loadUser } from '../actions/userAction';
 
 const Profile: React.FC = () => {
-  const { me } = useAppSelector(selectUserState);
+  const { user } = useAppSelector(selectUserState);
   const [open, setOpen] = useState(false);
-  const dispatch = useAppDispatch();
-
-  useEffect(() => {
-    if (!me) {
-      dispatch(loadUser());
-      console.log('Loading user...' );
-    }
-  }, [dispatch, me]);
+  const navigate = useNavigate();
 
   const handleClick = () => {
     setOpen(true);
@@ -38,15 +30,11 @@ const Profile: React.FC = () => {
     setOpen(false);
   };
 
-  if (!me) {
-    return (
-      <Container maxWidth="md">
-        <Typography variant="h5" align="center" sx={{ marginTop: '2rem' }}>
-          Please login to view your profile
-        </Typography>
-      </Container>
-    );
+  if (!user) {
+    return null;
   }
+
+  console.log(user)
 
   return (
     <Container maxWidth="md" sx={{ marginTop: '2rem' }}>
@@ -57,26 +45,26 @@ const Profile: React.FC = () => {
             <Stack direction="row" spacing={1}>
               <Avatar 
                 sx={{ width: 120, height: 120 }} 
-                src={me.avatar || undefined}
+                src={user.avatar || undefined}
               >
-                {!me.avatar && me.username[0].toUpperCase()}
+                {!user?.avatar && user?.username[0].toUpperCase()}
               </Avatar>
             </Stack>
           </Grid>
           <Grid item xs={12} sm={8}>
             <Box display="flex" alignItems="center" justifyContent="space-between">
               <Typography variant="h5" gutterBottom>
-                {me.fullName}
+                {user.username}
               </Typography>
               <IconButton aria-label="edit profile" onClick={handleClick}>
                 <EditIcon />
               </IconButton>
             </Box>
             <Typography variant="body1" color="textSecondary">
-              @{me.username}
+              @{user.username}
             </Typography>
             <Typography variant="body2" color="textSecondary" sx={{ marginTop: '0.5rem' }}>
-              {me.bio || 'No bio available'}
+              {user.bio || 'No bio available'}
             </Typography>
           </Grid>
         </Grid>
@@ -90,15 +78,15 @@ const Profile: React.FC = () => {
         <Grid container spacing={2}>
           <Grid item xs={4} textAlign="center">
             <Typography variant="h6">Blogs</Typography>
-            <Typography variant="h5" color="primary">{me?.blogs?.length || 0}</Typography>
+            <Typography variant="h5" color="primary">{user?.blogs?.length || 0}</Typography>
           </Grid>
           <Grid item xs={4} textAlign="center">
             <Typography variant="h6">Followers</Typography>
-            <Typography variant="h5" color="primary">{me?.followers?.length || 0}</Typography>
+            <Typography variant="h5" color="primary">{user?.followers?.length || 0}</Typography>
           </Grid>
           <Grid item xs={4} textAlign="center">
             <Typography variant="h6">Following</Typography>
-            <Typography variant="h5" color="primary">{me?.following?.length || 0}</Typography>
+            <Typography variant="h5" color="primary">{user?.following?.length || 0}</Typography>
           </Grid>
         </Grid>
       </Paper>
@@ -108,7 +96,7 @@ const Profile: React.FC = () => {
         <Typography variant="h6" gutterBottom>
           My Blogs
         </Typography>
-        {me.blogs && me.blogs.length === 0 ? (
+        {user.blogs && user.blogs.length === 0 ? (
           <Stack spacing={1} display="flex" justifyContent="center" alignItems="center">
             <Typography variant="body1" sx={{ margin: 'auto' }}>
               Post your first blog today!
@@ -125,8 +113,9 @@ const Profile: React.FC = () => {
           </Stack>
         ) : (
           <Grid container spacing={2}>
-            {me.blogs?.map((blog: Blog) => (
-              <Grid item xs={12} sm={6} key={blog._id}>
+            {user.blogs?.map((blog: Blog) => (
+              <Grid item xs={12} sm={6} key={blog._id}
+              onClick={() => navigate(`/blog/${user?.username}/${blog._id}`)}>
                 <Paper elevation={0} sx={{ cursor: 'pointer', padding: '1rem' }}>
                   <img
                     src={blog.image || '/default-image.jpg'}
@@ -140,7 +129,7 @@ const Profile: React.FC = () => {
                     <Typography variant="body2" color="textSecondary">
                       {blog.content && blog.content.length > 50
                         ? `${blog.content.substring(0, 50)}...`
-                        : blog.content || 'No content'}
+                        : blog?.content || 'No content available'}
                     </Typography>
                   </Box>
                 </Paper>

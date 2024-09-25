@@ -6,7 +6,7 @@ class AuthController {
     static async connectUser(req, res) {
         const { email, password } = req.body;
         try {
-            const user = await User.findOne({ email });
+            const user = await User.findOne({ email }).populate('blogs', 'title content image');
             if (!user) {
                 return res.status(400).json({ success: false, message: "Invalid credentials" });
             }
@@ -167,11 +167,14 @@ class AuthController {
     // @access  Public
     static async verifyEmail(req, res) {
         const { code } = req.body;
+        console.log("code", code);
         try {
             const user = await User.findOne({
-                verficationToken: code,
+                verificationToken: code,
                 verificationTokenExpiresAt: { $gt: Date.now() },
-            });
+            }).populate('blogs', 'title content image');
+
+            console.log(Date.now());
     
             if (!user) {
                 return res.status(400).json({ success: false, message: "Invalid or expired verification code" });
@@ -199,7 +202,8 @@ class AuthController {
 
     static checkAuth = async (req, res) => {
         try {
-            const user = await User.findById(req.user.id).select('-password');
+            const user = await User.findById(req.user.id).select('-password').
+                populate('blogs', 'title content image');
             if (!user) return res.status(404).json({ message: 'User not found' });
             res.status(200).json({success: true, user});
         } catch (error) {

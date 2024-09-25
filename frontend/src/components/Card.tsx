@@ -13,14 +13,14 @@ export default function BlogCard({ title, content, image, author, createdAt, lik
   const date = createdAt ? format(new Date(createdAt), 'MMMM dd, yyyy') : 'Unknown Date';
 
   return (
-      <Card sx={{ Width: 400, minHeight: '200px', borderRadius: 3 }}>
+      <Card sx={{ Width: 400, maxHeight: 470, borderRadius: 3 }}>
         {/* Blog image */}
         <CardMedia
           component="img"
-          height="200"
           image={image || 'https://via.placeholder.com/200x400'}
           alt={title}
-          sx={{ borderRadius: '8px 8px 0 0' }} // Rounded corners for the top of the image
+          sx={{ borderRadius: '8px 8px 0 0', 
+            maxHeight: '260px' }} // Rounded corners for the top of the image
         />
       
         <CardContent sx={{ padding: 2 }}>

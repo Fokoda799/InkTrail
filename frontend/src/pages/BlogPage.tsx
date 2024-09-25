@@ -7,15 +7,11 @@ import { useAppSelector, useAppDispatch } from '../redux/hooks';
 import { selectBlogState } from '../redux/reducers/blogReducer';
 import BlogCard from '../components/Card';
 import BasicBreadcrumbs from '../components/BasicBreadcrumbs';
-import { selectUserState } from '../redux/reducers/userReducer';
-import { useAlert } from 'react-alert';
 
 const BlogsPage: React.FC = () => {
   const { blogs, pagination, loading } = useAppSelector(selectBlogState);
-  const { me } = useAppSelector(selectUserState);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const alert = useAlert();
 
   const [blogList, setBlogList] = useState<Blog[]>([]);
   const [hasMore, setHasMore] = useState<boolean>(true);
@@ -26,12 +22,6 @@ const BlogsPage: React.FC = () => {
     const action = viewType === 'feeds' ? fetchBlogs(page) : fetchFilteredBlogs(page, { following: true });
     dispatch(action);
   }, [dispatch, page, viewType]);
-
-  useEffect(() => {
-    if (!me?.isVerified) {
-      alert.info('Please verify your email');
-    }
-  },);
 
   useEffect(() => {
     getBlogs();

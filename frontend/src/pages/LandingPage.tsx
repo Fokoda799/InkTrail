@@ -1,15 +1,11 @@
-import { Box, Button, Typography, useTheme, Container, Grid, Card, CardContent, useMediaQuery, Theme } from '@mui/material';
+import { Box, Button, Typography, Container, Grid, Card, CardContent } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { useAppSelector } from '../redux/hooks';
-import { selectUserState } from '../redux/reducers/userReducer';
-import BlogsPage from './BlogPage';
 import { motion } from 'framer-motion';
 import EditIcon from '@mui/icons-material/Edit';
 import ExploreIcon from '@mui/icons-material/Explore';
 import CloudIcon from '@mui/icons-material/Cloud';
 import React, { FC } from 'react';
 import { SvgIconProps } from '@mui/material/SvgIcon';
-import { AppProvider } from '@toolpad/core';
 
 interface FeatureCardProps {
   icon: React.ReactElement<SvgIconProps>;
@@ -19,13 +15,6 @@ interface FeatureCardProps {
 
 const LandingPage = () => {
   const navigate = useNavigate();
-  const { me } = useAppSelector(selectUserState);
-  const isMobile = useMediaQuery((theme: Theme) => theme.breakpoints.down('sm'));
-  const theme = useTheme();
-
-  if (me) {
-    return <AppProvider theme={theme}><BlogsPage /></AppProvider>;
-  }
 
   const handleGetStarted = () => {
     navigate('/signup');
@@ -52,7 +41,7 @@ const LandingPage = () => {
   );
 
   return (
-    <AppProvider theme={theme}>
+    <>
       <Box>
         {/* Hero Section */}
         <Box
@@ -82,10 +71,10 @@ const LandingPage = () => {
                   textAlign: 'center',
                 }}
               >
-                <Typography variant={isMobile ? 'h3' : 'h2'} gutterBottom sx={{ fontWeight: 'bold' }}>
+                <Typography variant={'h2'} gutterBottom sx={{ fontWeight: 'bold' }}>
                   Welcome to InkTrail
                 </Typography>
-                <Typography variant={isMobile ? 'body1' : 'h5'} sx={{ mb: 4 }}>
+                <Typography variant={'h5'} sx={{ mb: 4 }}>
                   Share your thoughts, discover new ideas, and create your own writing trail.
                 </Typography>
                 <Button
@@ -167,7 +156,7 @@ const LandingPage = () => {
           </Container>
         </Box>
       </Box>
-    </AppProvider>
+    </>
   );
 };
 

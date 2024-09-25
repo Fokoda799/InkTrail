@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import './styles/RaedBlog.css'; 
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
@@ -6,9 +6,10 @@ import { Blog, BlogResponse, ErrorResponse } from '../types/blogTypes';
 import { useAppSelector } from '../redux/hooks';
 import { selectUserState } from '../redux/reducers/userReducer';
 import { UserResponse } from '../types/userTypes';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const RaedBlog: React.FC = () => {
-  const { me } = useAppSelector(selectUserState);
+  const { user } = useAppSelector(selectUserState);
   const { id } = useParams<{ id: string }>();
   const [blog, setBlog] = React.useState<Blog | null>(null);
   const [loading, setLoading] = React.useState<boolean>(true);
@@ -23,8 +24,8 @@ const RaedBlog: React.FC = () => {
       if (!data.success) throw new Error(data.message);
       setBlog(data.blog);
       console.log(data.blog?.author?.followers);
-      if (data.blog?.author?.followers && me?._id) {
-        setFollow(!data.blog.author.followers.includes(me?._id));
+      if (data.blog?.author?.followers && user?._id) {
+        setFollow(!data.blog.author.followers.includes(user?._id));
       }
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Error fetching blog');
@@ -52,7 +53,7 @@ const RaedBlog: React.FC = () => {
   }, [id]);
 
   const handleClick = async () => {
-    if (me?._id === blog?.author?._id) {
+    if (user?._id === blog?.author?._id) {
       alert('You cannot follow yourself');
       return;
     }
@@ -68,6 +69,10 @@ const RaedBlog: React.FC = () => {
 
   if (!blog) {
     return <div>No blog found.</div>;
+  }
+
+  if (loading) {
+    return <LoadingSpinner />;
   }
 
   return (
@@ -91,7 +96,7 @@ const RaedBlog: React.FC = () => {
       </div>
 
       <div className="blog-content">
-        <img src={blog.image} alt="Blog" className="blog-main-image" />
+        <img src={blog.image} alt="Blog" className="blog-main-image"/>
         <p>{blog.content}</p>
       </div>
       <div className="actions">

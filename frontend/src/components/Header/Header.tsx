@@ -12,7 +12,6 @@ import Avatar from '@mui/material/Avatar';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Tabs, Tab, Tooltip } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
-import { selectUserState } from '../../redux/reducers/userReducer';
 import { selectBlogState } from '../../redux/reducers/blogReducer';
 import { logout } from '../../actions/userAction';
 import HistoryEduIcon from '@mui/icons-material/HistoryEdu';
@@ -29,8 +28,12 @@ import { clearReadyBlog } from '../../redux/reducers/blogReducer';
 // Define a constant for icon size
 const iconSize = { width: 40, height: 40 };
 
-const Header = () => {
-  const { me } = useAppSelector(selectUserState);
+interface HeaderProps {
+  user: User | null;
+  isAuthenticated: boolean;
+}
+
+const Header = ({user, isAuthenticated}: HeaderProps) => {
   const { readyBlog } = useAppSelector(selectBlogState);
   const dispatch = useAppDispatch();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -72,7 +75,6 @@ const Header = () => {
 
   const handleLogout = () => {
     dispatch(logout());
-    navigate('/');
     setAnchorEl(null);
   };
 
@@ -118,10 +120,10 @@ const Header = () => {
         />
 
         {/* Display ParentComponent only for logged-in users */}
-        {me && <SearchBar />}
+        {isAuthenticated && user?.isVerified && <SearchBar />}
 
         {/* Display Tabs or User actions based on login state */}
-        {me ? (
+        {isAuthenticated && user?.isVerified ? (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             {pathname === '/new-fact' ? (
               <IconButton size="large" color="inherit" onClick={handlePublish}>
@@ -132,16 +134,6 @@ const Header = () => {
                 <HistoryEduIcon />
               </IconButton>
             )}
-            {!me.isVerified && (
-              <IconButton
-              size="small"
-              aria-label="open notifications"
-              color="inherit"
-              onClick={() => navigate('/email-verification')}
-              >
-                Verfiy Email
-              </IconButton>
-              )}
             <IconButton
               size="large"
               aria-label="open profile menu"
@@ -149,7 +141,7 @@ const Header = () => {
               color="inherit"
               sx={{ display: { xs: 'none', md: 'flex' } }}
             >
-              {avatar(me, iconSize)}
+              {avatar(user, iconSize)}
             </IconButton>
           </Box>
         ) : (
@@ -173,11 +165,11 @@ const Header = () => {
             onClick={toggleDrawer(false)}
             onKeyDown={toggleDrawer(false)}
           >
-            {me ? (
+            {isAuthenticated && user?.isVerified ? (
               <>
                 <MenuItem>
-                  {avatar(me, { width: 50, height: 50 })}
-                  <Typography variant="body1" sx={{ marginLeft: 2 }}>{`@${me.username}`}</Typography>
+                  {avatar(user, { width: 50, height: 50 })}
+                  <Typography variant="body1" sx={{ marginLeft: 2 }}>{user?.username}</Typography>
                 </MenuItem>
                 <MenuItem onClick={() => navigate('/profile')}>Profile</MenuItem>
                 <MenuItem onClick={handleLogout}>Logout</MenuItem>

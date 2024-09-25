@@ -22,8 +22,6 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: false,
         minlength: [6, "Password must be at least 6 characters"],
-        maxlength: [20, "Password cannot exceed 20 characters"],
-        select: false
     },
     withPassword: {
         type: Boolean,
@@ -77,8 +75,8 @@ const userSchema = new mongoose.Schema({
     ],
     resetPasswordToken: String,
     resetPasswordExpire: Date,
-    verficationToken: String,
-    verficationTokenExpire: Date,
+    verificationToken: String,
+    verificationTokenExpiresAt: Date,
 }, { timestamps: true });
 
 // Hash password before saving user
@@ -97,6 +95,9 @@ userSchema.pre('save', async function (next) {
 
 // Compare password method
 userSchema.methods.comparePassword = async function (password) {
+    if (!this.password) {
+        throw new Error('Password is not set for this user');
+    }
     return await bcrypt.compare(password, this.password);
 }
 
@@ -107,15 +108,13 @@ userSchema.methods.getJWTToken = function () {
     });
 }
 
-// Generate and set verification token
-userSchema.methods.getVerificationToken = function () {
-    // Generate a random token using crypto
-    const verificationToken = crypto.randomBytes(20).toString('hex');
-
-    this.verficationToken = Math.floor(100000 + Math.random() * 900000).toString();
-    this.verficationTokenExpire = Date.now() + 15 * 60 * 1000; // 15 minutes
-
-    return verificationToken; // This is the plain token to be sent via email
+// Generate password reset token
+userSchema.methods.getResetPasswordToken = function () {
+    const resetToken = crypto.randomBytes(20).toString('hex');
+    this.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+    this.resetPasswordExpire = Date.now() + 10 * 60 * 1000; // Token expires in 10 minutes
+    return resetToken;
 }
+
 const User = mongoose.model('User', userSchema);
 export default User;

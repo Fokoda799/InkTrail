@@ -14,7 +14,7 @@ const sendToken = (user, statusCode, res) => {
         ...user._doc,
         password: undefined,
         verificationToken: undefined,
-        verificationTokenExpires: undefined
+        verificationTokenExpiresAt: undefined
       },
       token,
     });
