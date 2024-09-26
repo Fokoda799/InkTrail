@@ -3,18 +3,15 @@ import './styles/RaedBlog.css';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { Blog, BlogResponse, ErrorResponse } from '../types/blogTypes';
-import { useAppSelector } from '../redux/hooks';
-import { selectUserState } from '../redux/reducers/userReducer';
-import { UserResponse } from '../types/userTypes';
 import LoadingSpinner from '../components/LoadingSpinner';
+import Follow from '../components/Follow';
+import { formatDistanceToNow } from 'date-fns';
 
 const RaedBlog: React.FC = () => {
-  const { user } = useAppSelector(selectUserState);
   const { id } = useParams<{ id: string }>();
   const [blog, setBlog] = React.useState<Blog | null>(null);
   const [loading, setLoading] = React.useState<boolean>(true);
   const [error, setError] = React.useState<string>('');
-  const [follow, setFollow] = React.useState<boolean>(false);
 
 
   const fetchBlog = async (id: string | undefined) => {
@@ -24,25 +21,8 @@ const RaedBlog: React.FC = () => {
       if (!data.success) throw new Error(data.message);
       setBlog(data.blog);
       console.log(data.blog?.author?.followers);
-      if (data.blog?.author?.followers && user?._id) {
-        setFollow(!data.blog.author.followers.includes(user?._id));
-      }
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Error fetching blog');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const followUser = async (id: string | undefined) => {
-    if (!id) return;
-    setLoading(true);
-    try {
-      const { data }: { data: UserResponse | ErrorResponse } = await axios.put(`/api/v1/user/follow/${id}`);
-      if (!data.success) throw new Error(data.message);
-      setFollow(data.isFollowing); // Toggle follow state
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Error following user');
     } finally {
       setLoading(false);
     }
@@ -51,17 +31,6 @@ const RaedBlog: React.FC = () => {
   React.useEffect(() => {
     fetchBlog(id);
   }, [id]);
-
-  const handleClick = async () => {
-    if (user?._id === blog?.author?._id) {
-      alert('You cannot follow yourself');
-      return;
-    }
-    
-    followUser(blog?.author?._id).then(() => {
-      console.log('Follow user:', follow);
-    })
-  };
 
   if (error) {
     return <div className="error-message">{error}</div>;
@@ -75,32 +44,33 @@ const RaedBlog: React.FC = () => {
     return <LoadingSpinner />;
   }
 
+  const readingTime = Math.ceil(blog?.content.split(/\s+/).length / 200);
+  const timeAgo = formatDistanceToNow(blog?.createdAt || "", { addSuffix: true });
   return (
-    <div className="blog-page">
-      <div className="blog-header">
-        <div className="blog-category">NATURE</div>
-        <h1 className="blog-title">{blog.title}</h1>
-        <p className="blog-subtitle">A philanthropist and local government have protected this gem</p>
-        <div className="blog-author-section">
-          <img src={blog.author?.avatar} alt="Author" className="author-image" />
-          <div className="author-details">
-            <div className='author'>
-              <span className="author-name">{blog.author?.username}</span> •  
-              <span className={follow ? 'Unfollow' : 'Follow'} onClick={handleClick}>
-                {follow ? 'Unfollow' : 'Follow'}
+    <div className='blog-background'>
+      <div className="blog-page">
+        <div className="blog-header">
+          <h1 className="blog-title">{blog.title}</h1>
+          <div className="blog-author-section">
+            <img src={blog.author?.avatar} alt="Author" className="author-image" />
+            <div className="author-details">
+              <div className='author'>
+                <span className="author-name">{blog.author?.username}</span> •
+                <Follow targetUserId={blog?.author?._id || ''} />
+              </div>
+              <span className="author-info text-sm text-gray-600">
+                {readingTime} min read • {timeAgo}
               </span>
-            </div> 
-            <span className="author-info">Published in Simply Wild • 5 min read • 3 days ago</span>
+            </div>
           </div>
         </div>
-      </div>
-
-      <div className="blog-content">
-        <img src={blog.image} alt="Blog" className="blog-main-image"/>
-        <p>{blog.content}</p>
-      </div>
-      <div className="actions">
-        {/* Add any additional actions or buttons here */}
+        <div className="blog-content">
+          <img src={blog.image} alt="Blog" className="blog-main-image"/>
+          <p>{blog.content}</p>
+        </div>
+        <div className="actions">
+          {/* Add any additional actions or buttons here */}
+        </div>
       </div>
     </div>
   );

@@ -24,6 +24,7 @@ import SearchBar from '../SearchBar';
 import { SxProps } from '@mui/material';
 import { useAlert } from 'react-alert';
 import { clearReadyBlog } from '../../redux/reducers/blogReducer';
+import logo from '../../assets/logo.png';
 
 // Define a constant for icon size
 const iconSize = { width: 40, height: 40 };
@@ -113,7 +114,7 @@ const Header = ({user, isAuthenticated}: HeaderProps) => {
     <Box sx={{ flexGrow: 1, borderBottom: 0.1, borderColor: 'gray' }}>
       <Toolbar sx={{ justifyContent: 'space-between', px: 2 }}>
         {/* Logo */}
-        <img src="public/logo.png"
+        <img src={logo}
         alt="InkTrail"
         style={{ width: 80, height: 60, cursor: 'pointer', margin: 0 }}
         onClick={() => navigate('/')}

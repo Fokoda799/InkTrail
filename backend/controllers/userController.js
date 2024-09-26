@@ -105,8 +105,8 @@ class UserController {
     // @access  Admin
     static async deleteUser(req, res) {
         try {
-            const { id } = req.params;
-            if (!idValidation(id)) return res.status(400).json({ message: "Invalid ID" });
+            const { _id: id } = req.user;
+            console.log(id);
 
             const user = await User.findByIdAndDelete(id);
             if (!user) return res.status(404).json({ message: "User not found" });
@@ -140,30 +140,6 @@ class UserController {
         }
     }
 
-    // @desc    Get the connected user
-    // @route   GET /users/me
-    // @access  User
-    static async getMe(req, res) {
-        try {
-            const { id: userId } = req.user;
-
-            const user = await User.findById(userId).populate('blogs', 'title content image');
-            if (!user) return res.status(404).json({ message: "User not found" });
-
-            return res.status(200).json({
-                success: true,
-                user: {
-                    ...user._doc,
-                    password: undefined,
-                    verificationToken: undefined,
-                    verificationTokenExpires: undefined
-                },
-            });
-        } catch (error) {
-            return res.status(500).json({ message: `Internal server error: ${error.message}` });
-        }
-    }
-
     // @desc    Update the connected user
     // @route   PUT /users/me
     // @access  User
@@ -192,51 +168,48 @@ class UserController {
         }
     }
 
-    static async followUser(req, res) {
+    // @desc    Get the following status of the connected user
+    // @route   GET /users/follow-status/:id
+    // @access  User
+    static async getFollowStatus (req, res) {
         try {
-            const { id: userId } = req.params; // Destructure userId from params
-            if (!userId) {
-                return res.status(400).json({ success: false, message: 'Missing id' });
-            }
-    
-            // Find the user to be followed
-            const user = await User.findById(userId);
-            if (!user) {
-                return res.status(404).json({ success: false, message: 'User not found' });
-            }
-    
-            const { id: meId } = req.user; // Destructure the ID of the current user
-    
-            if (user.id === meId) {
-                return res.status(400).json({ success: false, message: 'Cannot follow yourself' });
-            }
-    
-            // Check if the current user is already following the other user
-            const isFollowing = user.followers.includes(meId);
-    
-            if (isFollowing) {
-                // Unfollow user
-                user.followers = user.followers.filter(follower => follower.toString() !== meId);
-                req.user.following = req.user.following.filter(followed => followed.toString() !== user.id);
-            } else {
-                // Follow user
-                user.followers.push(meId);
-                req.user.following.push(user.id);
-            }
-    
-            // Save both the user being followed/unfollowed and the current user
-            await Promise.all([user.save(), req.user.save()]);
-    
-            return res.status(200).json({
-                success: true,
-                user: req.user,
-                isFollowing: !isFollowing,
-                message: isFollowing ? 'Unfollowed successfully' : 'Followed successfully',
-            });
+            const { targetUserId } = req.params;
+            const currentUser = await User.findById(req.user._id);
+            const isFollowing = currentUser.following.includes(targetUserId);
+            return res.json({ isFollowing });
         } catch (error) {
-            console.error('Error following user:', error); // Log the error for debugging
-            return res.status(500).json({ message: error.message, success: false });
+            consol.log(error);
+            return res.status(500).json({ error: 'Server error' });
         }
+    }
+
+    // @desc    Follow a user if not already following
+    // @route   POST /users/follow
+    // @access  User
+    static async followUser (req, res) {
+        try {
+            const { targetUserId, action } = req.body;
+            const currentUser = await User.findById(req.user._id);
+            const targetUser = await User.findById(targetUserId);
+        
+            if (action === 'follow') {
+              if (!currentUser.following.includes(targetUserId)) {
+                currentUser.following.push(targetUserId);
+                targetUser.followers.push(req.user._id);
+              }
+            } else if (action === 'unfollow') {
+              currentUser.following = currentUser.following.filter(id => id.toString() !== targetUserId);
+              targetUser.followers = targetUser.followers.filter(id => id.toString() !== req.user._id);
+            }
+        
+            await currentUser.save();
+            await targetUser.save();
+        
+            return res.json({ isFollowing: action === 'follow' });
+          } catch (error) {
+            console.error(error);
+            return res.status(500).json({ error: 'Server error' });
+          }
     }
     
 };

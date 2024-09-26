@@ -26,23 +26,23 @@ const Footer = () => {
             justifyItems: 'center', justifyContent: 'space-between'
            }}>
             <Typography>
-              <Link href="#" color="inherit" underline="none" aria-label="Visit Facebook page">
-                Discord
-              </Link>
-            </Typography>
-            <Typography>
-              <Link href="#" color="inherit" underline="none" aria-label="Visit Twitter page">
+              <Link href="https://x.com/AbdllahUp96" color="inherit" underline="none" aria-label="Visit Twitter page">
                 Twitter
               </Link>
             </Typography>
             <Typography>
-              <Link href="#" color="inherit" underline="none" aria-label="Visit LinkedIn page">
+              <Link href="https://www.linkedin.com/in/fokoda-code/" color="inherit" underline="none" aria-label="Visit LinkedIn page">
                 LinkedIn
               </Link>
             </Typography>
             <Typography>
-              <Link href="#" color="inherit" underline="none" aria-label="Visit LinkedIn page">
+              <Link href="https://github.com/Fokoda799" color="inherit" underline="none" aria-label="Visit My github profoile page">
                 GitHub
+              </Link>
+            </Typography>
+            <Typography>
+              <Link href="https://abdellah-hadid.tech" color="inherit" underline="none" aria-label="More about me">
+                More about me
               </Link>
             </Typography>
           </Grid>

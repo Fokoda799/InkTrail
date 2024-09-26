@@ -15,11 +15,11 @@ adminRouter.put('/:id/role', isAuthenticatedUser, authorizeRoles('admin'), UserC
 adminRouter.delete('/:id', isAuthenticatedUser, authorizeRoles('admin'), UserController.deleteUser);
 
 // User routes
-userRouter.get('/me', isAuthenticatedUser, UserController.getMe);
 userRouter.put('/me', isAuthenticatedUser, UserController.updateMe);
 userRouter.delete('/me', isAuthenticatedUser, UserController.deleteUser);
 userRouter.put('/me/update-password', isAuthenticatedUser, AuthController.updatePassword);
-userRouter.put('/follow/:id', isAuthenticatedUser, UserController.followUser);
+userRouter.get('/follow-status/:targetUserId', isAuthenticatedUser, UserController.getFollowStatus);
+userRouter.post('/follow', isAuthenticatedUser, UserController.followUser);
 
 // Auth routes
 authRouter.post('/sign-up', UserController.createUser);

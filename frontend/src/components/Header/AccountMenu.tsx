@@ -4,7 +4,6 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Divider from '@mui/material/Divider';
-import PersonAdd from '@mui/icons-material/PersonAdd';
 import Settings from '@mui/icons-material/Settings';
 import Logout from '@mui/icons-material/Logout';
 import { useNavigate } from 'react-router-dom';
@@ -63,15 +62,6 @@ const AccountMenu: React.FC<AccountMenuProps> = ({ anchorEl, handleLogout, handl
         <Avatar /> Profile
       </MenuItem>
       <Divider />
-      <MenuItem onClick={() => { 
-        navigate('/profile')
-        handleMenuClose()
-      }}>
-        <ListItemIcon>
-          <PersonAdd fontSize="small" />
-        </ListItemIcon>
-        Add another account
-      </MenuItem>
       <MenuItem onClick={() => { 
         navigate('/settings')
         handleMenuClose()

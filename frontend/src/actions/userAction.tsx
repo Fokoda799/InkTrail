@@ -168,6 +168,13 @@ export const deleteUser = () => async (dispatch: AppDispatch) => {
   try {
     await axios.delete(`${apiUrlUser}me`);
     dispatch(setDeleteUser());
+
+    // Remove token from local storage
+    localStorage.removeItem('token');
+    localStorage.removeItem('persist:root');
+
+    // Clear blogs
+    dispatch(clearBlogs());
   } catch (error) {
     const message = axios.isAxiosError(error) ? error.response?.data.message : String(error);
     dispatch(setError(message));
