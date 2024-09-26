@@ -20,14 +20,18 @@ import { useAppSelector } from './redux/hooks';
 import { useEffect } from 'react';
 import { checkAuth } from './actions/userAction';
 import { useAppDispatch } from './redux/hooks';
+import Settings from './pages/Settings';
 
 function App() {
   const { user, isAuthenticated } = useAppSelector(selectUserState);
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    dispatch(checkAuth());
-  }, [dispatch]);
+    if (isAuthenticated) {
+      dispatch(checkAuth());
+    };
+    
+  }, [isAuthenticated, dispatch]);
 
   return (
     <>
@@ -40,6 +44,7 @@ function App() {
             <Route path="/new-fact" element={<WriteBlog />} />
             <Route path="/blog/:username/:id" element={<ReadBlog />} />
             <Route path="/search" element={<Search />} />
+            <Route path="/settings" element={<Settings />} />
           </Route>
           <Route element={<RedirectAuthenticatedUser />}>
             <Route path="/welcome" element={<LandingPage />} />

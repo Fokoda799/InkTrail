@@ -72,6 +72,17 @@ const userSlice = createSlice({
       state.isLoading = false;
       state.error = null;
     },
+    setUpdatePassword: (state, action) => {
+      state.user = action.payload;
+      state.isLoading = false;
+      state.error = null;
+    },
+    setDeleteUser: (state) => {
+      state.user = null;
+      state.isLoading = false;
+      state.error = null;
+      state.isAuthenticated = false;
+    }
   },
 });
 
@@ -87,6 +98,8 @@ export const {
   setCheckAuth,
   notAuthenticated,
   setUpdateUser,
+  setUpdatePassword,
+  setDeleteUser,
 } = userSlice.actions;
 
 // Selector to get authentication state

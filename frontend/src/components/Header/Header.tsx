@@ -173,6 +173,7 @@ const Header = ({user, isAuthenticated}: HeaderProps) => {
                 </MenuItem>
                 <MenuItem onClick={() => navigate('/profile')}>Profile</MenuItem>
                 <MenuItem onClick={handleLogout}>Logout</MenuItem>
+                <MenuItem onClick={() => navigate('/settings')}>Settings</MenuItem>
               </>
             ) : (
               <>

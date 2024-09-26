@@ -13,6 +13,8 @@ import {
   setCheckAuth,
   notAuthenticated,
   setUpdateUser,
+  setUpdatePassword,
+  setDeleteUser,
 } from '../redux/reducers/userReducer';
 import axios from 'axios';
 import { SignUpData, UpdateData } from '../types/userTypes';
@@ -141,121 +143,33 @@ export const updateUser = (updateData: UpdateData) => async (dispatch: AppDispat
   }
 }
 
-// export const updatePassword = (newPassword: string, currentPassword?: string) => async (dispatch: AppDispatch) => {
-//   try {
-//     dispatch(updatePasswordStart());
+// Update user Password
+export const updatePassword = (newPassword: string, currentPassword?: string) => async (dispatch: AppDispatch) => {
+  dispatch(setLoading());
+
+  try {
     
-//     const { data }: { data: AuthResponse | ErrorResponse} = await axios.put(
-//       '/api/v1/me/update-password',
-//       { currentPassword, newPassword }
-//     );
+    const { data }: { data: AuthResponse } = await axios.put(
+      `${apiUrlUser}me/update-password`,
+      { currentPassword, newPassword }
+    );
+    dispatch(setUpdatePassword(data.user));
 
-//     if (!data.success) {
-//       console.log(data.message);
-//       dispatch(updatePasswordFailure(data.message));
-//       return;
-//     }
-//     dispatch(updatePasswordSuccess(data.user))
-//   } catch (error) {
-//     const message = axios.isAxiosError(error) ? error.response?.data.message : String(error);
-//     console.log('Error:', message);
-//     dispatch(updateUserFailure(message));
-//   }
-// }
+  } catch (error) {
+    const message = axios.isAxiosError(error) ? error.response?.data.message : String(error);
+    dispatch(setError(message));
+  }
+}
 
-// export const forgotPassword = (email: string) => async (dispatch: AppDispatch) => {
-//   try {
-//       dispatch(forgotPasswordStart());
-//       const { data }: { data: AuthResponse | ErrorResponse } = await axios.post('/api/v1/auth/forgot-password', { email });
+// Delete user account
+export const deleteUser = () => async (dispatch: AppDispatch) => {
+  dispatch(setLoading());
 
-//       if (!data.success) {
-//           console.log('Error:', data.message);
-//           dispatch(forgotPasswordFailure(data.message));
-//           return;
-//       }
-
-//       dispatch(forgotPasswordSuccess(data.user));
-//   } catch (error: unknown) {
-//       const message = axios.isAxiosError(error) ? error.response?.data.message : String(error);
-//       console.log('Error:', message);
-//       dispatch(forgotPasswordFailure(message));
-//   }
-// };
-
-// // Reset password
-// export const resetPassword = (token: string, newPassword: string) => async (dispatch: AppDispatch) => {
-//   try {
-//       dispatch(resetPasswordStart());
-//       const { data }: { data: AuthResponse | ErrorResponse } = await axios.patch('/api/v1/auth/reset-password', { token, newPassword });
-
-//       if (!data.success) {
-//           console.log('Error:', data.message);
-//           dispatch(resetPasswordFailure(data.message));
-//           return;
-//       }
-
-//       dispatch(resetPasswordSuccess(data.user));
-//   } catch (error: unknown) {
-//       const message = axios.isAxiosError(error) ? error.response?.data.message : String(error);
-//       console.log('Error:', message);
-//       dispatch(resetPasswordFailure(message));
-//   }
-// };
-
-// export const followUser = (id: string) => async (dispatch: AppDispatch) => {
-//   try {
-//     dispatch(updateUserStart());
-
-//     const { data }: { data: AuthResponse | ErrorResponse } = await axios.put(`/api/v1/user/follow/${id}`);
-
-//     if (!data.success) {
-//       console.log(data.message);
-//       dispatch(updateUserFailure(data.message));
-//       return;
-//     }
-
-//     dispatch(loadUser());
-//   } catch (error) {
-//     let message = 'An unexpected error occurred';
-
-//     if (axios.isAxiosError(error)) {
-//       message = error.response?.data?.message || 'A network error occurred';
-//     } else if (error instanceof Error) {
-//       message = error.message;
-//     } else {
-//       message = String(error);
-//     }
-
-//     console.log('Error:', message);
-//     dispatch(updateUserFailure(message)); // Ensure the correct action is dispatched
-//   }
-// };
-
-// export const unfollowUser = (id: string) => async (dispatch: AppDispatch) => {
-//   try {
-//     dispatch(updateUserStart());
-
-//     const { data }: { data: AuthResponse | ErrorResponse } = await axios.put(`/api/v1/user/unfollow/${id}`);
-
-//     if (!data.success) {
-//       console.log(data.message);
-//       dispatch(updateUserFailure(data.message));
-//       return;
-//     }
-
-//     dispatch(loadUser());
-//   } catch (error) {
-//     let message = 'An unexpected error occurred';
-
-//     if (axios.isAxiosError(error)) {
-//       message = error.response?.data?.message || 'A network error occurred';
-//     } else if (error instanceof Error) {
-//       message = error.message;
-//     } else {
-//       message = String(error);
-//     }
-
-//     console.log('Error:', message);
-//     dispatch(updateUserFailure(message)); // Ensure the correct action is dispatched
-//   }
-// }
+  try {
+    await axios.delete(`${apiUrlUser}me`);
+    dispatch(setDeleteUser());
+  } catch (error) {
+    const message = axios.isAxiosError(error) ? error.response?.data.message : String(error);
+    dispatch(setError(message));
+  }
+}
