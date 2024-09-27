@@ -46,9 +46,7 @@ const Profile: React.FC = () => {
               <Avatar 
                 sx={{ width: 120, height: 120 }} 
                 src={user.avatar || undefined}
-              >
-                {!user?.avatar && user?.username[0].toUpperCase()}
-              </Avatar>
+              />
             </Stack>
           </Grid>
           <Grid item xs={12} sm={8}>
@@ -115,7 +113,7 @@ const Profile: React.FC = () => {
           <Grid container spacing={2}>
             {user.blogs?.map((blog: Blog) => (
               <Grid item xs={12} sm={6} key={blog._id}
-              onClick={() => navigate(`/blog/${user?.username}/${blog._id}`)}>
+              onClick={() => navigate(`/edit-blog/${blog._id}`)}>
                 <Paper elevation={0} sx={{ cursor: 'pointer', padding: '1rem' }}>
                   <img
                     src={blog.image || '/default-image.jpg'}

@@ -13,7 +13,7 @@ export interface Blog {
   author: Author;
   title: string;
   content: string;
-  image?: string;
+  image: string;
   category: string;
   tags?: string[];
   isPublished?: boolean;

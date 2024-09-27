@@ -12,6 +12,7 @@ import About from './pages/About';
 import LandingPage from './pages/LandingPage';
 import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
+import EditDeleteBlog from './pages/EditDeleteBlog';
 import EmailVerificationPage from './pages/VerficationPage';
 import Profile from './pages/Profile';
 import WriteBlog from './pages/WriteBlog';
@@ -45,6 +46,7 @@ function App() {
             <Route path="/blog/:username/:id" element={<ReadBlog />} />
             <Route path="/search" element={<Search />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/edit-blog/:id" element={<EditDeleteBlog />} />
           </Route>
           <Route element={<RedirectAuthenticatedUser />}>
             <Route path="/welcome" element={<LandingPage />} />

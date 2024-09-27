@@ -1,0 +1,113 @@
+.edit-delete-blog-background {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f5f5f5; /* Light background for contrast */
+}
+
+.edit-delete-blog-page {
+    background-color: #ffffff; /* White background for the form */
+    border: 1px solid #ddd;
+    padding: 40px; /* Increased padding for a spacious look */
+    width: 800px; /* Increased width for better readability */
+    height: 100%; /* Set height to auto for dynamic content */
+}
+
+h1 {
+    font-weight: 800;
+    font-size: 70px; /* Slightly reduced heading size for balance */
+    margin-bottom: 30px; /* Increased margin for better spacing */
+    color: #333; /* Darker color for the heading */
+    text-align: center; /* Centered heading for aesthetic appeal */
+}
+
+.edit-delete-blog-form {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    margin-bottom: 10px; /* Increased margin for better separation */
+    font-weight: 700;
+    font-size: 16px; /* Slightly larger font for labels */
+}
+
+.blog-main-image {
+    margin-bottom: 20px; /* Increased margin for spacing */
+    width: 100%; /* Full width for the main image */
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    height: 300px; /* Set a fixed height for the main image */
+}
+
+.blog-main-image:hover {
+    cursor: pointer; /* Change cursor to pointer on hover */
+}
+
+.blog-main-image:active {
+    transform: scale(1.05); /* Slight scale up on click */
+    cursor: not-allowed; /* Change cursor to not-allowed on click */
+}
+
+.input-title,
+.input-content {
+    margin-bottom: 20px; /* Increased bottom margin */
+    padding: 15px; /* Increased padding for comfort */
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px; /* Increased font size for inputs */
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.input-title:focus,
+.input-content:focus {
+    border-color: #007bff; /* Change border color on focus */
+}
+
+.input-content {
+    min-height: 150px; /* Set a larger minimum height for the content textarea */
+}
+
+.actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px; /* Added margin on top for spacing */
+}
+
+.btn-update,
+.btn-delete {
+    padding: 15px 20px; /* Increased button padding */
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px; /* Larger font size for buttons */
+    transition: background-color 0.3s, transform 0.2s; /* Added transform for hover effect */
+}
+
+.btn-update {
+    background-color: #28a745; /* Green for update */
+    color: white;
+}
+
+.btn-delete {
+    background-color: #dc3545; /* Red for delete */
+    color: white;
+}
+
+.btn-update:hover {
+    background-color: #218838; /* Darker green on hover */
+    transform: scale(1.05); /* Slight scale up on hover */
+}
+
+.btn-delete:hover {
+    background-color: #c82333; /* Darker red on hover */
+    transform: scale(1.05); /* Slight scale up on hover */
+}
+
+.error-message {
+    color: red;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 16px; /* Larger font for error messages */
+}

@@ -3,24 +3,23 @@ import CardMedia from '@mui/material/CardMedia';
 import CardContent from '@mui/material/CardContent';
 import Avatar from '@mui/material/Avatar';
 import Typography from '@mui/material/Typography';
-import { Grid, Box, Stack } from '@mui/material';
+import { Grid, Box } from '@mui/material';
 import { red } from '@mui/material/colors';
 import { Blog } from '../types/blogTypes';
 import { format } from 'date-fns';
-import ThumbUpTwoToneIcon from '@mui/icons-material/ThumbUpTwoTone';
 
-export default function BlogCard({ title, content, image, author, createdAt, likes }: Blog) {
+export default function BlogCard({ title, content, image, author, createdAt }: Blog) {
   const date = createdAt ? format(new Date(createdAt), 'MMMM dd, yyyy') : 'Unknown Date';
 
   return (
-      <Card sx={{ Width: 400, maxHeight: 470, borderRadius: 3 }}>
+      <Card sx={{ Width: 400, maxHeight: 490, minHeight: 490, borderRadius: 3 }}>
         {/* Blog image */}
         <CardMedia
           component="img"
           image={image || 'https://via.placeholder.com/200x400'}
           alt={title}
           sx={{ borderRadius: '8px 8px 0 0', 
-            maxHeight: '260px' }} // Rounded corners for the top of the image
+            maxHeight: '260px', minHeight: '260px' }} // Rounded corners for the top of the image
         />
       
         <CardContent sx={{ padding: 2 }}>
@@ -28,21 +27,13 @@ export default function BlogCard({ title, content, image, author, createdAt, lik
           <Grid container justifyContent="space-between" alignItems="center" sx={{ marginBottom: 1 }}>
             <Grid item>
               <Typography variant="caption" color="textSecondary" sx={{ textTransform: 'uppercase' }}>
-                Engineering {/* Replace with a dynamic category */}
+                InkTrail
               </Typography>
-            </Grid>
-            <Grid item>
-              <Stack direction="row" spacing={1} alignItems="center">
-                <ThumbUpTwoToneIcon fontSize="small" />
-                <Typography variant="body1" color="textSecondary">
-                  {likes?.length || 0}
-                </Typography>
-              </Stack>
             </Grid>
           </Grid>
           {/* Blog title */}
           <Typography variant="h6" component="div" gutterBottom sx={{ fontWeight: 'bold' }}>
-            {title}
+            {title.slice(0, 50)}...
           </Typography>
           {/* Blog summary */}
           <Typography variant="body2" color="text.secondary" sx={{ marginBottom: 2, maxHeight: 60, minHeight: 60 }}>

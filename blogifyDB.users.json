@@ -1,0 +1,148 @@
+[{
+  "_id": {
+    "$oid": "66ec690e12d6a0d45754a6e0"
+  },
+  "username": "abdllahhadid",
+  "email": "abdllahhadid@gmail.com",
+  "withPassword": false,
+  "role": "user",
+  "following": [
+    {
+      "$oid": "66ec6ad312d6a0d45754a74b"
+    }
+  ],
+  "followers": [
+    {
+      "$oid": "66ec96ec73007fd6dca5e2c3"
+    },
+    {
+      "$oid": "66ec6ad312d6a0d45754a74b"
+    },
+    {
+      "$oid": "66ec8c4ff39fbbbcec6868bd"
+    },
+    {
+      "$oid": "66f425d59e4277344d9c77c9"
+    },
+    {
+      "$oid": "66f5a8a6b750e87b660338ac"
+    },
+    {
+      "$oid": "66f5a8a6b750e87b660338ac"
+    },
+    {
+      "$oid": "66f5a8a6b750e87b660338ac"
+    },
+    {
+      "$oid": "66f5a8a6b750e87b660338ac"
+    },
+    {
+      "$oid": "66f5a8a6b750e87b660338ac"
+    },
+    {
+      "$oid": "66f5a8a6b750e87b660338ac"
+    },
+    {
+      "$oid": "66f5a8a6b750e87b660338ac"
+    },
+    {
+      "$oid": "66f5a8a6b750e87b660338ac"
+    },
+    {
+      "$oid": "66f5a8a6b750e87b660338ac"
+    }
+  ],
+  "blogs": [
+    {
+      "$oid": "66ec693512d6a0d45754a6e4"
+    },
+    {
+      "$oid": "66ec7b8f81dd36261ff358d2"
+    },
+    {
+      "$oid": "66ec7dac81dd36261ff358e9"
+    },
+    {
+      "$oid": "66ec7f0781dd36261ff35912"
+    },
+    {
+      "$oid": "66ec808a1e553af63aa60156"
+    },
+    {
+      "$oid": "66f01765d026e02445e65d9c"
+    }
+  ],
+  "history": [],
+  "createdAt": {
+    "$date": "2024-09-19T18:10:22.063Z"
+  },
+  "updatedAt": {
+    "$date": "2024-09-26T19:38:20.562Z"
+  },
+  "__v": 136,
+  "bio": "test ok ",
+  "isVerified": false,
+  "lastLogin": {
+    "$date": "2024-09-25T15:07:56.883Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "66ec8c4ff39fbbbcec6868bd"
+  },
+  "username": "abdellahHadid",
+  "email": "abdellah@gmail.com",
+  "password": "$2a$10$rNbOaAYXDjSaTTw1yrhp0uLiS2MbFuDVJzc5Q4uoDhiXtqKbFhBpG",
+  "withPassword": true,
+  "role": "user",
+  "following": [
+    {
+      "$oid": "66ec690e12d6a0d45754a6e0"
+    }
+  ],
+  "followers": [],
+  "blogs": [
+    {
+      "$oid": "66ec8fb273007fd6dca5c88d"
+    }
+  ],
+  "history": [],
+  "createdAt": {
+    "$date": "2024-09-19T20:40:47.347Z"
+  },
+  "updatedAt": {
+    "$date": "2024-09-22T19:02:56.766Z"
+  },
+  "__v": 104,
+  "avatar": "https://firebasestorage.googleapis.com/v0/b/blogify-auth-893b7.appspot.com/o/avatars%2F1726779262785-quill-drawing-a-line.png?alt=media&token=2e96fe53-4d4c-4c8f-b9f4-7fd7d0b2a451",
+  "bio": "Welcome"
+},
+{
+  "_id": {
+    "$oid": "66f5a8a6b750e87b660338ac"
+  },
+  "username": "feyt2003",
+  "email": "feyt2003@gmail.com",
+  "password": "$2a$10$WlxAAAyiyaHMlPXeygMw0...tmxMoqZuMxQ88eOrU8odRaOlD7BsW",
+  "withPassword": true,
+  "isVerified": true,
+  "role": "user",
+  "following": [],
+  "followers": [],
+  "blogs": [],
+  "history": [],
+  "verificationToken": "126278",
+  "verificationTokenExpiresAt": {
+    "$date": "2024-09-27T18:32:06.272Z"
+  },
+  "lastLogin": {
+    "$date": "2024-09-26T18:32:06.286Z"
+  },
+  "createdAt": {
+    "$date": "2024-09-26T18:32:06.302Z"
+  },
+  "updatedAt": {
+    "$date": "2024-09-26T19:38:21.350Z"
+  },
+  "__v": 18
+}]
