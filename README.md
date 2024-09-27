@@ -1,7 +1,7 @@
 # InkTria ✒
 
 ## Description
-BlogSphere is a comprehensive web application designed to provide a feature-rich blog platform with advanced user management capabilities. It leverages modern technologies to deliver an engaging, efficient, and secure user experience for both content creators and readers.
+InkTrail is a comprehensive web application designed to provide a feature-rich blog platform with advanced user management capabilities. It leverages modern technologies to deliver an engaging, efficient, and secure user experience for both content creators and readers.
 
 ## Features
 
