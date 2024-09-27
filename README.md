@@ -24,7 +24,7 @@ InkTrail is a comprehensive web application designed to provide a feature-rich b
 
 ## Technologies Used
 
-- **Frontend**: React, TypeScript, Material-UI, Tailwindcss, Redux.
+- **Frontend**: React + vite, TypeScript, Material-UI, Tailwindcss, Redux.
 - **API**: Restful API.
 - **Backend**: Node.js, Express.
 - **Database**: MongoDB.
