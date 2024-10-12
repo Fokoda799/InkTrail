@@ -11,12 +11,10 @@ const adminRouter = Router();
 adminRouter.get('/', isAuthenticatedUser, authorizeRoles('admin'), UserController.getAllUsers);
 adminRouter.get('/:id', isAuthenticatedUser, authorizeRoles('admin'), UserController.getUserById);
 adminRouter.put('/:id', isAuthenticatedUser, authorizeRoles('admin'), UserController.updateUser);
-adminRouter.put('/:id/role', isAuthenticatedUser, authorizeRoles('admin'), UserController.updateUserRole);
 adminRouter.delete('/:id', isAuthenticatedUser, authorizeRoles('admin'), UserController.deleteUser);
 
 // User routes
 userRouter.put('/me', isAuthenticatedUser, UserController.updateMe);
-userRouter.delete('/me', isAuthenticatedUser, UserController.deleteUser);
 userRouter.put('/me/update-password', isAuthenticatedUser, AuthController.updatePassword);
 userRouter.get('/follow-status/:targetUserId', isAuthenticatedUser, UserController.getFollowStatus);
 userRouter.post('/follow', isAuthenticatedUser, UserController.followUser);

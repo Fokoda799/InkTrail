@@ -1,4 +1,5 @@
 import User from '../models/userModel.js';
+import jwt from 'jsonwebtoken';
 import sendToken from '../utils/jwtToken.js';
 import idValidation from '../utils/idValidation.js';
 import {sendVierificationEmail} from '../mailtrap/emails.js';
@@ -116,6 +117,29 @@ class UserController {
         }
     }
 
+    // @desc    Update user role
+    // @route   PUT /users/:id/role
+    // @access  Admin
+    static async updateUserRole(req, res) {
+        try {
+            const { id } = req.params;
+            if (!idValidation(id)) return res.status(400).json({ message: "Invalid ID" });
+
+            const { role } = req.body;
+            if (!role) return res.status(400).json({ message: "Role is required" });
+
+            const validRoles = ["user", "admin"];
+            if (!validRoles.includes(role)) return res.status(400).json({ message: "Invalid role" });
+
+            const user = await User.findByIdAndUpdate(id, { role }, { new: true });
+            if (!user) return res.status(404).json({ message: "User not found" });
+
+            return res.status(200).json({ message: "User role updated" });
+        } catch (error) {
+            return res.status(500).json({ message: "Internal server error" });
+        }
+    }
+
     // @desc    Update the connected user
     // @route   PUT /users/me
     // @access  User
@@ -175,7 +199,7 @@ class UserController {
               }
             } else if (action === 'unfollow') {
               currentUser.following = currentUser.following.filter(id => id.toString() !== targetUserId);
-              targetUser.followers = targetUser.followers.filter(id => id.toString() !== req.user._id);
+              targetUser.followers = targetUser.followers.filter(id => id.toString() !== currentUserId);
             }
         
             await currentUser.save();
@@ -183,8 +207,8 @@ class UserController {
         
             return res.json({ isFollowing: action === 'follow' });
           } catch (error) {
-            console.error(error);
-            return res.status(500).json({ error: 'Server error' });
+            console.log(error);
+            res.status(500).json({ error: 'Server error' });
           }
     }
     

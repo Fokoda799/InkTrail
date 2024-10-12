@@ -15,14 +15,8 @@ blogRouter.get('/blog/:id', blogIdValidator, validate, BlogController.getBlogByI
 blogRouter.post('/blogs', isAuthenticatedUser, createOrUpdateBlogValidator, validate, BlogController.postBlog);
 blogRouter.put('/blog/:id', isAuthenticatedUser, blogIdValidator, createOrUpdateBlogValidator, validate, BlogController.updateBlog);
 blogRouter.delete('/blog/:id', isAuthenticatedUser, blogIdValidator, validate, BlogController.deleteBlog);
-blogRouter.get('/user/me/blogs', isAuthenticatedUser, BlogController.getUserBlogs);
-blogRouter.get('/user/me/blogs/:id', isAuthenticatedUser, blogIdValidator, validate, BlogController.getUserBlogById);
 
 // Admin routes
-blogRouter.post('/admin/blogs', isAuthenticatedUser, authorizeRoles('admin'), createOrUpdateBlogValidator, validate, BlogController.postBlogAsAdmin);
-blogRouter.get('/admin/users/:id/blogs', isAuthenticatedUser, authorizeRoles('admin'), BlogController.getUserBlogs);
-blogRouter.get('/admin/users/:userId/blogs/:id', isAuthenticatedUser, authorizeRoles('admin'), blogIdValidator, validate, BlogController.getUserBlogById);
-blogRouter.put('/blog/like/:id', blogIdValidator, validate, isAuthenticatedUser, BlogController.likeBlog);
 blogRouter.get('/blogs/search', isAuthenticatedUser, BlogController.searchBlogs);
 
 export default blogRouter;
