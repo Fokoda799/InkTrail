@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser';
 import connectDB from './config/db.js';
 import {userRouter, authRouter, adminRouter} from './routes/userRoutes.js';
 import blogRouter from './routes/blogRoutes.js';
+import error from './middlewares/error.js';
 
 // Load env variables
 dotenv.config();
@@ -29,16 +30,10 @@ app.get('/', (req, res) => {
 app.use('/api/v1/user', userRouter);
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/admin', adminRouter);
-app.use('/api/v1/', blogRouter);
+app.use('/api/v1/blogs', blogRouter);
 
 // Centralized error handling middleware
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(err.status || 500).json({
-        success: false,
-        message: err.message || 'Internal Server Error'
-    });
-});
+app.use(error);
 
 // Connect to MongoDB
 connectDB();

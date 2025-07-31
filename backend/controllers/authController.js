@@ -1,6 +1,6 @@
-import { sendWelcomeEmail } from '../mailtrap/emails.js';
 import User from '../models/userModel.js';
 import sendToken from '../utils/jwtToken.js';
+import { sendVerificationEmail, sendWelcomeEmail } from '../nodemailer/email.js';
 
 class AuthController {
     static async connectUser(req, res) {
@@ -104,13 +104,13 @@ class AuthController {
     // @route   POST /verify-email
     // @access  Public
     static async verifyEmail(req, res) {
-        const { code } = req.body;
-        console.log("code", code);
+        const { token } = req.body;
+        console.log("token", token);
         try {
             const user = await User.findOne({
-                verificationToken: code,
+                verificationToken: token,
                 verificationTokenExpiresAt: { $gt: Date.now() },
-            }).populate('blogs', 'title content image');
+            });
 
             console.log(Date.now());
     
@@ -122,9 +122,9 @@ class AuthController {
             user.verficationToken = undefined;
             user.verficationTokenExpire = undefined;
             await user.save();
-    
-            await sendWelcomeEmail(user.email, user.name);
-    
+
+            await sendWelcomeEmail(user);
+
             res.status(200).json({
                 success: true,
                 user: {
@@ -149,6 +149,33 @@ class AuthController {
             res.status(500).json({ message: error.message });
         }
     };
+
+
+    static async resendVerificationEmail(req, res) {
+        const { email } = req.body;
+        if (!email) {
+            return res.status(400).json({ success: false, message: "Email is required" });
+        }
+
+        // Check if the user exists
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        const verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
+
+        // Save the new verification token and its expiration time
+        user.verificationToken = verificationToken;
+        user.verificationTokenExpiresAt = Date.now() + 24 * 60 * 60 * 1000;
+        await user.save();
+
+        await sendVerificationEmail(user, verificationToken);
+        res.status(200).json({
+            success: true,
+            message: "Verification email sent successfully"
+        });
+    }
 
 }
 

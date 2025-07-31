@@ -26,5 +26,6 @@ authRouter.post('/google', AuthController.signinWithGoogle);
 authRouter.get('/logout', isAuthenticatedUser, AuthController.disconnectUser);
 authRouter.post('/verify-email', isAuthenticatedUser, AuthController.verifyEmail);
 authRouter.get('/check-auth', isAuthenticatedUser, AuthController.checkAuth);
+authRouter.post('/resend-verification-email', isAuthenticatedUser, AuthController.resendVerificationEmail);
 
 export { userRouter, authRouter, adminRouter };

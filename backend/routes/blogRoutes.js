@@ -8,15 +8,16 @@ import { validate } from '../middlewares/validate.js';
 const blogRouter = Router();
 
 // Public routes
-blogRouter.get('/blogs', isAuthenticatedUser, BlogController.getAllBlogs);
-blogRouter.get('/blog/:id', blogIdValidator, validate, BlogController.getBlogById);
+blogRouter.get('/', isAuthenticatedUser, BlogController.getAllBlogs);
+blogRouter.get('/:id', isAuthenticatedUser, blogIdValidator, validate, BlogController.getBlogById);
 
 // Authenticated user routes
-blogRouter.post('/blogs', isAuthenticatedUser, createOrUpdateBlogValidator, validate, BlogController.postBlog);
-blogRouter.put('/blog/:id', isAuthenticatedUser, blogIdValidator, createOrUpdateBlogValidator, validate, BlogController.updateBlog);
-blogRouter.delete('/blog/:id', isAuthenticatedUser, blogIdValidator, validate, BlogController.deleteBlog);
+blogRouter.post('/', isAuthenticatedUser, createOrUpdateBlogValidator, validate, BlogController.postBlog);
+blogRouter.put('/:id', isAuthenticatedUser, validate, BlogController.updateBlog);
+blogRouter.delete('/:id', isAuthenticatedUser, blogIdValidator, validate, BlogController.deleteBlog);
+blogRouter.post('/:id/like', isAuthenticatedUser, blogIdValidator, validate, BlogController.likeBlog);
 
 // Admin routes
-blogRouter.get('/blogs/search', isAuthenticatedUser, BlogController.searchBlogs);
+blogRouter.get('/search', isAuthenticatedUser, BlogController.searchBlogs);
 
 export default blogRouter;

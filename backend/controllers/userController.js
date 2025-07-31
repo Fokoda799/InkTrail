@@ -2,8 +2,8 @@ import User from '../models/userModel.js';
 import jwt from 'jsonwebtoken';
 import sendToken from '../utils/jwtToken.js';
 import idValidation from '../utils/idValidation.js';
-import {sendVierificationEmail} from '../mailtrap/emails.js';
-
+import { sendVerificationEmail } from '../nodemailer/email.js';
+import { generateVerificationToken } from '../utils/jwtToken.js';
 class UserController {
     // @desc    Get all users
     // @route   GET /users
@@ -42,10 +42,11 @@ class UserController {
             const { username, email, password } = req.body;
 
             // Check if email already exists
-            const existingUser = await User.findOne({ email });
-            if (existingUser) {
-                return res.status(400).json({ message: "Email already exists" });
-            }
+            // const existingUser = await User.findOne({ email });
+            // if (existingUser) {
+            //     console.log("Email already exists");
+            //     return res.status(400).json({ message: "Email already exists" });
+            // }
 
             const verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -61,12 +62,12 @@ class UserController {
             // Save the new user to the database
             await newUser.save();
 
-            // Send verification email with the generated token
-            await sendVierificationEmail(newUser.email, newUser.verificationToken);
+            await sendVerificationEmail(newUser, verificationToken);
 
             // Send the JWT token in response
             sendToken(newUser, 201, res);
         } catch (error) {
+            console.log("Error creating user:", error);
             res.status(500).json({ message: error.message });
         }
     }

@@ -1,4 +1,7 @@
 import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const blogSchema = new mongoose.Schema({
     author: {
@@ -15,48 +18,57 @@ const blogSchema = new mongoose.Schema({
     content: {
         type: String,
         required: true,
-        maxLength: 2000,
-        minLength: 50, // Fixed typo from `minLengrh` to `minLength`
+        maxLength: 200000,
+        minLength: 100, // Fixed typo from `minLengrh` to `minLength`
     },
-    image: {
+    coverImage: {
         type: String,
-        default: '', // Optional: Provide a default value if the image field is not required
+        default: process.env.IMAGE_PLACEHOLDER, // Optional: Provide a default value if the image field is not required
     },
-    category: {
+    excerpt: {
         type: String,
     },
     tags: {
         type: [String],
         default: [], // Optional: Provide a default empty array for tags
     },
-    isPublished: {
-        type: Boolean,
-        default: false,
+    state: {
+        type: String,
+        enum: ['draft', 'published', 'archived'],
+        default: 'draft',
     },
-    likes: [
-        {
-            type: mongoose.Types.ObjectId,
+    likes: [{
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
+            required: true
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now
         }
-    ],
-    comments: [
-        {
-            userId: {
-                type: mongoose.Types.ObjectId,
-                ref: 'User',
-                required: true,
-            },
-            content: {
-                type: String,
-                required: true,
-                maxLength: 200,
-            },
-            createdAt: {
-                type: Date,
-                default: Date.now,
-            },
-        }
-    ],
+    }],
+    bookmarks: {
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: 'User',
+        default: []
+    },
+    comments: {
+        type: Number,
+        default: 0,
+    },
+    views: {
+        type: Number,
+        default: 0, // Default value for views
+    },
+    readTime: {
+        type: Number,
+        default: 0, // Default value for read time
+    },
+    images: {
+        type: [String],
+        default: [], // Optional: Provide a default empty array for images
+    },
 }, { timestamps: true });
 
 const Blog = mongoose.model('Blog', blogSchema);

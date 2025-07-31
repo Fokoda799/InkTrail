@@ -8,14 +8,14 @@ const userSchema = new mongoose.Schema({
     username: {
         type: String,
         required: [true, "Username is required"],
-        unique: [true, "Username is already taken"],
+        // unique: [true, "Username is already taken"],
         maxlength: [50, "Username cannot exceed 50 characters"],
         minlength: [5, "Username must be at least 5 characters"]
     },
     email: {
         type: String,
         required: [true, "Email is required"],
-        unique: [true, "Email already exists"],
+        // unique: [true, "Email already exists"],
         validate: [validator.isEmail, "Please enter a valid email"]
     },
     password: {
@@ -32,11 +32,7 @@ const userSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     },
-    isVerified: {
-        type: Boolean,
-        required: true,
-        default: false
-    },
+    isVerified: { type: Boolean, default: false },
     role: {
         type: String,
         enum: ['user', 'admin'],

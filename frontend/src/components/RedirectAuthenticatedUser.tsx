@@ -1,16 +1,14 @@
+// components/RedirectAuthenticatedUser.tsx
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAppSelector } from '../redux/hooks';
-import { selectUserState } from '../redux/reducers/userReducer';
+import { useAuth } from '../hooks/useAuth';
+import LoadingSpinner from './LoadingSpinner';
 
+export const RedirectAuthenticatedUser = () => {
+  const { isAuthenticated, isLoading } = useAuth();
 
-const RedirectAuthenticatedUser = () => {
-	const { isAuthenticated, user } = useAppSelector(selectUserState);
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
 
-	if (isAuthenticated && user?.isVerified) {
-		return <Navigate to='/' replace />;
-	}
-
-	return <Outlet />;
+  return isAuthenticated ? <Navigate to="/" replace /> : <Outlet />;
 };
-
-export default RedirectAuthenticatedUser;

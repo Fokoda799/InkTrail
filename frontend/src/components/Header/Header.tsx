@@ -1,201 +1,444 @@
-import React from 'react';
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-// import Badge from '@mui/material/Badge';
-import Drawer from '@mui/material/Drawer';
-import MenuItem from '@mui/material/MenuItem';
-// import NotificationsIcon from '@mui/icons-material/Notifications';
-import MenuIcon from '@mui/icons-material/Menu';
-import Avatar from '@mui/material/Avatar';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Tabs, Tab, Tooltip } from '@mui/material';
-import { useAppSelector, useAppDispatch } from '../../redux/hooks';
-import { selectBlogState } from '../../redux/reducers/blogReducer';
-import { logout } from '../../actions/userAction';
-import HistoryEduIcon from '@mui/icons-material/HistoryEdu';
-import SendTwoToneIcon from '@mui/icons-material/SendTwoTone';
-import { createBlog } from '../../actions/blogAction';
-import NotificationsMenu from './NotificationsMenu';
-import { User } from '../../types/userTypes';
-import AccountMenu from './AccountMenu';
-import SearchBar from '../SearchBar';
-import { SxProps } from '@mui/material';
-import { useAlert } from 'react-alert';
-import { clearReadyBlog } from '../../redux/reducers/blogReducer';
-import logo from '../../assets/logo.png';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Menu, 
+  X, 
+  Bell, 
+  User, 
+  Settings, 
+  LogOut, 
+  Edit3, 
+  Send,
+  Home,
+  Info,
+  UserPlus,
+  LogIn
+} from 'lucide-react';
 
-// Define a constant for icon size
-const iconSize = { width: 40, height: 40 };
+interface User {
+  username: string;
+  avatar?: string;
+  isVerified: boolean;
+}
 
 interface HeaderProps {
   user: User | null;
   isAuthenticated: boolean;
+  readyBlog?: unknown;
+  onPublish?: () => void;
+  onLogout?: () => void;
 }
 
-const Header = ({user, isAuthenticated}: HeaderProps) => {
-  const { readyBlog } = useAppSelector(selectBlogState);
-  const dispatch = useAppDispatch();
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [notificationsAnchorEl, setNotificationsAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [drawerOpen, setDrawerOpen] = React.useState(false);
-  const alert = useAlert();
-
+const Header: React.FC<HeaderProps> = ({ 
+  user, 
+  isAuthenticated,
+  onPublish, 
+  onLogout 
+}) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  
   const navigate = useNavigate();
-  const { pathname } = useLocation(); // Destructure pathname for cleaner code
-
-  const isNotificationsOpen = Boolean(notificationsAnchorEl);
-
-  // Memoized event handlers
-  const handleProfileMenuOpen = React.useCallback((event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget), []);
-  // const handleNotificationsClick = React.useCallback((event: React.MouseEvent<HTMLElement>) => setNotificationsAnchorEl(event.currentTarget), []);
-  const handleMenuClose = React.useCallback(() => setAnchorEl(null), []);
-  const handleNotificationsClose = React.useCallback(() => setNotificationsAnchorEl(null), []);
-  const toggleDrawer = React.useCallback(
-    (open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
-      if (event.type === 'keydown' && ((event as React.KeyboardEvent).key === 'Tab' || (event as React.KeyboardEvent).key === 'Shift')) {
-        return;
+  const location = useLocation();
+  const path = location.pathname;
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+  const notificationsRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const isAuthorized = isAuthenticated && user?.isVerified;
+  // Close menus when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+        setIsProfileMenuOpen(false);
       }
-      setDrawerOpen(open);
-    },
-    []
-  );
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
+        setIsNotificationsOpen(false);
+      }
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setIsSearchFocused(false);
+      }
+    };
 
-  const handlePublish = () => {
-    if (readyBlog) {
-      console.log('Publishing blog:', readyBlog);
-      dispatch(createBlog(readyBlog));
-      navigate('/');
-      alert.success("Blog published successfully");
-      dispatch(clearReadyBlog());
-    } else {
-      console.error('No blog data to publish');
-    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const UserAvatar = ({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) => {
+    const sizeClasses = {
+      sm: 'w-8 h-8 text-sm',
+      md: 'w-10 h-10 text-base',
+      lg: 'w-12 h-12 text-lg'
+    };
+
+    return (
+      <div className={`${sizeClasses[size]} rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white font-semibold overflow-hidden`}>
+        {user?.avatar ? (
+          <img src={user.avatar} alt={user.username} className="w-full h-full object-cover" />
+        ) : (
+          user?.username?.[0]?.toUpperCase() || 'U'
+        )}
+      </div>
+    );
   };
 
-  const handleLogout = () => {
-    dispatch(logout());
-    setAnchorEl(null);
-  };
-
-  // Avatar component
-  const avatar = (user: User, sx: SxProps) => (
-    <Avatar sx={sx} src={user.avatar || undefined}>
-      {!user.avatar && user.username[0].toUpperCase()}
-    </Avatar>
+  const NotificationsMenu = () => (
+    <AnimatePresence>
+      {isNotificationsOpen && (
+        <motion.div
+          ref={notificationsRef}
+          initial={{ opacity: 0, scale: 0.95, y: -10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: -10 }}
+          className="absolute right-0 top-full mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50"
+        >
+          <div className="p-4 border-b border-gray-100">
+            <h3 className="font-semibold text-gray-900">Notifications</h3>
+          </div>
+          <div className="max-h-96 overflow-y-auto">
+            {[
+              { id: 1, type: 'info', message: 'Your post received 5 new likes', time: '2 min ago' },
+              { id: 2, type: 'warning', message: 'Your draft will be deleted in 7 days', time: '1 hour ago' },
+              { id: 3, type: 'success', message: 'Welcome to InkTrail!', time: '1 day ago' }
+            ].map((notification) => (
+              <div key={notification.id} className="p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors duration-150">
+                <div className="flex items-start gap-3">
+                  <div className={`w-2 h-2 rounded-full mt-2 ${
+                    notification.type === 'info' ? 'bg-blue-500' :
+                    notification.type === 'warning' ? 'bg-yellow-500' : 'bg-green-500'
+                  }`} />
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-900">{notification.message}</p>
+                    <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="p-3 border-t border-gray-100">
+            <button className="w-full text-center text-sm text-amber-600 hover:text-amber-700 font-medium">
+              View all notifications
+            </button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 
-  // Tabs for navigation
-  const tabs = (
-    <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-      <Tabs>
-        <Tooltip title="Go to Home" arrow>
-          <Tab label="Home" component={Link} to="/" />
-        </Tooltip>
-        <Tooltip title="About Us" arrow>
-          <Tab label="About" component={Link} to="/about" />
-        </Tooltip>
-        {pathname !== '/signin' && (
-          <Tooltip title="Sign In" arrow>
-            <Tab label="Sign In" component={Link} to="/signin" />
-          </Tooltip>
-        )}
-        {pathname !== '/signup' && (
-          <Tooltip title="Sign Up" arrow>
-            <Tab label="Sign Up" component={Link} to="/signup" />
-          </Tooltip>
-        )}
-      </Tabs>
-    </Box>
+  const ProfileMenu = () => (
+    <AnimatePresence>
+      {isProfileMenuOpen && (
+        <motion.div
+          ref={profileMenuRef}
+          initial={{ opacity: 0, scale: 0.95, y: -10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: -10 }}
+          className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 z-50"
+        >
+          <div className="p-4 border-b border-gray-100">
+            <div className="flex items-center gap-3">
+              <UserAvatar size="sm" />
+              <div>
+                <p className="font-medium text-gray-900">{user?.username}</p>
+                <p className="text-sm text-gray-500">View profile</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="py-2">
+            <button
+              onClick={() => {
+                navigate('/profile');
+                setIsProfileMenuOpen(false);
+              }}
+              className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-gray-50 transition-colors duration-150"
+            >
+              <User className="w-4 h-4 text-gray-500" />
+              <span className="text-gray-700">Profile</span>
+            </button>
+            
+            <button
+              onClick={() => {
+                navigate('/settings');
+                setIsProfileMenuOpen(false);
+              }}
+              className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-gray-50 transition-colors duration-150"
+            >
+              <Settings className="w-4 h-4 text-gray-500" />
+              <span className="text-gray-700">Settings</span>
+            </button>
+          </div>
+          
+          <div className="border-t border-gray-100 py-2">
+            <button
+              onClick={() => {
+                onLogout?.();
+                setIsProfileMenuOpen(false);
+              }}
+              className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-gray-50 transition-colors duration-150 text-red-600"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Logout</span>
+            </button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+
+  const MobileMenu = () => (
+    <AnimatePresence>
+      {isMenuOpen && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+            onClick={() => setIsMenuOpen(false)}
+          />
+          
+          {/* Menu */}
+          <motion.div
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'tween', duration: 0.3 }}
+            className="fixed right-0 top-0 h-full w-80 bg-white shadow-xl z-50 md:hidden"
+          >
+            <div className="p-4 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-gray-900">Menu</h2>
+                <button
+                  onClick={() => setIsMenuOpen(false)}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-150"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-4">
+              {isAuthorized ? (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <UserAvatar size="md" />
+                    <div>
+                      <p className="font-medium text-gray-900">{user?.username}</p>
+                      <p className="text-sm text-gray-500">Verified user</p>
+                    </div>
+                  </div>
+                  
+                  <nav className="space-y-2">
+                    <Link
+                      to="/profile"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors duration-150"
+                    >
+                      <User className="w-5 h-5 text-gray-500" />
+                      <span className="text-gray-700">Profile</span>
+                    </Link>
+                    
+                    <Link
+                      to="/settings"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors duration-150"
+                    >
+                      <Settings className="w-5 h-5 text-gray-500" />
+                      <span className="text-gray-700">Settings</span>
+                    </Link>
+                    
+                    <button
+                      onClick={() => {
+                        onLogout?.();
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors duration-150 text-red-600"
+                    >
+                      <LogOut className="w-5 h-5" />
+                      <span>Logout</span>
+                    </button>
+                  </nav>
+                </div>
+              ) : (
+                <nav className="space-y-2">
+                  <Link
+                    to="/welcome"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors duration-150"
+                  >
+                    <Home className="w-5 h-5 text-gray-500" />
+                    <span className="text-gray-700">Home</span>
+                  </Link>
+                  
+                  <Link
+                    to="/about"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors duration-150"
+                  >
+                    <Info className="w-5 h-5 text-gray-500" />
+                    <span className="text-gray-700">About</span>
+                  </Link>
+                  
+                  {location.pathname !== '/signin' && (
+                    <Link
+                      to="/signin"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors duration-150"
+                    >
+                      <LogIn className="w-5 h-5 text-gray-500" />
+                      <span className="text-gray-700">Sign In</span>
+                    </Link>
+                  )}
+                  
+                  {location.pathname !== '/signup' && (
+                    <Link
+                      to="/signup"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors duration-150"
+                    >
+                      <UserPlus className="w-5 h-5 text-gray-500" />
+                      <span className="text-gray-700">Sign Up</span>
+                    </Link>
+                  )}
+                </nav>
+              )}
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   );
 
   return (
-    <Box sx={{ flexGrow: 1, borderBottom: 0.1, borderColor: 'gray' }}>
-      <Toolbar sx={{ justifyContent: 'space-between', px: 2 }}>
-        {/* Logo */}
-        <img src={logo}
-        alt="InkTrail"
-        style={{ width: 80, height: 60, cursor: 'pointer', margin: 0 }}
-        onClick={() => navigate('/')}
-        />
-
-        {/* Display ParentComponent only for logged-in users */}
-        {isAuthenticated && user?.isVerified && <SearchBar />}
-
-        {/* Display Tabs or User actions based on login state */}
-        {isAuthenticated && user?.isVerified ? (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            {pathname === '/new-fact' ? (
-              <IconButton size="large" color="inherit" onClick={handlePublish}>
-                <SendTwoToneIcon />
-              </IconButton>
-            ) : (
-              <IconButton size="large" color="inherit" onClick={() => navigate('/new-fact')}>
-                <HistoryEduIcon />
-              </IconButton>
-            )}
-            <IconButton
-              size="large"
-              aria-label="open profile menu"
-              onClick={handleProfileMenuOpen}
-              color="inherit"
-              sx={{ display: { xs: 'none', md: 'flex' } }}
+    <header className="sticky top-0 z-40 bg-white border-b border-gray-200 backdrop-blur-sm bg-white/95">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <div className="flex items-center">
+            <button
+              onClick={() => navigate('/welcome')}
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity duration-150"
             >
-              {avatar(user, iconSize)}
-            </IconButton>
-          </Box>
-        ) : (
-          tabs
-        )}
+              <div className="w-10 h-10  rounded-lg flex items-center justify-center">
+                <img className='w-full h-full' alt="logo" src="/public/icon.png" />
+              </div>
+              <span className="text-xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+                InkTrail
+              </span>
+            </button>
+          </div>
 
-        {/* Mobile Drawer */}
-        <IconButton
-          size="large"
-          aria-label="open drawer"
-          onClick={toggleDrawer(true)}
-          sx={{ display: { xs: 'flex', md: 'none' } }}
-        >
-          <MenuIcon />
-        </IconButton>
-
-        <Drawer anchor="right" open={drawerOpen} onClose={toggleDrawer(false)}>
-          <Box
-            sx={{ width: 250 }}
-            role="presentation"
-            onClick={toggleDrawer(false)}
-            onKeyDown={toggleDrawer(false)}
-          >
-            {isAuthenticated && user?.isVerified ? (
+          {/* Navigation */}
+          <div className="flex items-center gap-4">
+            {isAuthorized ? (
               <>
-                <MenuItem>
-                  {avatar(user, { width: 50, height: 50 })}
-                  <Typography variant="body1" sx={{ marginLeft: 2 }}>{user?.username}</Typography>
-                </MenuItem>
-                <MenuItem onClick={() => navigate('/profile')}>Profile</MenuItem>
-                <MenuItem onClick={handleLogout}>Logout</MenuItem>
-                <MenuItem onClick={() => navigate('/settings')}>Settings</MenuItem>
+                {/* Action Buttons */}
+                <div className="hidden md:flex items-center gap-2">
+                  {location.pathname === '/new-fact' ? (
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={onPublish}
+                      className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-full hover:from-amber-600 hover:to-orange-600 transition-all duration-200 font-medium"
+                    >
+                      <Send className="w-4 h-4" />
+                      Publish
+                    </motion.button>
+                  ) : (
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => navigate('/new-fact')}
+                      className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-all duration-200 font-medium"
+                    >
+                      <Edit3 className="w-4 h-4" />
+                      Write
+                    </motion.button>
+                  )}
+                </div>
+
+                {/* Notifications */}
+                <div className="relative hidden md:block">
+                  <button
+                    onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                    className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-all duration-150"
+                  >
+                    <Bell className="w-5 h-5" />
+                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
+                  </button>
+                  <NotificationsMenu />
+                </div>
+
+                {/* Profile Menu */}
+                <div className="relative hidden md:block">
+                  <button
+                    onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                    className="flex items-center gap-2 p-1 hover:bg-gray-100 rounded-full transition-all duration-150"
+                  >
+                    <UserAvatar />
+                  </button>
+                  <ProfileMenu />
+                </div>
               </>
             ) : (
-              <>
-                <MenuItem component={Link} to="/">Home</MenuItem>
-                <MenuItem component={Link} to="/about">About</MenuItem>
-                <MenuItem component={Link} to="/signin">Sign In</MenuItem>
-                <MenuItem component={Link} to="/signup">Sign Up</MenuItem>
-              </>
-            )}
-          </Box>
-        </Drawer>
-      </Toolbar>
+              /* Guest Navigation */
+              <nav className="hidden md:flex items-center gap-6">
+                <Link
+                  to="/welcome"
+                  className={`font-medium transition-colors duration-150 hover:text-gray-900 ${
+                    path === '/welcome' ? 'text-orange-500' : 'text-gray-600'
+                  }`}
+                >
+                  Home
+                </Link>
 
-      {/* Menu components */}
-      <AccountMenu anchorEl={anchorEl} handleLogout={handleLogout} handleMenuClose={handleMenuClose} />
-      <NotificationsMenu
-        notificationsAnchorEl={notificationsAnchorEl}
-        isNotificationsOpen={isNotificationsOpen}
-        handleNotificationsClose={handleNotificationsClose}
-      />
-    </Box>
+                <Link
+                  to="/about"
+                  className={`font-medium transition-colors duration-150 hover:text-gray-900 ${
+                    path === '/about' ? 'text-orange-500' : 'text-gray-600'
+                  }`}
+                >
+                  About
+                </Link>
+
+                {path !== '/signin' && (
+                  <Link
+                    to="/signin"
+                    className={`font-medium transition-colors duration-150 hover:text-gray-900 ${
+                      path === '/signin' ? 'text-orange-500' : 'text-gray-600'
+                    }`}
+                  >
+                    Sign In
+                  </Link>
+                )}
+
+                {path !== '/signup' && (
+                  <Link
+                    to="/signup"
+                    className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-full hover:from-amber-600 hover:to-orange-600 transition-all duration-200 font-medium"
+                  >
+                    Sign Up
+                  </Link>
+                )}
+              </nav>
+            )}
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setIsMenuOpen(true)}
+              className="md:hidden p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-all duration-150"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Menu */}
+      <MobileMenu />
+    </header>
   );
 };
 

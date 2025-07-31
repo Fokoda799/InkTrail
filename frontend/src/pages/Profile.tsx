@@ -11,14 +11,13 @@ import {
   Button,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
-import { useAppSelector } from '../redux/hooks';
-import { selectUserState } from '../redux/reducers/userReducer';
 import EditProfile from '../components/EditProfile';
 import { Link, useNavigate } from 'react-router-dom';
 import { Blog } from '../types/blogTypes';
+import { useAuth } from '../hooks/useAuth';
 
 const Profile: React.FC = () => {
-  const { user } = useAppSelector(selectUserState);
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
 

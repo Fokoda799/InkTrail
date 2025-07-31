@@ -10,17 +10,37 @@ export interface Author {
 
 export interface Blog {
   _id: string;
-  author: Author;
   title: string;
   content: string;
-  image: string;
-  category: string;
+  excerpt?: string;
+  author: {
+    username: string;
+    avatar?: string;
+    isVerified?: boolean;
+    bio?: string;
+    followers?: string[];
+    following?: string[];
+  };
+  state: 'draft' | 'published' | 'archived';
+  createdAt: string;
+  likes?: number;
+  isLiked: boolean;
+  bookmarks?: string[];
+  comments?: number;
+  readTime?: number;
   tags?: string[];
-  isPublished?: boolean;
-  likes?: string[];
-  comments?: Comment[];
-  createdAt?: string;
-  url: string;
+  coverImage?: string;
+  views?: number;
+  images?: string[];
+}
+
+export interface BlogInput {
+  title?: string;
+  content?: string;
+  excerpt?: string;
+  tags?: string[];
+  coverImage?: string;
+  actionType?: string;
 }
 
 export interface Comment {
