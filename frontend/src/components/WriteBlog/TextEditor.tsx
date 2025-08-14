@@ -11,6 +11,12 @@ import Highlight from '@tiptap/extension-highlight';
 import Underline from '@tiptap/extension-underline';
 import Subscript from '@tiptap/extension-subscript';
 import Superscript from '@tiptap/extension-superscript';
+import BulletList from '@tiptap/extension-bullet-list';
+import OrderedList from '@tiptap/extension-ordered-list';
+import Blockquote from '@tiptap/extension-blockquote';
+import ListItem from '@tiptap/extension-list-item'; // Required for lists
+import Heading from '@tiptap/extension-heading';
+import { CustomCodeBlock } from '../../helpers/codeBlock';
 import { motion, AnimatePresence } from 'framer-motion';
 import EditorState from '../../hooks/useEditor';
 import {
@@ -48,6 +54,19 @@ interface TextEditorProps {
   className?: string;
 }
 
+function isDarkColor(color: string) {
+  // Basic check to determine if color is dark or light (hex format)
+  if (!color.startsWith('#')) return false;
+  const c = color.substring(1);      // strip #
+  const rgb = parseInt(c, 16);
+  const r = (rgb >> 16) & 0xff;
+  const g = (rgb >> 8) & 0xff;
+  const b = rgb & 0xff;
+  // Calculate luminance per ITU-R BT.709
+  const luminance = 0.2126*r + 0.7152*g + 0.0722*b;
+  return luminance < 128;
+}
+
 const TextEditor: React.FC<TextEditorProps> = ({
   content = '',
   onChange,
@@ -63,11 +82,22 @@ const TextEditor: React.FC<TextEditorProps> = ({
 
   const editor = useEditor({
     extensions: [
+      CustomCodeBlock,
       StarterKit.configure({
         heading: {
           levels: [1, 2, 3],
         },
+        bulletList: false,  // disable default so we can load custom ones
+        orderedList: false,
+        blockquote: false,
       }),
+      Heading.configure({
+        levels: [1, 2, 3]
+      }),
+      BulletList,
+      OrderedList,
+      ListItem,
+      Blockquote,
       Image.configure({
         HTMLAttributes: {
           class: 'rounded-lg shadow-md max-w-full h-auto my-4',
@@ -92,7 +122,7 @@ const TextEditor: React.FC<TextEditorProps> = ({
       }),
       Underline,
       Subscript,
-      Superscript,
+      Superscript, 
     ],
     content,
     autofocus: true,
@@ -156,7 +186,7 @@ const TextEditor: React.FC<TextEditorProps> = ({
 
   const highlights = [
     '#FEF3C7', '#FED7AA', '#FECACA', '#D1FAE5', '#BFDBFE',
-    '#E0E7FF', '#EDE9FE', '#FCE7F3'
+    '#E0E7FF', '#EDE9FE', '#FCE7F3', 'none'
   ];
 
   if (!editor) {
@@ -168,7 +198,7 @@ const TextEditor: React.FC<TextEditorProps> = ({
   }
 
   return (
-    <div className={`bg-white rounded-2xl shadow-lg border border-gray-200 ${className}`}>
+    <div className={` bg-white border border-gray-200 ${className}`}>
       {/* Toolbar */}
       <div className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-amber-50/30 p-4">
         <div className="flex flex-wrap items-center gap-2">
@@ -225,16 +255,39 @@ const TextEditor: React.FC<TextEditorProps> = ({
               <Strikethrough className="w-4 h-4" />
             </button>
             <button
-              onClick={() => editor.chain().focus().toggleCode().run()}
+              onClick={() => {
+                // Check if current selection is a code block
+                if (editor.isActive('codeBlock')) {
+                  // Just toggle off the code block (turn back to paragraph)
+                  editor.chain().focus().setParagraph().run();
+                } else {
+                  // If toggling on, set code block with default language
+                  editor.chain().focus().toggleCodeBlock().setNode('codeBlock', { language: 'javascript' }).run();
+                }
+              }}
               className={`p-2 rounded-lg transition-all duration-200 ${
-                editorState?.isCode
+                editor.isActive('codeBlock')
                   ? 'bg-amber-100 text-amber-700'
                   : 'hover:bg-gray-100 text-gray-600'
               }`}
-              title="Code"
+              title="Code Block"
             >
               <Code className="w-4 h-4" />
             </button>
+            {editor.isActive('codeBlock') && (
+              <select
+                value={editor.getAttributes('codeBlock').language || 'javascript'}
+                onChange={e => {
+                  editor.chain().focus().setNode('codeBlock', { language: e.target.value }).run();
+                }}
+                className="ml-2 rounded border border-gray-300 px-2 py-1"
+              >
+                <option value="javascript">JavaScript</option>
+                <option value="python">Python</option>
+                <option value="cpp">C++</option>
+                {/* Add more languages as needed */}
+              </select>
+            )}
           </div>
 
           {/* Headings */}
@@ -363,7 +416,10 @@ const TextEditor: React.FC<TextEditorProps> = ({
           <div className="flex items-center gap-1 border-r border-gray-300 pr-3">
             <button
               onClick={() => setShowLinkDialog(true)}
-              className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 transition-all duration-200"
+              className={`p-2 rounded-lg hover:bg-gray-100 text-gray-600 transition-all duration-200
+                ${editorState?.canSetLink ? '' : 'opacity-50 cursor-not-allowed'}
+                ${editorState?.isLinkActive ? 'bg-amber-100 text-amber-700' : ''}
+              `}
               title="Add Link"
             >
               <LinkIcon className="w-4 h-4" />
@@ -387,8 +443,12 @@ const TextEditor: React.FC<TextEditorProps> = ({
             <div className="relative">
               <button
                 onClick={() => setShowColorPicker(!showColorPicker)}
-                className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 transition-all duration-200"
+                className={`p-2 rounded-lg hover:bg-gray-100 transition-all duration-200`}
                 title="Text Color"
+                style={{
+                  backgroundColor: editorState?.currentColor || editorState?.currentHighlight || 'transparent',
+                  color: editorState?.currentColor ? (isDarkColor(editorState.currentColor) ? 'white' : 'black') : 'inherit',
+                }}
               >
                 <Palette className="w-4 h-4" />
               </button>
@@ -422,6 +482,16 @@ const TextEditor: React.FC<TextEditorProps> = ({
                     <div>
                       <h4 className="text-sm font-medium text-gray-700 mb-2">Highlight</h4>
                       <div className="grid grid-cols-8 gap-2">
+                        <button
+                          onClick={() => {
+                            editor.chain().focus().unsetHighlight().run();
+                            setShowColorPicker(false);
+                          }}
+                          className="w-6 h-6 rounded border border-gray-300 hover:scale-110 transition-transform duration-150 flex items-center justify-center text-gray-500 text-xs"
+                          title="No Highlight"
+                        >
+                          None
+                        </button>
                         {highlights.map((color) => (
                           <button
                             key={color}
@@ -492,8 +562,8 @@ const TextEditor: React.FC<TextEditorProps> = ({
 
       {/* Editor Content */}
       <div className="relative">
-        <EditorContent editor={editor} />
-        
+        <EditorContent editor={editor} className='editor-content p-6 max-h-[400px] overflow-auto' />
+
         {/* Character Count */}
         <div className="absolute bottom-4 right-4 text-sm text-gray-500 bg-white/90 backdrop-blur-sm px-2 py-1 rounded">
           {editor.storage.characterCount?.characters() || 0} characters

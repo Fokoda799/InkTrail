@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import { Users, Target, Eye, ArrowRight, ExternalLink, Award, Heart, Zap } from 'lucide-react';
 

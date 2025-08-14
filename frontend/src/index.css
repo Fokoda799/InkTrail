@@ -8,7 +8,7 @@ html, body {
     padding: 0;
     width: 100vw;
     height: 100vh;
-    overflow-x: hidden;
+    overflow-x: hidden; 
     box-sizing: border-box;
 }
 
@@ -18,3 +18,249 @@ body {
     font-weight: 300;
     font-style: normal;
 }
+
+.prose pre,
+.prose code {
+  white-space: pre-wrap; /* force wrapping */
+  word-break: break-word;
+  overflow-x: auto;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* ===== Scrollbar CSS ===== */
+  /* Custom Scrollbar Styles */
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #f59e0b, #ea580c);
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #d97706, #dc2626);
+  transform: scale(1.1);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(135deg, #b45309, #b91c1c);
+}
+
+::-webkit-scrollbar-corner {
+  background: #f1f5f9;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #f59e0b #f1f5f9;
+}
+
+/* Custom scrollbar for specific containers */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #f59e0b #f8fafc;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f8fafc;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #f59e0b, #ea580c);
+  border-radius: 3px;
+  transition: all 0.3s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #d97706, #dc2626);
+  box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+}
+
+/* Thin scrollbar variant */
+.thin-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #f59e0b transparent;
+}
+
+.thin-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background: #f59e0b;
+  border-radius: 2px;
+  transition: all 0.2s ease;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #d97706;
+  width: 6px;
+}
+
+/* Dark theme scrollbar */
+.dark-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #f59e0b #1f2937;
+}
+
+.dark-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.dark-scrollbar::-webkit-scrollbar-track {
+  background: #1f2937;
+  border-radius: 4px;
+}
+
+.dark-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #f59e0b, #ea580c);
+  border-radius: 4px;
+  border: 1px solid #374151;
+}
+
+.dark-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  border-color: #4b5563;
+}
+
+/* Invisible scrollbar (but still functional) */
+.invisible-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.invisible-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Animated scrollbar */
+.animated-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #f59e0b, #ea580c);
+  border-radius: 4px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.animated-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  transform: scale(1.2);
+  box-shadow: 0 4px 8px rgba(245, 158, 11, 0.4);
+}
+
+/* Rounded scrollbar for modals */
+.modal-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-scrollbar::-webkit-scrollbar-track {
+  background: #f8fafc;
+  border-radius: 10px;
+  margin: 8px 0;
+}
+
+.modal-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #f59e0b, #ea580c);
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.modal-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #d97706, #dc2626);
+}
+
+/* Tailwind layer (e.g., styles.css or globals.css) */
+.prose ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+}
+
+.prose ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+}
+
+.prose blockquote {
+  border-left: 4px solid #f59e0b; /* amber-500 */
+  padding-left: 1rem;
+  color: #555;
+  font-style: italic;
+}
+
+/* styles.css */
+/* Black background for code blocks */
+pre[data-language] {
+  background-color: #1e1e1e;
+  color: #d4d4d4;
+  padding: 1rem;
+  border: 1px solid #fff;
+  border-radius: 0.5rem;
+  position: relative;
+  font-family: 'Fira Code', monospace;
+  overflow-x: auto;
+}
+
+/* Language label on top right */
+pre[data-language]::before {
+  content: attr(data-language);
+  position: absolute;
+  top: 0.25rem;
+  right: 0.5rem;
+  background-color: #333;
+  color: #ddd;
+  font-size: 0.4rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.hljs {
+  color: #d4d4d4;
+  background-color: #1e1e1e;
+}
+
+.editor-content h1 {
+  font-size: 2.25rem; /* e.g. 36px */
+  font-weight: 700;
+  margin: 1em 0 0.5em;
+  color: #0c0b0a; /* amber-700, for example */
+}
+
+.editor-content h2 {
+  font-size: 1.75rem; /* e.g. 28px */
+  font-weight: 600;
+  margin: 0.9em 0 0.45em;
+  color: #1a1919; /* amber-600 */
+}
+
+.editor-content h3 {
+  font-size: 1.25rem; /* e.g. 20px */
+  font-weight: 600;
+  margin: 0.8em 0 0.4em;
+  color: #0a0500; /* amber-500 */
+}
+

@@ -1,6 +1,6 @@
-import { Component, ErrorInfo } from 'react';
+import { Component, ErrorInfo, PropsWithChildren } from 'react';
 
-class ErrorBoundary extends Component {
+class ErrorBoundary extends Component<PropsWithChildren<{}>> {
   state = { hasError: false };
 
   static getDerivedStateFromError() {

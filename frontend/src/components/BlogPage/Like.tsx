@@ -11,6 +11,7 @@ interface LikeButtonProps {
   clickable?: boolean;
   withNumber?: boolean;
   style?: string;
+  active?: boolean;
 }
 
 const LikeButton: React.FC<LikeButtonProps> = ({
@@ -22,17 +23,20 @@ const LikeButton: React.FC<LikeButtonProps> = ({
   clickable = true,
   withNumber = true,
   style,
+  active = true,
 }) => {
-  const { setLike } = useData();
+  const { setAction } = useData();
 
-  const [isLoading, setIsLoading] = useState(false);
+  // const [isLoading, setIsLoading] = useState(false);
   const [isLiked, setIsLiked] = useState(initialLiked);
   const [likeCount, setLikeCount] = useState(initialLikes);
   const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
+    setIsAnimating(true);
     setIsLiked(initialLiked);
     setLikeCount(initialLikes);
+    setTimeout(() => setIsAnimating(false), 300);
   }, [initialLiked, initialLikes]);
 
   const sizeClasses = {
@@ -55,7 +59,6 @@ const LikeButton: React.FC<LikeButtonProps> = ({
 
   const handleLike = () => {
     setIsAnimating(true);
-    setIsLoading(true);
     
     try {
       const newLikedState = !isLiked;
@@ -65,7 +68,7 @@ const LikeButton: React.FC<LikeButtonProps> = ({
       setLikeCount(newCount);
       
       // Call the callback if provided
-      setLike(blogId);
+      setAction(blogId, "like");
       if (onLikeChange) {
         onLikeChange(newCount, newLikedState);
       }
@@ -74,8 +77,6 @@ const LikeButton: React.FC<LikeButtonProps> = ({
       setTimeout(() => setIsAnimating(false), 300)
     } catch (error) {
       console.error('Error updating like state:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -83,11 +84,10 @@ const LikeButton: React.FC<LikeButtonProps> = ({
     <button
       onClick={clickable ? handleLike : undefined}
       className={`
-        inline-flex items-center gap-1 
+        inline-flex items-center
         ${style || 'rounded-full border transition-all duration-200 ease-out'}
-        ${sizeClasses[size].button}
         ${isLiked 
-          ? 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100 hover:border-red-300' 
+          ? 'text-red-600' + (active && 'border-red-200 hover:bg-red-100 hover:border-red-300') 
           : !style && 'bg-gray-100 border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300'
         }
         ${style || 'hover:shadow-md active:scale-95 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50'}
@@ -95,9 +95,9 @@ const LikeButton: React.FC<LikeButtonProps> = ({
     >
       <Heart
         className={`
-          ${sizeClasses[size].icon}
+          w-5 h-5
           transition-all duration-200 ease-out
-          ${isLiked ? 'fill-red-500 text-red-500' : 'text-gray-400'}
+          ${isLiked ? 'fill-red-500 text-red-500' : ''}
           ${isAnimating ? 'scale-125' : 'scale-100'}
         `}
       />

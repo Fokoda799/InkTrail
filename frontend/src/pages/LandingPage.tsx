@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Edit3, Compass, Users, ArrowRight, Star, CheckCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface FeatureCardProps {
   icon: React.ReactElement;
@@ -10,8 +11,11 @@ interface FeatureCardProps {
 }
 
 const LandingPage = () => {
+
+  const navigate = useNavigate();
+
   const handleGetStarted = () => {
-    // Placeholder for navigation - could integrate with router later
+    navigate('/signup')
     console.log('Navigate to signup');
   };
 

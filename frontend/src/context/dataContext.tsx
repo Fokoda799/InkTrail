@@ -1,17 +1,38 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { Blog, BlogInput } from '../types/blogTypes';
-import { fetchBlogs, createBlog, updateBlog, deleteBlog, fetchBlogById, toggleLike } from '../api/dataApi';
+import { Blog, BlogInput, Comment, Like } from '../types/blogTypes';
+import {
+  fetchBlogs,
+  createBlog,
+  updateBlog,
+  deleteBlog,
+  fetchBlogById,
+  toggleAction,
+  CommentActions,
+  getBlogsByUsername
+} from '../api/dataApi';
+
+interface CommentActionsProps {
+  addComment: (blogId: string, content: string, replyingTo?: string) => Promise<Comment>;
+  updateComment: (commentId: string, content: string) => Promise<Comment>;
+  deleteComment: (commentId: string) => Promise<void>;
+  getComments: (blogId: string) => Promise<Comment[]>;
+  getCommentCount: (blogId: string) => Promise<number>;
+  toggleCommentLike: (commentId: string, blogId: string) => Promise<Like>;
+}
+
 interface DataContextType {
   blogs: Blog[];
   blog: Blog | null;
   isLoading: boolean;
   error: string | null;
   refreshBlogs: (viewType: 'feeds' | 'following', page: number, sortBy: 'latest' | 'trending' | 'popular' | null) => Promise<void>;
-  getBlogById: (id: string) => Promise<void>;
+  getBlogById: (id: string) => Promise<Blog | null | undefined>;
   addBlog: (data: BlogInput) => Promise<void>;
   editBlog: (id: string, data: BlogInput) => Promise<void>;
   removeBlog: (id: string) => Promise<void>;
-  setLike: (blogId: string) => Promise<void>;
+  setAction: (blogId: string, actionType: string) => Promise<void>;
+  CommentActions: CommentActionsProps;
+  getBlogsByUsername: (username: string, limit: number, offset: number) => Promise<Blog[]>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -22,12 +43,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const refreshBlogs = async (viewType: 'feeds' | 'following' = 'feeds', page: number = 0, sortBy: 'latest' | 'trending' | 'popular' | null = null) => {
+  const refreshBlogs = async (viewType: 'feeds' | 'following' = 'feeds', page: number = 1, sortBy: 'latest' | 'trending' | 'popular' | null = null) => {
     setIsLoading(true);
     setError(null);
     try {
       const data = await fetchBlogs(viewType, page, sortBy);
-      setBlogs(data);
+      setBlogs(prev => page === 1 ? data : [...prev, ...data]);
     } catch (err: any) {
       setError(err.message || 'Failed to load blogs');
     } finally {
@@ -43,6 +64,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const fetchedBlog = await fetchBlogById(id);
       console.log('Fetched blog from API:', fetchedBlog);
       setBlog(fetchedBlog);
+      console.info('Blog fetched successfully:', fetchedBlog);
+      return fetchedBlog;
     } catch (err: any) {
       setError(err.message || 'Failed to fetch blog');
       return;
@@ -80,11 +103,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // Blog actions like, comment, etc. can be handled here
-  const setLike = async (blogId: string) => {
+  const setAction = async (blogId: string, actionType: string) => {
     try {
-      await toggleLike(blogId);
+      const updatedBlog = await toggleAction(blogId, actionType);
       // Update the blog state to reflect the new like status
-      setBlog((prev) => (prev ? { ...prev, isLiked: !prev.isLiked, likes: prev.likes ? prev.likes + (prev.isLiked ? -1 : 1) : 1 } : prev));
+      setBlog(updatedBlog);
     } catch (err: any) {
       throw new Error(err.message || 'Failed to update like status');
     }
@@ -98,7 +121,13 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <DataContext.Provider
-      value={{ blogs, isLoading, error, refreshBlogs, blog, getBlogById, addBlog, editBlog, removeBlog, setLike }}
+      value={{ 
+        blogs, isLoading, error,
+        refreshBlogs, blog,
+        getBlogById, addBlog, editBlog, 
+        removeBlog, setAction, CommentActions,
+        getBlogsByUsername
+      }}
     >
       {children}
     </DataContext.Provider>

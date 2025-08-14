@@ -1,11 +1,13 @@
 // types/blogTypes.ts
 
 export interface Author {
-  _id?: string;
-  username?: string;
-  avatar?: string;
-  blogs?: Blog[];
-  followers?: string[];
+  _id: string;
+  username: string;
+  avatar: string;
+  bio?: string;
+  follows?: string[];
+  isFollowed?: boolean;
+  isVerified?: boolean;
 }
 
 export interface Blog {
@@ -13,19 +15,13 @@ export interface Blog {
   title: string;
   content: string;
   excerpt?: string;
-  author: {
-    username: string;
-    avatar?: string;
-    isVerified?: boolean;
-    bio?: string;
-    followers?: string[];
-    following?: string[];
-  };
+  author: Author;
   state: 'draft' | 'published' | 'archived';
   createdAt: string;
   likes?: number;
   isLiked: boolean;
   bookmarks?: string[];
+  isBookmarked?: boolean;
   comments?: number;
   readTime?: number;
   tags?: string[];
@@ -41,13 +37,9 @@ export interface BlogInput {
   tags?: string[];
   coverImage?: string;
   actionType?: string;
-}
-
-export interface Comment {
-  _id?: string;
-  author: Author;
-  content: string;
-  createdAt: string;
+  readTime?: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Pagination {
@@ -96,6 +88,24 @@ export interface ItemsResponse {
   success: true;
   items: Item[];
 }
+
+export interface Like {
+  likeCount: number;
+  liked: boolean;
+}
+
+export interface Comment {
+  _id: string;
+  user: Author;
+  content: string;
+  liked: boolean;
+  likeCount: number;
+  isAuthorLiked: boolean; // Indicates if the comment author has liked this comment
+  isAuthor: boolean; // Indicates if the comment's author is the blog author
+  replies: Comment[];
+  repliesCount: number; // Total number of replies to this comment
+  createdAt: string;
+} 
 
 // actions/actionTypes.ts
 export const BLOGS_FETCHED = 'BLOGS_FETCHED';

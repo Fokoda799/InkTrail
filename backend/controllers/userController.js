@@ -10,7 +10,7 @@ class UserController {
     // @access  Admin
     static async getAllUsers(req, res) {
         try {
-            const users = await User.find().populate('blogs', 'title content image');
+            const users = await User.find()
             res.status(200).json(users);
         } catch (error) {
             res.status(500).json({ message: error.message });
@@ -20,16 +20,19 @@ class UserController {
     // @desc    Get user by ID
     // @route   GET /users/:id
     // @access  Admin
-    static async getUserById(req, res) {
+    static async getUser(req, res) {
         try {
-            const { id } = req.params;
-            if (!idValidation(id)) return res.status(400).json({ message: "Invalid ID" });
+            const { username } = req.params;
 
-            const user = await User.findById(id);
+            const user = await User.findOne({ username }).populate('bookmarks', 'title content coverImage likes views excerpt comments createdAt');
             if (!user) return res.status(404).json({ message: "User not found" });
+
+            user.password = undefined; // Exclude password from response
+            user.isFollowed = user.followers.includes(req.user._id); // Check if the user is followed by the current user
 
             res.status(200).json(user);
         } catch (error) {
+            console.error("Error fetching user:", error);
             res.status(500).json({ message: error.message });
         }
     }
@@ -39,14 +42,20 @@ class UserController {
     // @access  Public
     static async createUser(req, res) {
         try {
-            const { username, email, password } = req.body;
+            const { username, email, password, } = req.body;
 
             // Check if email already exists
-            // const existingUser = await User.findOne({ email });
-            // if (existingUser) {
-            //     console.log("Email already exists");
-            //     return res.status(400).json({ message: "Email already exists" });
-            // }
+            const existingUserEmail = await User.findOne({ email });
+            if (existingUserEmail) {
+                console.log("Email already exists");
+                return res.status(400).json({ message: "Email already exists" });
+            }
+
+            const existingUsername = await User.findOne({ username });
+            if (existingUsername) {
+                console.log("Username already exists");
+                return res.status(400).json({ message: "Username already exists" });
+            }
 
             const verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -80,13 +89,13 @@ class UserController {
         try {
             const { id } = req.params;
 
-            const { username, password } = req.body;
+            const updates = req.body;
 
             const user = await User.findByIdAndUpdate(
                 id,
-                { full_name, username, password },
+                { ...updates },
                 { new: true, runValidators: true }
-            ).populate('blogs', 'title content image');
+            );
 
             if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -147,13 +156,18 @@ class UserController {
     static async updateMe(req, res) {
         try {
             const { id } = req.user;
-            const { username, bio, avatar } = req.body;
+            const updates = req.body;
+
+            console.log("No updates provided", updates);
+
+            if (!updates || Object.keys(updates).length === 0) {
+                return res.status(400).json({ message: "No updates provided" });
+            }
 
             const user = await User.findByIdAndUpdate(
                 id,
-                { username, bio, avatar },
-                { new: true, runValidators: true }
-            ).populate('blogs', 'title content image');
+                { ...updates },
+                { new: true, runValidators: true });
 
             if (!user) return res.status(404).json({
                 success: false,

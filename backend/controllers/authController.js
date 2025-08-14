@@ -1,8 +1,26 @@
 import User from '../models/userModel.js';
-import sendToken from '../utils/jwtToken.js';
+import sendToken, { removeToken } from '../utils/jwtToken.js';
 import { sendVerificationEmail, sendWelcomeEmail } from '../nodemailer/email.js';
 
 class AuthController {
+    static async getMe(req, res) {
+        const { id } = req.user;
+
+        try {
+            const user = await User.findById(id)
+                .select('-password')
+            if (!user) return res.status(404).json({ message: 'User not found' });
+
+            res.status(200).json({
+                success: true,
+                user
+            });
+        } catch (error) {
+            console.error('Error fetching user:', error);
+            res.status(500).json({ message: error.message });
+        }
+    }
+
     static async connectUser(req, res) {
         const { email, password } = req.body;
         try {
@@ -46,9 +64,7 @@ class AuthController {
     static async signinWithGoogle(req, res) {
         try {
             const { username, email, avatar } = req.body;
-            let user = await User.findOne({ email }).populate('blogs',
-                'title content image category tags isPublished claps comments'
-            );
+            let user = await User.findOne({ email });
 
             if (user) {
                 sendToken(user, 200, res);
@@ -76,27 +92,47 @@ class AuthController {
     static updatePassword = async (req, res) => {
         try {
             const { currentPassword, newPassword } = req.body;
-            const user = await User.findById(req.user.id);
-            if (!user) return res.status(404).json({
-                success: false,
-                message: 'User not found'
-            });
+            const user = await User.findById(req.user.id).select('+password'); // Ensure password is fetched for comparison
 
-            const isMatch = await user.comparePassword(currentPassword);
-            if (!isMatch) return res.status(400).json({
-                success: false,
-                message: 'Invalid password'
-            });
-            const updatedUser = await user.updatePassword(newPassword);
-            if (!updatedUser) return res.status(400).json({
-                success: false,
-                message: 'Password update failed: ' + error.message
-            });
+            if (!user) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'User not found',
+                });
+            }
 
-            sendToken(updatedUser, 200, res);
+            let isMatch = true;
+
+            if (user.withPassword) {
+                isMatch = await user.comparePassword(currentPassword);
+            }
+
+            if (!isMatch) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Invalid current password',
+                });
+            }
+
+            // Update password directly (assuming you have this method implemented)
+            await user.updatePassword(newPassword);
+
+            // Reload user but exclude sensitive fields
+            const safeUser = await User.findById(user._id).select('-password -resetPasswordToken -resetPasswordExpire -verificationToken -verificationTokenExpiresAt');
+
+            // If you want to send a JWT token after update:
+            sendToken(safeUser, 200, res);
+
+            // Or if you want to send JSON without token, use:
+            // return res.status(200).json({
+            //   success: true,
+            //   user: safeUser,
+            //   message: 'Password updated successfully',
+            // });
+
         } catch (error) {
             console.error('Error during password update:', error);
-            return res.status(500).json({ message: error.message });
+            return res.status(500).json({ success: false, message: error.message });
         }
     };
 
@@ -176,6 +212,30 @@ class AuthController {
             message: "Verification email sent successfully"
         });
     }
+
+    static async deleteAccount(req, res) {
+        try {
+            const userId = req.user.id; // from auth middleware
+
+            const user = await User.deleteOne({ _id: userId });
+            if (!user) {
+                return res.status(404).json({
+                    success: false,
+                    message: "User not found"
+                });
+            }
+
+            removeToken(res); // Clear the token cookie
+
+        } catch (error) {
+            console.error("Error deleting user:", error);
+            return res.status(500).json({
+                success: false,
+                message: "An error occurred while deleting your account"
+            });
+        }
+    }
+
 
 }
 

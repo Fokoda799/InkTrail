@@ -4,7 +4,7 @@ const sendToken = (user, statusCode, res) => {
   const token = user.getJWTToken();
 
   const options = {
-    expires: new Date(Date.now() + process.env.COOKIE_EXPIRE * 24 * 60 * 60 * 1000),
+    // expires: new Date(Date.now() + process.env.COOKIE_EXPIRE * 24 * 60 * 60 * 1000),
     httpOnly: true,
     secure: process.env.DEV_MODE === 'production',
   };
@@ -23,6 +23,17 @@ const sendToken = (user, statusCode, res) => {
       },
       token,
     });
+};
+
+export const removeToken = (res) => {
+  res.cookie("token", "", {
+    expires: new Date(0),
+    httpOnly: true,
+    secure: process.env.DEV_MODE === 'production',
+  }).json({
+    success: true,
+    message: "Token removed successfully",
+  });
 };
 
 

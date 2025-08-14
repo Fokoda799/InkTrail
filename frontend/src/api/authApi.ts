@@ -1,8 +1,8 @@
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { SignUpData } from "../types/userTypes";
+import { SignUpData, User } from "../types/userTypes";
 import { app } from "../firebase";
 
-export const getMe = async () => {
+export const getMe = async (): Promise<User> => {
   const res = await fetch('/api/v1/auth/me', {
     method: 'GET',
   });
@@ -10,7 +10,9 @@ export const getMe = async () => {
     console.error('Failed to fetch user data:', res.statusText);
     throw new Error('Failed to fetch user data');
   }
-  return res.json();
+
+  const data = await res.json();
+  return data.user;
 }
 
 export const signUp = async (userData: SignUpData) => {
@@ -126,3 +128,48 @@ export const linkWithGoogle = async () => {
   }
 };
 
+
+export const getUser = async (username: string): Promise<User | null> => {
+  try {
+    const res = await fetch(`/api/v1/user/profile/${username}`, {
+      method: 'GET',
+      credentials: 'include',
+    });
+    if (!res.ok) {
+      throw new Error('Failed to fetch user data');
+    }
+    return res.json();
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    throw error;
+  }
+};
+
+export const updatePassword = async (currentPassword: string | undefined, newPassword: string) => {
+  const res = await fetch('/api/v1/auth/update-password', {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.message || 'Failed to update password');
+  }
+  const data = await res.json();
+  return data.user;
+};
+
+export const deleteAccount = async () => {
+  const res = await fetch('/api/v1/auth/delete-account', {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.message || 'Failed to delete account');
+  }
+}

@@ -1,10 +1,12 @@
 import Blog from '../models/blogModel.js';
 import User from '../models/userModel.js';
+import Comment from '../models/commentModel.js';
+import { handlePostActions, createNotification } from '../service/postActions.js';
 
 class BlogController {
     static async postBlog(req, res) {
         try {
-            const { title, content, coverImage } = req.body;
+            const { title, content, coverImage, excerpt, tags } = req.body;
             
             // Validate required fields
             if (!title || !content) {
@@ -15,7 +17,9 @@ class BlogController {
             }
 
             // Retrieve author ID from authenticated user
-            const author = req.user.id
+            const authorId = req.user.id
+
+            const author = await User.findById(authorId);
 
             // Create new blog document
             const newBlog = new Blog({
@@ -23,22 +27,38 @@ class BlogController {
                 title,
                 content,
                 coverImage,
+                excerpt,
+                tags
             });
 
             // Save the new blog to the database
             await newBlog.save();
 
-            // Add the new blog ID to the user's blogs array
-            const user = await User.findById(author);
-            if (user) {
-                user.blogs.push(newBlog._id);
-                await user.save();
+            // Increase the number of blogs for the author
+            author.blogsCount += 1;
+            await author.save();
+
+            if(newBlog) {
+                createNotification(
+                    author._id,
+                    author._id,
+                    'blog',
+                    { id: newBlog._id, type: 'Blog' },
+                    `Your blog has been published!`,
+                    `Your blog "${newBlog.title}" is now live! Check it out and share your thoughts.`,
+                    `/blog/${newBlog._id}`,
+                    {
+                        type: 'blog',
+                        title: newBlog.title,
+                        excerpt: newBlog.excerpt,
+                    }
+                );
             }
 
             // Respond with the created blog
             return res.status(201).json({ 
                 success: true, 
-                blog: newBlog 
+                // blog: newBlog 
             });
         } catch (error) {
             console.error('Error creating blog:', error);
@@ -52,12 +72,13 @@ class BlogController {
 
     static async getAllBlogs(req, res) {
         // Validate and sanitize input
-        const { page = 1, limit = 9, viewType, sortBy } = req.query;
+        const { page = 1, limit = 10, viewType, sortBy } = req.query;
         const pageInt = parseInt(page, 10);
         const limitInt = parseInt(limit, 10);
         
         // Input validation
         if (pageInt < 1 || limitInt < 1 || isNaN(pageInt) || isNaN(limitInt)) {
+            console.error('Invalid pagination parameters:', { page: pageInt, limit: limitInt });
             return res.status(400).json({ 
                 success: false, 
                 message: 'Page and limit must be positive integers',
@@ -123,7 +144,9 @@ class BlogController {
 
             // Execute paginated query
             const [blogs, totalBlogs] = await Promise.all([
-                Blog.find(queryConditions)
+                Blog.find(queryConditions,
+                    'title content coverImage likes comments views readTime createdAt images tags excerpt'
+                )
                     .sort(sort)
                     .skip((pageInt - 1) * limitInt)
                     .limit(limitInt)
@@ -137,26 +160,9 @@ class BlogController {
 
             // Format the response data
             const formattedBlogs = blogs.map(blog => ({
-                _id: blog._id,
-                title: blog.title,
-                content: blog.content,
-                coverImage: blog.coverImage,
+                ...blog,
                 likes: blog.likes?.length || 0,
                 isLiked: blog.likes?.some(like => like.user.toString() === req.user?.id) || false,
-                comments: blog.comments?.length || 0,
-                views: blog.views || 0,
-                readTime: blog.readTime,
-                createdAt: blog.createdAt,
-                images: blog.images || [],
-                tags: blog.tags || [],
-                excerpt: blog.excerpt,
-                author: {
-                    username: blog.author?.username,
-                    avatar: blog.author?.avatar,
-                    isVerified: blog.author?.isVerified || false,
-                    bio: blog.author?.bio,
-                    followers: blog.author?.followers?.length || 0
-                }
             }));
 
             console.log(`Fetched ${blogs.length} blogs for page ${pageInt} with limit ${limitInt} (viewType: ${viewType})`);
@@ -204,16 +210,18 @@ class BlogController {
             const userId = req.user?.id || null;
 
             const blogDoc = await Blog.findById(id)
-            .populate('author', 'avatar username isVerified bio followers following');
+            .populate('author', 'username avatar isVerified bio followers following');
 
             if (!blogDoc) {
             return res.status(404).json({
                 success: false,
-                message: 'Blog not found',
+                message: 'Blog not found: ' + req.originalUrl,
             });
             }
 
             const isLiked = blogDoc.likes.find(like => like.user.toString() === userId) ? true : false;
+
+            console.log("Avatar: ", blogDoc.author);
 
             return res.status(200).json({
                 success: true,
@@ -225,6 +233,8 @@ class BlogController {
                     isLiked,
                     likes: blogDoc.likes.length,
                     comments: blogDoc.comments.length,
+                    isBookmarked: blogDoc.bookmarks.includes(userId),
+                    bookmarks: blogDoc.bookmarks.length,
                     views: blogDoc.views,
                     readTime: blogDoc.readTime,
                     createdAt: blogDoc.createdAt,
@@ -232,12 +242,13 @@ class BlogController {
                     tags: blogDoc.tags,
                     excerpt: blogDoc.excerpt,
                     author: {
+                        _id: blogDoc.author._id,
                         username: blogDoc.author.username,
                         avatar: blogDoc.author.avatar,
                         isVerified: blogDoc.author.isVerified,
                         bio: blogDoc.author.bio,
-                        following: blogDoc.author.following.length,
-                        followers: blogDoc.author.followers.length
+                        follows: blogDoc.author.followers.length,
+                        isFollowed: userId ? blogDoc.author.followers.includes(userId) : false
                     },
                 }
             });
@@ -399,42 +410,342 @@ class BlogController {
         }
     }
 
-    static async likeBlog(req, res) {
+    static async BlogActions(req, res) {
         try {
-            const blogDoc = await Blog.findById(req.params.id);
-
-            if (!blogDoc) {
-                return res.status(404).json({ error: 'Blog not found' });
+            const { actionType } = req.body;
+            if (!actionType) {
+                console.error('Action type is required');
+                return res.status(400).json({ error: 'Action type is required' });
             }
+            const blogId = await handlePostActions(actionType, req);
 
-            // Check if user already liked the blog
-            const existingLikeIndex = blogDoc.likes.findIndex(like => like.user.toString() === req.user._id.toString());
+            const updatedReq = {
+                ...req,  // copy all existing properties
+                params: { ...req.params, id: blogId },  // update the id param
+                originalUrl: `/api/v1/blogs/${blogId}`,  // update the URL if needed
+            };
 
-            let liked = false;
-            
-            if (existingLikeIndex > -1) {
-                // User already liked, remove the like
-                blogDoc.likes.splice(existingLikeIndex, 1);
-                console.log(`Like removed`);
-            } else {
-                // User hasn't liked, add the like
-                blogDoc.likes.push({
-                    user: req.user._id,
-                    createdAt: new Date()
-                });
-                console.log(`Like added`);
+            if (actionType !== 'follow') {
+                return BlogController.getBlogById(updatedReq, res); // Fetch updated blog details
             }
-
-            await blogDoc.save();
-
-            res.json({
-                message: liked ? 'Post liked successfully' : 'Post unliked successfully'
+            return res.status(200).json({
+                success: true,
+                message: `Action ${actionType} performed successfully`,
             });
         } catch (error) {
-            res.status(500).json({ error: error.message });
             console.error('Error liking blog:', error);
+            res.status(500).json({ error: error.message });
         }
     }
+
+    static async getBlogComments(req, res) {
+        const { id } = req.params;
+        const userId = req.user.id;
+
+        try {
+            // Check if blog exists
+            const exists = await Blog.findOne({ _id: id }, { _id: 1 });
+            if (!exists) {
+            return res.status(404).json({
+                success: false,
+                message: 'Blog not found',
+            });
+            }
+
+            // Find top-level comments (assuming replies are nested inside each comment)
+            const comments = await Comment.find({ blog: id, replyTo: null }) // top-level comments only
+            .populate('user', 'username avatar isVerified')
+            .populate({
+                path: 'replies',
+                populate: [
+                { path: 'user', select: 'username avatar isVerified' },
+                {
+                    path: 'replies',
+                    populate: [
+                    { path: 'user', select: 'username avatar isVerified' },
+                    {
+                        path: 'replies',
+                        populate: { path: 'user', select: 'username avatar isVerified' },
+                    },
+                    ],
+                },
+                ],
+            })
+            .sort({ createdAt: -1 }) // newest first
+            .lean();
+
+            return res.status(200).json({
+            success: true,
+            comments,
+            });
+        } catch (error) {
+            console.error('Error fetching blog comments:', error);
+            return res.status(500).json({
+            success: false,
+            message: 'Server Error. Please try again later.',
+            });
+        }
+        }
+    static async commentCount(req, res) {
+        const { id } = req.params;
+
+        try {
+            // Check if blog is exists
+            const exists = await Blog.findOne({ _id: id }, { _id: 1 });
+            if (!exists) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Blog not found'
+                });
+            }
+
+            // Count comments for the blog
+            const count = await Comment.countDocuments({ blog: id });
+
+            return res.status(200).json({
+                success: true,
+                count
+            });
+        } catch (error) {
+            console.error('Error fetching blog comment count:', error);
+            return res.status(500).json({
+                success: false,
+                message: 'Server Error. Please try again later.'
+            });
+        }
+    }
+
+    static async addComment(req, res) {
+        const { id } = req.params;
+        const { content, replyingTo } = req.body;
+
+        try {
+            const blogExists = await Blog.findById(id).populate('author', 'notification');
+            if (!blogExists) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Blog not found',
+                });
+            }
+
+            const newCommentData = {
+                user: req.user.id,
+                blog: id,
+                content,
+                isAuthor: blogExists.author.equals(req.user.id),
+                replyTo: replyingTo || null,  // <-- set parent comment ID or null
+            };
+
+            const newComment = new Comment(newCommentData);
+            await newComment.save();    
+
+            if (replyingTo) {
+                const parentComment = await Comment.findById(replyingTo);
+                if (!parentComment) {
+                    return res.status(404).json({
+                    success: false,
+                    message: 'Comment not found',
+                    });
+                }
+                if (!parentComment.blog.equals(id)) {
+                    return res.status(400).json({
+                    success: false,
+                    message: 'Reply comment does not belong to the same blog',
+                    });
+                }
+
+                await Comment.findByIdAndUpdate(replyingTo, {
+                    $push: { replies: newComment._id },
+                    $inc: { repliesCount: 1 },
+                });
+            }
+
+            await newComment.populate('user', 'username avatar isVerified');
+
+            if (blogExists.author.notification.comment) {
+                createNotification(
+                    blogExists.author._id,
+                    req.user._id,
+                    'comment',
+                    { id: newComment._id, type: 'Comment' },
+                    `${req.user.username} commented on your post`,
+                    `${req.user.username} shared his thoughts on your article: 
+                        '${newComment.content.slice(0, 20)}...' — join the discussion!`,
+                    `/blog/${id}/comment#${newComment._id}`,
+                );
+            }
+
+            return res.status(201).json({
+                success: true,
+                comment: newComment.toObject(),
+            });
+        } catch (error) {
+            console.error('Error adding comment:', error);
+            return res.status(500).json({
+                success: false,
+                message: 'Server Error. Please try again later.',
+            });
+        }
+    }
+
+
+    static async updateComment(req, res) {
+        const { id } = req.params;
+        const { content } = req.body;
+
+        try {
+            // Find the comment by ID
+            const comment = await Comment.findById(id);
+            if (!comment) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Comment not found'
+                });
+            }
+
+            // Update the comment content
+            comment.content = content;
+            comment.updatedAt = new Date(); // Update the timestamp
+            await comment.save();
+
+            return res.status(200).json({
+                success: true,
+                comment: comment.toObject() // Convert to plain object
+            });
+        } catch (error) {
+            console.error('Error updating comment:', error);
+            return res.status(500).json({
+                success: false,
+                message: 'Server Error. Please try again later.'
+            });
+        }
+    }
+
+    static async deleteComment(req, res) {
+        const { id } = req.params;
+
+        try {
+            // Find the comment by ID
+            const comment = await Comment.deleteOne({ _id: id });
+            if (!comment) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Comment not found'
+                });
+            }
+
+            return res.status(200).json({
+                success: true,
+                message: 'Comment deleted successfully'
+            });
+        } catch (error) {
+            console.error('Error deleting comment:', error);
+            return res.status(500).json({
+                success: false,
+                message: 'Server Error. Please try again later.'
+            });
+        }
+    }
+
+    static async toggleCommentLike(req, res) {
+        const { id } = req.params;
+        const { blogId } = req.body; // Get blogId from request body
+
+        try {
+            const blog = await Blog.findOne({ _id: blogId }, { author: 1 }).populate('author', 'notification');
+            // Find the comment by ID
+            const comment = await Comment.findById(id)
+            if (!comment) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Comment not found'
+                });
+            }
+
+            // Check if the user has already liked the comment
+            const userId = req.user.id;
+
+            const hasLiked = comment.likes?.includes(userId);
+
+            if (hasLiked) {
+                // Remove like
+                comment.likes.pull(userId);
+            } else {
+                // Add like
+                comment.likes.push(userId);
+            }
+
+            const isAuthorLiked = blog.author.equals(userId);
+            console.log("Author: ", blog.author, "User: ", userId, "isAuthorLiked: ", isAuthorLiked);
+
+            // Update the like status
+            comment.isAuthorLiked = isAuthorLiked;
+            comment.liked = !hasLiked;
+            comment.likeCount = comment.likes.length;
+
+            await comment.save();
+
+            if (!hasLiked && blog.author.notification.like) {
+                createNotification(
+                    comment.user,
+                    blog.author._id,
+                    'like',
+                    { id: comment._id, type: 'Like' },
+                    `${req.user.username} liked your comment ${isAuthorLiked ? '🧡' : ''}`,
+                    `${isAuthorLiked ? 'The author appreciated your comment on '
+                    + blog.title + ' — your voice matters!' :
+                    `${req.user.username} liked your comment on '${blog.title}' — keep sharing your thoughts!`}`,
+                    `/blog/${blogId}/comment#${comment._id}`,
+                );
+            }
+
+            return res.status(200).json({
+                success: true,
+                liked: !hasLiked, // Return the new like status
+                likeCount: comment.likes.length
+            });
+        } catch (error) {
+            console.error('Error toggling comment like:', error);
+            return res.status(500).json({
+                success: false,
+                message: 'Server Error. Please try again later.'
+            });
+        }
+    }
+
+    static async getUserBlogs(req, res) {
+        const { username } = req.params;
+        const { limit, offset } = req.query;
+
+        try {
+            const exists = await User.findOne({ username }, { _id: 1 });
+            if (!exists) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'User not found'
+                });
+            }
+
+            const blogs = await Blog.find({ author: exists._id })
+                .skip(parseInt(offset) || 0)
+                .limit(parseInt(limit) || 10)
+                .sort({ createdAt: -1 }) // Sort by creation date, newest first
+                .populate('author', 'username avatar isVerified bio followers following')
+                .lean(); // Use lean to get plain JavaScript objects
+           
+            return res.status(200).json({
+                success: true,
+                blogs
+            })
+        } catch (error) {
+            console.error(error)
+            res.status(500).json({
+                success: false,
+                message: error.message
+            })
+        }
+
+        }
 }
 
 export default BlogController;

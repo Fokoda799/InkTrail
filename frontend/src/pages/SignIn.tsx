@@ -25,13 +25,13 @@ const SignIn: React.FC<SignInProps> = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [localError, setLocalError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const navigate = useNavigate();
   const { login, oAuth } = useAuth(); // Assuming useAuth is a custom hook for authentication
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (isLoading) return; // Prevent multiple submissions
     setLocalError('');
     
     if (!email || !password) {
@@ -44,20 +44,23 @@ const SignIn: React.FC<SignInProps> = () => {
       return;
     }
 
-    setIsSubmitting(true);
+    setIsLoading(true);
     
     try {
       await login(email, password);
       navigate('/'); // Redirect to home on successful sign-in
     } catch (err) {
-      setLocalError('Sign in failed. Please try again.: ' + err);
+      setLocalError(
+        'Sign in failed. Please try again: ' +
+        (err instanceof Error ? err.message : String(err))
+      );
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
   const handleGoogleSignIn = async () => {
-    if (isLoading || isSubmitting) return; // Prevent multiple clicks
+    if (isLoading) return; // Prevent multiple clicks
     setIsLoading(true);
     setLocalError('');
     
@@ -74,16 +77,13 @@ const SignIn: React.FC<SignInProps> = () => {
     }
   };
 
-  const displayError = localError;
-  const loading = isLoading || isSubmitting;
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 flex items-center justify-center p-4">
       {/* Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
+      {/* <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-gradient-to-br from-amber-400/10 to-orange-400/10 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-br from-orange-400/10 to-red-400/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-      </div>
+      </div> */}
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -109,14 +109,14 @@ const SignIn: React.FC<SignInProps> = () => {
           </div>
 
           {/* Error Message */}
-          {displayError && (
+          {localError && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3"
             >
               <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-              <p className="text-red-700 text-sm">{displayError}</p>
+              <p className="text-red-700 text-sm">{localError}</p>
             </motion.div>
           )}
 
@@ -188,12 +188,12 @@ const SignIn: React.FC<SignInProps> = () => {
             {/* Sign In Button */}
             <motion.button
               type="submit"
-              disabled={loading}
-              whileHover={{ scale: loading ? 1 : 1.02 }}
-              whileTap={{ scale: loading ? 1 : 0.98 }}
+              disabled={isLoading}
+              whileHover={{ scale: isLoading ? 1 : 1.02 }}
+              whileTap={{ scale: isLoading ? 1 : 0.98 }}
               className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg font-semibold hover:from-amber-600 hover:to-orange-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? (
+              {isLoading ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
                   Signing In...
@@ -222,7 +222,7 @@ const SignIn: React.FC<SignInProps> = () => {
             whileTap={{ scale: 0.98 }}
             className="w-full flex items-center justify-center gap-3 px-6 py-3 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200"
           >
-            {loading ? (
+            {isLoading ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
                   Loading...

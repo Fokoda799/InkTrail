@@ -8,13 +8,15 @@ import {
   User, 
   Settings, 
   LogOut, 
-  Edit3, 
-  Send,
+  Edit3,
   Home,
   Info,
   UserPlus,
   LogIn
 } from 'lucide-react';
+import SearchBar from '../AppComponents/SearchBar';
+import { NotificationsMenu } from './NotificationsMenu';
+import { getUnreadCount } from '../../api/notificationApi';
 
 interface User {
   username: string;
@@ -33,20 +35,37 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ 
   user, 
   isAuthenticated,
-  onPublish, 
   onLogout 
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   
   const navigate = useNavigate();
   const location = useLocation();
   const path = location.pathname;
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
-  const searchRef = useRef<HTMLDivElement>(null);
   const isAuthorized = isAuthenticated && user?.isVerified;
+  const pathname = location.pathname === '/results';
+
+  // Fetch unread notifications count on mount
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      try {
+        const count = await getUnreadCount();
+        setUnreadCount(count);
+      } catch (error) {
+        console.error("Failed to fetch unread notifications count:", error);
+      }
+    };
+
+    if (!isAuthenticated) return;
+
+    fetchUnreadCount();
+  }, []);
+
   // Close menus when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -55,9 +74,6 @@ const Header: React.FC<HeaderProps> = ({
       }
       if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
         setIsNotificationsOpen(false);
-      }
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-        setIsSearchFocused(false);
       }
     };
 
@@ -83,49 +99,6 @@ const Header: React.FC<HeaderProps> = ({
     );
   };
 
-  const NotificationsMenu = () => (
-    <AnimatePresence>
-      {isNotificationsOpen && (
-        <motion.div
-          ref={notificationsRef}
-          initial={{ opacity: 0, scale: 0.95, y: -10 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: -10 }}
-          className="absolute right-0 top-full mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50"
-        >
-          <div className="p-4 border-b border-gray-100">
-            <h3 className="font-semibold text-gray-900">Notifications</h3>
-          </div>
-          <div className="max-h-96 overflow-y-auto">
-            {[
-              { id: 1, type: 'info', message: 'Your post received 5 new likes', time: '2 min ago' },
-              { id: 2, type: 'warning', message: 'Your draft will be deleted in 7 days', time: '1 hour ago' },
-              { id: 3, type: 'success', message: 'Welcome to InkTrail!', time: '1 day ago' }
-            ].map((notification) => (
-              <div key={notification.id} className="p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors duration-150">
-                <div className="flex items-start gap-3">
-                  <div className={`w-2 h-2 rounded-full mt-2 ${
-                    notification.type === 'info' ? 'bg-blue-500' :
-                    notification.type === 'warning' ? 'bg-yellow-500' : 'bg-green-500'
-                  }`} />
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-900">{notification.message}</p>
-                    <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="p-3 border-t border-gray-100">
-            <button className="w-full text-center text-sm text-amber-600 hover:text-amber-700 font-medium">
-              View all notifications
-            </button>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-
   const ProfileMenu = () => (
     <AnimatePresence>
       {isProfileMenuOpen && (
@@ -134,7 +107,7 @@ const Header: React.FC<HeaderProps> = ({
           initial={{ opacity: 0, scale: 0.95, y: -10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: -10 }}
-          className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 z-50"
+          className="z-50 fixed right-3 top-full mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200"
         >
           <div className="p-4 border-b border-gray-100">
             <div className="flex items-center gap-3">
@@ -149,7 +122,7 @@ const Header: React.FC<HeaderProps> = ({
           <div className="py-2">
             <button
               onClick={() => {
-                navigate('/profile');
+                navigate('/profile/' + user?.username);
                 setIsProfileMenuOpen(false);
               }}
               className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-gray-50 transition-colors duration-150"
@@ -313,7 +286,7 @@ const Header: React.FC<HeaderProps> = ({
   );
 
   return (
-    <header className="sticky top-0 z-40 bg-white border-b border-gray-200 backdrop-blur-sm bg-white/95">
+    <header className="fixed top-0 left-0 w-full z-50 bg-white border-b border-gray-200 backdrop-blur-sm bg-white/95">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -331,23 +304,16 @@ const Header: React.FC<HeaderProps> = ({
             </button>
           </div>
 
+          {/* Search Bar */}
+          {pathname && <SearchBar />}
+
           {/* Navigation */}
           <div className="flex items-center gap-4">
             {isAuthorized ? (
               <>
                 {/* Action Buttons */}
                 <div className="hidden md:flex items-center gap-2">
-                  {location.pathname === '/new-fact' ? (
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={onPublish}
-                      className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-full hover:from-amber-600 hover:to-orange-600 transition-all duration-200 font-medium"
-                    >
-                      <Send className="w-4 h-4" />
-                      Publish
-                    </motion.button>
-                  ) : (
+                  {path !== '/new-fact' && (
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
@@ -361,16 +327,29 @@ const Header: React.FC<HeaderProps> = ({
                 </div>
 
                 {/* Notifications */}
-                <div className="relative hidden md:block">
-                  <button
-                    onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-                    className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-all duration-150"
-                  >
-                    <Bell className="w-5 h-5" />
-                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
-                  </button>
-                  <NotificationsMenu />
-                </div>
+                {location.pathname !== '/notifications' && (
+                  <div className="relative hidden md:block">
+                    <button
+                      onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                      className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-all duration-150"
+                    >
+                      <Bell className="w-5 h-5" />
+                      {unreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 pb-0.5 text-xs font-bold flex items-center justify-center bg-red-500 text-white rounded-full border border-white">
+                          {unreadCount}
+                        </span>
+                      )}
+                    </button>
+                    <NotificationsMenu
+                      isNotificationsOpen={isNotificationsOpen}
+                      setIsNotificationsOpen={setIsNotificationsOpen}
+                      notificationsRef={notificationsRef}
+                      setBadgeUnreadCount={setUnreadCount} // Pass function to update badge count
+                      badgeUnreadCount={unreadCount}
+                    />
+                  </div>
+
+                )}
 
                 {/* Profile Menu */}
                 <div className="relative hidden md:block">

@@ -5,8 +5,6 @@ import './SearchBar.css';
 
 const SearchBar: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [category, setCategory] = useState<string>('all');
-  const [sort, setSort] = useState<string>('desc');
   
   const navigate = useNavigate();
 
@@ -17,7 +15,7 @@ const SearchBar: React.FC = () => {
   const handleSearch = () => {
     if (searchTerm.trim() === '') return;
     // Navigate to search results page with query parameters
-    navigate(`/search?term=${searchTerm}&category=${category}&sort=${sort}`);
+    navigate(`/search?term=${searchTerm}`);
   };
 
   return (

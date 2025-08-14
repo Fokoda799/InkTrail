@@ -1,5 +1,5 @@
 // components/AlertTemplate.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { AiOutlineClose } from 'react-icons/ai';
 import { FiCheckCircle, FiInfo, FiAlertTriangle } from 'react-icons/fi';
 
@@ -21,7 +21,7 @@ const typeStyles = {
     text: 'text-amber-800',
     iconBg: 'bg-gradient-to-br from-amber-400 to-orange-500',
     bar: 'bg-gradient-to-r from-amber-500 to-orange-500',
-    hover: 'hover:bg-amber-100/30', // Added specific hover colors for each type
+    hover: 'hover:bg-amber-100/30',
   },
   success: {
     icon: <FiCheckCircle className="w-5 h-5" />,
@@ -43,25 +43,24 @@ const typeStyles = {
   },
 };
 
-const AlertTemplate: React.FC<AlertTemplateProps> = ({ message, options, close }) => {
+const AlertTemplate: React.FC<AlertTemplateProps> = ({ style, options, message, close }) => {
   const { type, timeout = 5000 } = options;
   const styles = typeStyles[type] || typeStyles.info;
 
   const [progress, setProgress] = useState(0);
   const [isClosing, setIsClosing] = useState(false);
 
-  const handleClose = () => {
-    console.log('Closing alert');
+  const handleClose = useCallback(() => {
     setIsClosing(true);
-    setTimeout(() => close(), 300);
-  };
+    setTimeout(() => close(), 250);
+  }, [close]);
 
   useEffect(() => {
-    const interval = 100;
+    const interval = 50; // smoother progress bar animation
     const increment = (interval / timeout) * 100;
 
     const timer = setInterval(() => {
-      setProgress((prev) => {
+      setProgress(prev => {
         if (prev + increment >= 100) {
           clearInterval(timer);
           handleClose();
@@ -72,14 +71,17 @@ const AlertTemplate: React.FC<AlertTemplateProps> = ({ message, options, close }
     }, interval);
 
     return () => clearInterval(timer);
-  }, [timeout]);
+  }, [timeout, handleClose]);
 
   return (
-    <div className={`relative overflow-hidden transition-all duration-300 ease-out mb-3 ml-3  ${
-      isClosing ? 'opacity-0 scale-95 translate-y-2' : 'opacity-100 scale-100'
-    }`}>
+    <div
+      style={style}
+      className={`relative overflow-hidden transition-all duration-300 ease-out mb-3 ml-3 pointer-events-auto
+        ${isClosing ? 'opacity-0 scale-95 translate-y-2' : 'opacity-100 scale-100'}`}
+    >
       <div
-        className={`flex items-center gap-4 px-6 py-4 rounded-xl shadow-lg border ${styles.bg} ${styles.border} ${styles.text} backdrop-blur-md bg-opacity-80`}
+        className={`flex items-center gap-4 px-6 py-4 rounded-xl shadow-lg border 
+          ${styles.bg} ${styles.border} ${styles.text} backdrop-blur-md bg-opacity-80`}
       >
         <div className={`p-2 ${styles.iconBg} rounded-full text-white flex-shrink-0 shadow-inner`}>
           {styles.icon}
@@ -87,7 +89,7 @@ const AlertTemplate: React.FC<AlertTemplateProps> = ({ message, options, close }
         <span className="flex-1 text-sm font-medium leading-relaxed">{message}</span>
         <button
           onClick={handleClose}
-          className={`p-1.5 rounded-full transition-all duration-200 flex-shrink-0 active:scale-90 ${styles.hover}`}
+          className={`p-1.5 rounded-full z-10 transition-all duration-200 flex-shrink-0 active:scale-90 ${styles.hover}`}
           aria-label="Close alert"
         >
           <AiOutlineClose className="w-4 h-4 opacity-70 hover:opacity-100" />
@@ -95,12 +97,13 @@ const AlertTemplate: React.FC<AlertTemplateProps> = ({ message, options, close }
       </div>
 
       {/* Progress Bar */}
-      <div className="absolute bottom-0 left-0 w-full h-1 bg-gray-100/50 overflow-hidden rounded-b">
+      <div className="absolute bottom-0 left-0 w-full h-1 bg-gray-100/50 overflow-hidden rounded-b pointer-events-none">
         <div
-          className={`h-full ${styles.bar} transition-all duration-100 ease-linear`}
+          className={`h-full ${styles.bar} transition-[width] duration-50 ease-linear`}
           style={{ width: `${progress}%` }}
         />
       </div>
+
     </div>
   );
 };

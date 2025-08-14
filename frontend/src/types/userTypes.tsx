@@ -25,8 +25,23 @@ export interface User {
     avatar?: string;
     bio?: string;
     blogs?: Blog[];
+    blogsCount: number;
+    bookmarks: Blog[];
     following: string[];
     followers: string[];
+    isFollowed: boolean;
+    theme?: 'light' | 'dark' | 'system';
+    Language?: 'en' | 'fr' | 'ar';
+    notification: {
+        like: boolean;
+        follow: boolean;
+        comment: boolean;
+        costume: boolean;
+        email: boolean;
+        push: boolean;
+    };
+    createdAt: string;
+    updatedAt: string;
 }
 
 // User state types

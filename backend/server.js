@@ -1,12 +1,20 @@
 import express from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
+import http from 'http';
+import { Server } from 'socket.io';
 import colors from 'colors';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import connectDB from './config/db.js';
-import {userRouter, authRouter, adminRouter} from './routes/userRoutes.js';
+import {
+  userRouter,
+  authRouter,
+  adminRouter,
+} from './routes/userRoutes.js';
 import blogRouter from './routes/blogRoutes.js';
+import searchRouter from './routes/searchRoutes.js';
+import notificationRouter from './routes/notificationRoutes.js';
 import error from './middlewares/error.js';
 
 // Load env variables
@@ -14,6 +22,42 @@ dotenv.config();
 
 // Create express app
 const app = express();
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    methods: ['GET', 'POST'],
+    credentials: true,
+  }
+})
+
+app.set("io", io);
+
+// Store connected users
+let connectedUsers = {};
+
+io.on("connection", (socket) => {
+  console.log("Socket connected:", socket.id);
+
+  socket.on("registerUser", (userId) => {
+    connectedUsers[userId] = socket.id;
+    socket.join(userId.toString());
+    console.log(`User ${userId} joined their notification room`);
+  });
+
+  socket.on("disconnect", () => {
+    for (const [userId, id] of Object.entries(connectedUsers)) {
+      if (id === socket.id) {
+        delete connectedUsers[userId];
+        console.log(`User ${userId} disconnected`);
+        break;
+      }
+    }
+  });
+});
+
+export { io, connectedUsers }; // Export the io instance for use in other files
 
 // Middlewares
 app.use(cors());
@@ -31,6 +75,8 @@ app.use('/api/v1/user', userRouter);
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/admin', adminRouter);
 app.use('/api/v1/blogs', blogRouter);
+app.use('/api/v1/search', searchRouter);
+app.use('/api/v1/notifications', notificationRouter);
 
 // Centralized error handling middleware
 app.use(error);
@@ -41,6 +87,17 @@ connectDB();
 // Listen
 const PORT = process.env.PORT || 8080;
 const DEV_MODE = process.env.DEV_MODE || 'development';
-app.listen(PORT, () => {
-    console.log(`Server is running on ${DEV_MODE} mode, port ${PORT}`.bgWhite);
+
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, 'client/build')));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+  });
+}
+if (DEV_MODE === 'development') {
+  console.log('Running in development mode'.bgYellow);
+}
+
+server.listen(PORT, () => {
+  console.log(`Socket.IO server is running on port ${PORT}`.bgBlue);
 });

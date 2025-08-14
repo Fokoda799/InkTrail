@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { comment } from 'postcss';
 
 dotenv.config();
 
@@ -70,6 +71,18 @@ const blogSchema = new mongoose.Schema({
         default: [], // Optional: Provide a default empty array for images
     },
 }, { timestamps: true });
+
+blogSchema.index({ title: 'text' });
+
+blogSchema.pre('remove', async function(next) {
+  try {
+    // `this` is the blog document being removed
+    await mongoose.model('Comment').deleteMany({ blog: this._id });
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
 
 const Blog = mongoose.model('Blog', blogSchema);
 export default Blog;

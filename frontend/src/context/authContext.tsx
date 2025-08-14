@@ -1,78 +1,100 @@
 // context/AuthContext.tsx
 import React, { createContext, useEffect, useState } from 'react';
 import { User, SignUpData } from '../types/userTypes';
-import { signUp, logOut, signIn, verifyEmailToken, resendVerificationCode, linkWithGoogle } from '../api/authApi';
+import {
+  signUp,
+  logOut,
+  signIn,
+  verifyEmailToken,
+  resendVerificationCode,
+  linkWithGoogle,
+  getUser as fetchUser,
+  getMe,
+  updatePassword as updatePasswordApi,
+  deleteAccount as deleteAccountApi
+} from '../api/authApi';
+import { useNavigate } from 'react-router-dom';
 
 interface AuthContextType {
   user: User | null;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
   isAuthenticated: boolean;
-  isLoading: boolean; // Renamed from isCheckingAuth for clarity
-  isVerified: boolean; // Indicates if the user has verified their email
+  isLoading: boolean;
+  isVerified: boolean;
   register: (userData: SignUpData) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   verifyEmail: (token: string) => Promise<void>;
   resendVerificationEmail: (email: string) => Promise<void>;
   oAuth: () => Promise<void>;
+  getUser: (username: string) => Promise<User | null>;
+  updatePassword: (currentPassword: string | undefined, newPassword: string) => Promise<User | null>;
+  deleteAccount: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true); // Start with true to check auth status
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isVerified, setIsVerified] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const token = localStorage.getItem('token');
+  const navigate = useNavigate();
+
+  // Helper to store user
+  const storeUser = (user: User | null) => {
+    if (user) {
+      localStorage.setItem('authUser', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('authUser');
+    }
+    setUser(user);
+    setIsAuthenticated(!!user);
+    setIsVerified(user?.isVerified || false);
+  };
 
   useEffect(() => {
     const checkAuthStatus = async () => {
       setIsLoading(true);
       try {
-        const storedUser = localStorage.getItem('authUser');
-        if (storedUser) {
-          const parsedUser = JSON.parse(storedUser);
-          // Add token verification here if needed
-          setUser(parsedUser);
-          setIsVerified(parsedUser.isVerified || false);
+        const currentUser = await getMe();
+        if (currentUser) {
+          storeUser(currentUser);
         }
       } catch (error) {
         console.error('Error checking auth status:', error);
-        localStorage.removeItem('authUser');
-        setUser(null);
+        storeUser(null);
+        navigate('/welcome', { replace: true });
       } finally {
         setIsLoading(false);
       }
     };
-
+    if (!token) {
+      storeUser(null);
+      setIsLoading(false);
+      return;
+  }
     checkAuthStatus();
-  }, []);
+  }, []); // ✅ No unnecessary dependencies
 
   const register = async (userData: SignUpData) => {
-    setIsLoading(true);
     try {
       const res = await signUp(userData);
-      setUser(res.user);
-      setIsVerified(res.user.isVerified || false);
-      localStorage.setItem('authUser', JSON.stringify(res.user));
+      storeUser(res.user);
     } catch (error) {
       console.error('Registration error:', error);
       throw error;
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const login = async (email: string, password: string) => {
-    setIsLoading(true);
     try {
       const res = await signIn(email, password);
-      setUser(res.user);
-      setIsVerified(res.user.isVerified || false);
-      localStorage.setItem('authUser', JSON.stringify(res.user));
+      storeUser(res.user);
     } catch (error) {
       console.error('Login error:', error);
       throw error;
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -80,8 +102,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     try {
       await logOut();
-      setUser(null);
-      localStorage.removeItem('authUser');
+      storeUser(null);
+      navigate('/welcome', { replace: true }); // ✅ Redirect on logout
     } catch (error) {
       console.error('Logout error:', error);
       throw error;
@@ -91,17 +113,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const verifyEmail = async (token: string) => {
-    setIsLoading(true);
     try {
       const res = await verifyEmailToken(token);
-      setUser(res.user);
-      setIsVerified(res.user.isVerified || false);
-      localStorage.setItem('authUser', JSON.stringify(res.user));
+      storeUser(res.user);
     } catch (error) {
       console.error('Email verification error:', error);
       throw error;
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -115,23 +132,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const oAuth = async () => {
-    setIsLoading(true);
     try {
       const res = await linkWithGoogle();
-      setUser(res.user);
-      setIsVerified(res.user.isVerified || false);
-      localStorage.setItem('authUser', JSON.stringify(res.user));
+      storeUser(res.user);
     } catch (error) {
       console.error('OAuth error:', error);
       throw error;
-    } finally {
-      setIsLoading(false);
+    }
+  };
+
+  const handleUpdatePassword = async (currentPassword: string | undefined, newPassword: string) => {
+    try {
+      const updatedUser = await updatePasswordApi(currentPassword, newPassword);
+      storeUser(updatedUser);
+      return updatedUser;
+    } catch (error) {
+      console.error('Update password error:', error);
+      throw error;
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      await deleteAccountApi();
+      storeUser(null);
+      navigate('/welcome', { replace: true });
+    } catch (error) {
+      console.error('Delete account error:', error);
+      throw error;
     }
   };
 
   const value: AuthContextType = {
     user,
-    isAuthenticated: !!user,
+    setUser,
+    isAuthenticated,
     isLoading,
     isVerified,
     register,
@@ -139,7 +174,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     logout,
     verifyEmail,
     resendVerificationEmail,
-    oAuth
+    oAuth,
+    getUser: fetchUser,
+    updatePassword: handleUpdatePassword,
+    deleteAccount: handleDeleteAccount
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

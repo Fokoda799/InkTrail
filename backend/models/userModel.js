@@ -53,23 +53,69 @@ const userSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     }],
-    blogs: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Blog',
-        }
-    ],
+    isFollowed: {
+        type: Boolean,
+        default: false
+    },
+    blogsCount: {
+        type: Number,
+        default: 0
+    },
     history: [
         {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Blog',
         }
     ],
+    bookmarks: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Blog'
+    }],
+    theme: {
+        type: String,
+        enum: ['light', 'dark', 'system'],
+        default: 'system'
+    },
+    Language: {
+        type: String,
+        enum: ['en', 'fr', 'ar'],
+        default: 'en'
+    },
+    notification: {
+        like: {
+            type: Boolean,
+            default: true
+        },
+        comment: {
+            type: Boolean,
+            default: true
+        },
+        follow: {
+            type: Boolean,
+            default: true
+        },
+        custom: {
+            type: Boolean,
+            default: true
+        }
+    },
     resetPasswordToken: String,
     resetPasswordExpire: Date,
     verificationToken: String,
     verificationTokenExpiresAt: Date,
 }, { timestamps: true });
+
+userSchema.index({ username: 'text'});
+
+userSchema.pre('remove', async function(next) {
+  try {
+    // `this` is the user document being removed
+    await mongoose.model('Blog').deleteMany({ author: this._id });
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
 
 // Hash password before saving user
 userSchema.pre('save', async function (next) {
@@ -99,6 +145,22 @@ userSchema.methods.getJWTToken = function () {
         expiresIn: process.env.JWT_EXPIRES || '1d',
     });
 }
+
+// Method to update password directly without comparing
+userSchema.methods.updatePassword = async function (newPassword) {
+  if (!newPassword || newPassword.length < 6) {
+    throw new Error('New password must be at least 6 characters long');
+  }
+
+  this.password = newPassword;
+  this.withPassword = true;
+
+  // Save user document (will trigger pre-save hook to hash)
+  await this.save();
+
+  return true;
+};
+
 
 // Generate password reset token
 userSchema.methods.getResetPasswordToken = function () {
