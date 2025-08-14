@@ -16,7 +16,8 @@ import blogRouter from './routes/blogRoutes.js';
 import searchRouter from './routes/searchRoutes.js';
 import notificationRouter from './routes/notificationRoutes.js';
 import error from './middlewares/error.js';
-import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
 // Load env variables
 dotenv.config();
@@ -66,6 +67,9 @@ app.use(express.json());
 app.use(morgan('dev'));
 app.use(cookieParser());
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 // Routes
 app.get('/', (req, res) => {
   res.status(200).json({'message': 'API is running...'});
@@ -90,11 +94,12 @@ const PORT = process.env.PORT || 8080;
 const DEV_MODE = process.env.DEV_MODE || 'development';
 
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, 'client/build')));
+  app.use(express.static(join(__dirname, 'frontend/build')));
   app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+    res.sendFile(join(__dirname, 'frontend/build', 'index.html'));
   });
 }
+
 if (DEV_MODE === 'development') {
   console.log('Running in development mode'.bgYellow);
 }
