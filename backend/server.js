@@ -94,9 +94,9 @@ const PORT = process.env.PORT || 8080;
 const DEV_MODE = process.env.DEV_MODE || 'development';
 
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(join(__dirname, 'frontend/build')));
+  app.use(express.static(join(__dirname, '../frontend/build')));
   app.get('*', (req, res) => {
-    res.sendFile(join(__dirname, 'frontend/build', 'index.html'));
+    res.sendFile(join(__dirname, '../frontend/build', 'index.html'));
   });
 }
 
