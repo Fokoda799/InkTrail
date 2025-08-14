@@ -16,6 +16,7 @@ import blogRouter from './routes/blogRoutes.js';
 import searchRouter from './routes/searchRoutes.js';
 import notificationRouter from './routes/notificationRoutes.js';
 import error from './middlewares/error.js';
+import path from 'path';
 
 // Load env variables
 dotenv.config();
