@@ -1,12 +1,12 @@
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { SignUpData, User } from "../types/userTypes";
 import { app } from "../firebase";
-
-const API_BASE_URL = 'https://inktrail.onrender.com';
+import { defaultFetchOptions, apiUrl } from "./api";
 
 export const getMe = async (): Promise<User> => {
-  const res = await fetch(`${API_BASE_URL}/api/v1/auth/me`, {
+  const res = await fetch(apiUrl('/auth/me'), {
     method: 'GET',
+    ...defaultFetchOptions,
   });
   if (!res.ok) {
     console.error('Failed to fetch user data:', res.statusText);
@@ -18,11 +18,9 @@ export const getMe = async (): Promise<User> => {
 }
 
 export const signUp = async (userData: SignUpData) => {
-  const res = await fetch(`${API_BASE_URL}/api/v1/auth/sign-up`, {
+  const res = await fetch(apiUrl('/auth/sign-up'), {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    ...defaultFetchOptions,
     body: JSON.stringify(userData),
   });
   if (!res.ok) {
@@ -33,11 +31,9 @@ export const signUp = async (userData: SignUpData) => {
 };
 
 export const signIn = async (email: string, password: string) => {
-  const res = await fetch(`${API_BASE_URL}/api/v1/auth/sign-in`, {
+  const res = await fetch(apiUrl('/auth/sign-in'), {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    ...defaultFetchOptions,
     body: JSON.stringify({ email, password }),
   });
   if (!res.ok) {
@@ -48,8 +44,9 @@ export const signIn = async (email: string, password: string) => {
 };
 
 export const logOut = async () => {
-  const res = await fetch(`${API_BASE_URL}/api/v1/auth/logout`, {
+  const res = await fetch(apiUrl('/auth/logout'), {
     method: 'GET',
+    ...defaultFetchOptions,
   });
   if (!res.ok) {
     console.error('Failed to log out:', res.statusText);
@@ -59,11 +56,9 @@ export const logOut = async () => {
 }
 
 export const verifyEmailToken = async (token: string) => {
-  const res = await fetch(`${API_BASE_URL}/api/v1/auth/verify-email`, {
+  const res = await fetch(apiUrl('/auth/verify-email'), {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    ...defaultFetchOptions,
     body: JSON.stringify({ token }),
   });
   if (!res.ok) {
@@ -74,11 +69,9 @@ export const verifyEmailToken = async (token: string) => {
 };
 
 export const resendVerificationCode = async (email: string) => {
-  const res = await fetch(`${API_BASE_URL}/api/v1/auth/resend-verification-email`, {
+  const res = await fetch(apiUrl('/auth/resend-verification-email'), {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    ...defaultFetchOptions,
     body: JSON.stringify({ email }),
   });
   if (!res.ok) {
@@ -100,12 +93,9 @@ export const linkWithGoogle = async () => {
 
     if (!email) throw new Error("Missing email from Google account.");
 
-    const res = await fetch(`${API_BASE_URL}/api/v1/auth/google`, {
+    const res = await fetch(apiUrl('/auth/google'), {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
+      ...defaultFetchOptions,
       body: JSON.stringify({ username, email, avatar }),
     });
 
@@ -133,9 +123,9 @@ export const linkWithGoogle = async () => {
 
 export const getUser = async (username: string): Promise<User | null> => {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/v1/user/profile/${username}`, {
+    const res = await fetch(apiUrl(`/user/profile/${username}`), {
       method: 'GET',
-      credentials: 'include',
+      ...defaultFetchOptions,
     });
     if (!res.ok) {
       throw new Error('Failed to fetch user data');
@@ -148,11 +138,9 @@ export const getUser = async (username: string): Promise<User | null> => {
 };
 
 export const updatePassword = async (currentPassword: string | undefined, newPassword: string) => {
-  const res = await fetch(`${API_BASE_URL}/api/v1/auth/update-password`, {
+  const res = await fetch(apiUrl('/auth/update-password'), {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    ...defaultFetchOptions,
     body: JSON.stringify({ currentPassword, newPassword }),
   });
   if (!res.ok) {
@@ -164,11 +152,9 @@ export const updatePassword = async (currentPassword: string | undefined, newPas
 };
 
 export const deleteAccount = async () => {
-  const res = await fetch(`${API_BASE_URL}/api/v1/auth/delete-account`, {
+  const res = await fetch(apiUrl('/auth/delete-account'), {
     method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    ...defaultFetchOptions,
   });
   if (!res.ok) {
     const errorData = await res.json();

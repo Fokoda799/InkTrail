@@ -1,3 +1,5 @@
+import { apiUrl, defaultFetchOptions } from './api';
+
 interface UpdateUserData {
   username?: string;
   bio?: string;
@@ -13,11 +15,9 @@ interface UpdateUserData {
 }
 
 export const updateUser = async (updates: UpdateUserData) => {
-  const res = await fetch('/api/v1/user/me', {
+  const res = await fetch(apiUrl('/user/me'), {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    ...defaultFetchOptions,
     body: JSON.stringify(updates),
   });
 

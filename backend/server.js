@@ -62,7 +62,10 @@ io.on("connection", (socket) => {
 export { io, connectedUsers }; // Export the io instance for use in other files
 
 // Middlewares
-app.use(cors());
+app.use(cors({
+  origin: ['https://ink-trail-rouge.vercel.app'],
+  credentials: true
+}));  
 app.use(express.json());
 app.use(morgan('dev'));
 app.use(cookieParser());
