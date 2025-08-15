@@ -7,12 +7,15 @@ export function apiUrl(path: string) {
 
 export function defaultFetchOptions(): RequestInit {
   const token = localStorage.getItem('token');
+  if (!token) {
+    throw new Error('No token found. User must log in.');
+  }
   
   return {
-    credentials: 'include', // send cookies/JWT cookies with every request
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
+      'Authorization': token ? `Bearer ${token}` : '',
     },
+    credentials: 'include', // send cookies/JWT cookies with every request
   };
 }

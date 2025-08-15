@@ -60,7 +60,6 @@ export const logOut = async () => {
 export const verifyEmailToken = async (token: string) => {
   const res = await fetch(apiUrl('/auth/verify-email'), {
     method: 'POST',
-    ...defaultFetchOptions,
     body: JSON.stringify({ token }),
   });
   if (!res.ok) {

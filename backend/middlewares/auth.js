@@ -4,13 +4,16 @@ import jwt from "jsonwebtoken";
 import User from "../models/userModel.js";
 
 const isAuthenticatedUser = catchAsyncError(async (req, res, next) => {
-  const { token } = req.cookies;
+  let { token } = req.cookies;
 
   // Check if token is present
   if (!token) {
-    return next(
-      new ErrorHandler("Please Login to access this resources", 401)
-    );
+    token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return next(
+        new ErrorHandler("Please Login to access this resources", 401)
+      );
+    }
   }
 
   // Verify the token
