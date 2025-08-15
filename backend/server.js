@@ -28,7 +28,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: 'https://ink-trail-rouge.vercel.app/',
+    origin: 'https://ink-trail-rouge.vercel.app',
     methods: ['GET', 'POST'],
     credentials: true,
   }
