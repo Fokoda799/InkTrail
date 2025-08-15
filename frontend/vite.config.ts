@@ -14,7 +14,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://inktrail.onrender.com/',
+        target: 'https://inktrail.onrender.com',
         changeOrigin: true,
         secure: false
       }
