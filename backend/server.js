@@ -28,7 +28,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: 'https://ink-trail-rouge.vercel.app',
+    origin: 'https://ink-trail-rouge.vercel.app/',
     methods: ['GET', 'POST'],
     credentials: true,
   }
@@ -63,7 +63,7 @@ export { io, connectedUsers }; // Export the io instance for use in other files
 
 // Middlewares
 app.use(cors({
-  origin: ['https://ink-trail-rouge.vercel.app'],
+  origin: ['https://ink-trail-rouge.vercel.app/'],
   credentials: true
 }));  
 app.use(express.json());
