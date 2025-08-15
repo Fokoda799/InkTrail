@@ -20,7 +20,9 @@ export const getMe = async (): Promise<User> => {
 export const signUp = async (userData: SignUpData) => {
   const res = await fetch(apiUrl('/auth/sign-up'), {
     method: 'POST',
-    ...defaultFetchOptions,
+    headers: {
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify(userData),
   });
   if (!res.ok) {
