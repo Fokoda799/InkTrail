@@ -81,6 +81,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (userData: SignUpData) => {
     try {
       const res = await signUp(userData);
+      localStorage.setItem('token', res.token);
       storeUser(res.user);
     } catch (error) {
       console.error('Registration error:', error);
