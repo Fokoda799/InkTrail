@@ -26,7 +26,7 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-const frontendUrl = process.env.DEV_MODE === 'development' ? process.env.FRONTEND_URL || 'http://localhost:5173' : process.env.FRONTEND_URL;
+const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
 
 const io = new Server(server, {
   cors: {
