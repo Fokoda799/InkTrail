@@ -7,6 +7,10 @@ const sendToken = (user, statusCode, res) => {
     // expires: new Date(Date.now() + process.env.COOKIE_EXPIRE * 24 * 60 * 60 * 1000),
     httpOnly: true,
     secure: process.env.DEV_MODE === 'production',
+    sameSite: 'none', // Required for cross-site cookies
+    path: '/',
+    domain: '.onrender.app', // Or your production domain
+    maxAge: 24 * 60 * 60 * 1000 // 1 day
   };
 
   const plainUser = user.toObject();
