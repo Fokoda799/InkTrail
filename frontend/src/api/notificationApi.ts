@@ -1,5 +1,5 @@
 import { User } from '../types/userTypes';
-import { apiUrl, defaultFetchOptions } from './api';
+import { apiUrl } from './api';
 
 export interface Target {
   id: string;
@@ -29,7 +29,10 @@ export const fetchNotifications = async (options: { isRead?: boolean } = {}): Pr
 
   const res = await fetch(apiUrl(`/notifications?${params.toString()}`), {
     method: 'GET',
-    ...defaultFetchOptions,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
   });
 
   const data = await res.json();
@@ -40,7 +43,10 @@ export const fetchNotifications = async (options: { isRead?: boolean } = {}): Pr
 export const getUnreadCount = async (): Promise<number> => {
   const res = await fetch(apiUrl('/notifications/count'), {
     method: 'GET',
-    ...defaultFetchOptions,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.message || 'Failed to fetch unread count');
@@ -50,7 +56,10 @@ export const getUnreadCount = async (): Promise<number> => {
 export const markNotificationAsRead = async (notificationId: string): Promise<Notification> => {
   const res = await fetch(apiUrl(`/notifications/${notificationId}/read`), {
     method: 'PATCH',
-    ...defaultFetchOptions,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.message || 'Failed to mark notification as read');
@@ -60,7 +69,10 @@ export const markNotificationAsRead = async (notificationId: string): Promise<No
 export const markAllNotificationsAsRead = async (): Promise<Notification[]> => {
   const res = await fetch(apiUrl('/notifications/read-all'), {
     method: 'PATCH',
-    ...defaultFetchOptions,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.message || 'Failed to mark all as read');
@@ -70,7 +82,10 @@ export const markAllNotificationsAsRead = async (): Promise<Notification[]> => {
 export const deleteNotification = async (notificationId: string): Promise<{ message: string }> => {
   const res = await fetch(apiUrl(`/notifications/${notificationId}`), {
     method: 'DELETE',
-    ...defaultFetchOptions,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.message || 'Failed to delete notification');

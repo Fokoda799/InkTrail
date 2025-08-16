@@ -6,7 +6,7 @@ dotenv.config();
 
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGO_URI, {
+    const conn = await mongoose.connect(process.env.MONGO_URI || 'mongodb+srv://abdllahhadid:jm6N5mecAf0dMiH6@cluster0.k35nz8u.mongodb.net/inktrail_db?retryWrites=true&w=majority', {
       useNewUrlParser: true,
       useUnifiedTopology: true,
       serverSelectionTimeoutMS: 5000, // 5 seconds

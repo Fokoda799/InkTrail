@@ -1,5 +1,5 @@
 import { Blog, BlogInput, Comment, Like } from '../types/blogTypes';
-import { apiUrl, defaultFetchOptions } from './api';
+import { apiUrl } from './api';
 
 // Fetch all blogs
 export const fetchBlogs = async (
@@ -9,7 +9,10 @@ export const fetchBlogs = async (
 ): Promise<Blog[]> => {
   const res = await fetch(apiUrl(`/blogs?viewType=${viewType}&page=${page}&sortBy=${sortBy || ''}`), {
     method: 'GET',
-    ...defaultFetchOptions,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
   });
 
   const data = await res.json();
@@ -21,7 +24,10 @@ export const fetchBlogs = async (
 export const fetchBlogById = async (id: string): Promise<Blog> => {
   const res = await fetch(apiUrl(`/blogs/${id}`), {
     method: 'GET',
-    ...defaultFetchOptions,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
   });
 
   const data = await res.json();
@@ -33,7 +39,10 @@ export const fetchBlogById = async (id: string): Promise<Blog> => {
 export const createBlog = async (blogData: BlogInput): Promise<Blog> => {
   const res = await fetch(apiUrl('/blogs'), {
     method: 'POST',
-    ...defaultFetchOptions,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
     body: JSON.stringify(blogData),
   });
 
@@ -46,7 +55,10 @@ export const createBlog = async (blogData: BlogInput): Promise<Blog> => {
 export const updateBlog = async (id: string, blogData: BlogInput): Promise<Blog> => {
   const res = await fetch(apiUrl(`/blogs/${id}`), {
     method: 'PUT',
-    ...defaultFetchOptions,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
     body: JSON.stringify(blogData),
   });
 
@@ -59,7 +71,10 @@ export const updateBlog = async (id: string, blogData: BlogInput): Promise<Blog>
 export const deleteBlog = async (id: string) => {
   const res = await fetch(apiUrl(`/blogs/${id}`), {
     method: 'DELETE',
-    ...defaultFetchOptions,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
   });
 
   if (!res.ok) {
@@ -72,7 +87,10 @@ export const deleteBlog = async (id: string) => {
 export const toggleAction = async (id: string, actionType: string): Promise<Blog> => {
   const res = await fetch(apiUrl(`/blogs/${id}/action`), {
     method: 'POST',
-    ...defaultFetchOptions,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
     body: JSON.stringify({ actionType }),
   });
 
@@ -86,7 +104,10 @@ export class CommentActions {
   static async getComments(blogId: string): Promise<Comment[]> {
     const res = await fetch(apiUrl(`/blogs/${blogId}/comments`), {
       method: 'GET',
-      ...defaultFetchOptions,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || 'Failed to fetch comments');
@@ -96,7 +117,10 @@ export class CommentActions {
   static async getCommentCount(blogId: string): Promise<number> {
     const res = await fetch(apiUrl(`/blogs/${blogId}/comments/count`), {
       method: 'GET',
-      ...defaultFetchOptions,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || 'Failed to fetch comment count');
@@ -106,7 +130,10 @@ export class CommentActions {
   static async addComment(blogId: string, content: string, replyingTo?: string): Promise<Comment> {
     const res = await fetch(apiUrl(`/blogs/${blogId}/comments`), {
       method: 'POST',
-      ...defaultFetchOptions,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
       body: JSON.stringify({ content, replyingTo }),
     });
     const data = await res.json();
@@ -117,7 +144,10 @@ export class CommentActions {
   static async updateComment(commentId: string, content: string): Promise<Comment> {
     const res = await fetch(apiUrl(`/blogs/comments/${commentId}`), {
       method: 'PUT',
-      ...defaultFetchOptions,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
       body: JSON.stringify({ content }),
     });
     const data = await res.json();
@@ -128,7 +158,10 @@ export class CommentActions {
   static async deleteComment(commentId: string) {
     const res = await fetch(apiUrl(`/blogs/comments/${commentId}`), {
       method: 'DELETE',
-      ...defaultFetchOptions,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
     });
     if (!res.ok) {
       const errorData = await res.json();
@@ -139,7 +172,10 @@ export class CommentActions {
   static async toggleCommentLike(commentId: string, blogId: string): Promise<Like> {
     const res = await fetch(apiUrl(`/blogs/comments/${commentId}/like`), {
       method: 'POST',
-      ...defaultFetchOptions,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
       body: JSON.stringify({ blogId }),
     });
     const data = await res.json();
@@ -151,7 +187,10 @@ export class CommentActions {
 export const getBlogsByUsername = async (username: string, limit: number, offset: number): Promise<Blog[]> => {
   const res = await fetch(apiUrl(`/blogs/user/${username}?limit=${limit}&offset=${offset}`), {
     method: 'GET',
-    ...defaultFetchOptions,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
   });
 
   const data = await res.json();

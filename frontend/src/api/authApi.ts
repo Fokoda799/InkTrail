@@ -1,12 +1,15 @@
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { SignUpData, User } from "../types/userTypes";
 import { app } from "../firebase";
-import { defaultFetchOptions, apiUrl } from "./api";
+import { apiUrl } from "./api";
 
 export const getMe = async (): Promise<User> => {
   const res = await fetch(apiUrl('/auth/me'), {
     method: 'GET',
-    ...defaultFetchOptions,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
   });
   if (!res.ok) {
     console.error('Failed to fetch user data:', res.statusText);
@@ -23,10 +26,11 @@ export const signUp = async (userData: SignUpData) => {
     headers: {
       'Content-Type': 'application/json',
     },
+    credentials: 'include',
     body: JSON.stringify(userData),
   });
   if (!res.ok) {
-    const errorData = await res.json(); // 👈 Parse JSON response
+    const errorData = await res.json();
     throw new Error(errorData.message || 'Something went wrong');
   }
   return res.json();
@@ -35,11 +39,14 @@ export const signUp = async (userData: SignUpData) => {
 export const signIn = async (email: string, password: string) => {
   const res = await fetch(apiUrl('/auth/sign-in'), {
     method: 'POST',
-    ...defaultFetchOptions,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
     body: JSON.stringify({ email, password }),
   });
   if (!res.ok) {
-    const errorData = await res.json(); // 👈 Parse JSON response
+    const errorData = await res.json();
     throw new Error(errorData.message || 'Something went wrong');
   }
   return res.json();
@@ -48,7 +55,10 @@ export const signIn = async (email: string, password: string) => {
 export const logOut = async () => {
   const res = await fetch(apiUrl('/auth/logout'), {
     method: 'GET',
-    ...defaultFetchOptions,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
   });
   if (!res.ok) {
     console.error('Failed to log out:', res.statusText);
@@ -60,10 +70,14 @@ export const logOut = async () => {
 export const verifyEmailToken = async (token: string) => {
   const res = await fetch(apiUrl('/auth/verify-email'), {
     method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
     body: JSON.stringify({ token }),
   });
   if (!res.ok) {
-    const errorData = await res.json(); // 👈 Parse JSON response
+    const errorData = await res.json();
     throw new Error(errorData.message || 'Something went wrong');
   }
   return res.json();
@@ -72,11 +86,14 @@ export const verifyEmailToken = async (token: string) => {
 export const resendVerificationCode = async (email: string) => {
   const res = await fetch(apiUrl('/auth/resend-verification-email'), {
     method: 'POST',
-    ...defaultFetchOptions,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
     body: JSON.stringify({ email }),
   });
   if (!res.ok) {
-    const errorData = await res.json(); // 👈 Parse JSON response
+    const errorData = await res.json();
     throw new Error(errorData.message || 'Something went wrong');
   }
   return res.json();
@@ -96,7 +113,10 @@ export const linkWithGoogle = async () => {
 
     const res = await fetch(apiUrl('/auth/google'), {
       method: 'POST',
-      ...defaultFetchOptions,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
       body: JSON.stringify({ username, email, avatar }),
     });
 
@@ -121,12 +141,14 @@ export const linkWithGoogle = async () => {
   }
 };
 
-
 export const getUser = async (username: string): Promise<User | null> => {
   try {
     const res = await fetch(apiUrl(`/user/profile/${username}`), {
       method: 'GET',
-      ...defaultFetchOptions,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
     });
     if (!res.ok) {
       throw new Error('Failed to fetch user data');
@@ -141,7 +163,10 @@ export const getUser = async (username: string): Promise<User | null> => {
 export const updatePassword = async (currentPassword: string | undefined, newPassword: string) => {
   const res = await fetch(apiUrl('/auth/update-password'), {
     method: 'PUT',
-    ...defaultFetchOptions,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
     body: JSON.stringify({ currentPassword, newPassword }),
   });
   if (!res.ok) {
@@ -155,7 +180,10 @@ export const updatePassword = async (currentPassword: string | undefined, newPas
 export const deleteAccount = async () => {
   const res = await fetch(apiUrl('/auth/delete-account'), {
     method: 'DELETE',
-    ...defaultFetchOptions,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
   });
   if (!res.ok) {
     const errorData = await res.json();

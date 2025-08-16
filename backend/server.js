@@ -26,9 +26,11 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
+const frontendUrl = process.env.DEV_MODE === 'development' ? process.env.FRONTEND_URL || 'http://localhost:5173' : process.env.FRONTEND_URL;
+
 const io = new Server(server, {
   cors: {
-    origin: 'https://ink-trail-rouge.vercel.app/',
+    origin: frontendUrl,
     methods: ['GET', 'POST'],
     credentials: true,
   }
@@ -63,7 +65,7 @@ export { io, connectedUsers }; // Export the io instance for use in other files
 
 // Middlewares
 app.use(cors({
-  origin: ['https://ink-trail-rouge.vercel.app/'],
+  origin: [frontendUrl],
   credentials: true
 }));  
 app.use(express.json());

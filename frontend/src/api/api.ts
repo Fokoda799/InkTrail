@@ -1,5 +1,6 @@
-const API_BASE = 'https://inktrail.onrender.com/api/v1'; // your backend base URL
-
+const API_BASE = import.meta.env.DEV_MODE  === "development"
+  ? import.meta.env.VITE_API_BASE || 'http://localhost:8080/api/v1'
+  : import.meta.env.VITE_API_BASE;
 
 export function apiUrl(path: string) {
   return `${API_BASE}${path}`;
@@ -14,7 +15,6 @@ export function defaultFetchOptions(): RequestInit {
   return {
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': token ? `Bearer ${token}` : '',
     },
     credentials: 'include', // send cookies/JWT cookies with every request
   };
