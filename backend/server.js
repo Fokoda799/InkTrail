@@ -110,5 +110,7 @@ if (DEV_MODE === 'development') {
 }
 
 server.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`.bgGreen.bold);
   console.log(`Socket.IO server is running on port ${PORT}`.bgBlue);
+  console.log(`Frontend URL: ${frontendUrl}`.bgCyan.bold);
 });
