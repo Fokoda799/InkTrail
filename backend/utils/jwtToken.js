@@ -6,10 +6,10 @@ const sendToken = (user, statusCode, res) => {
   const options = {
     // expires: new Date(Date.now() + process.env.COOKIE_EXPIRE * 24 * 60 * 60 * 1000),
     httpOnly: true,
-    secure: process.env.DEV_MODE === 'production',
+    secure: true,
     sameSite: 'none', // Required for cross-site cookies
     path: '/',
-    domain: '.onrender.app', // Or your production domain
+    domain: 'https://inktrail-lyart.vercel.app', // Or your production domain
     maxAge: 24 * 60 * 60 * 1000 // 1 day
   };
 

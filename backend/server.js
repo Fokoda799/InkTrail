@@ -66,7 +66,8 @@ export { io, connectedUsers }; // Export the io instance for use in other files
 // Middlewares
 app.use(cors({
   origin: [frontendUrl],
-  credentials: true
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));  
 app.use(express.json());
 app.use(morgan('dev'));
