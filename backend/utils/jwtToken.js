@@ -9,7 +9,7 @@ const sendToken = (user, statusCode, res) => {
     secure: true,
     sameSite: 'none', // Required for cross-site cookies
     path: '/',
-    domain: 'https://inktrail-lyart.vercel.app', // Or your production domain
+    domain: 'inktrail-lyart.vercel.app', // Or your production domain
     maxAge: 24 * 60 * 60 * 1000 // 1 day
   };
 
