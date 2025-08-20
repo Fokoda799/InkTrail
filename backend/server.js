@@ -18,6 +18,7 @@ import notificationRouter from './routes/notificationRoutes.js';
 import error from './middlewares/error.js';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import jwt from 'jsonwebtoken';
 
 // Load env variables
 dotenv.config();
@@ -37,6 +38,17 @@ const io = new Server(server, {
 })
 
 app.set("io", io);
+
+// Socket.IO authentication middleware
+io.use((socket, next) => {
+  const token = socket.handshake.auth.token;
+  if (token && jwt.verify(token, process.env.JWT_SECRET)) {
+    next();
+  } else {
+    next(new Error("Unauthorized"));
+  }
+});
+
 
 // Store connected users
 let connectedUsers = {};
