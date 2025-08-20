@@ -89,10 +89,6 @@ export class CommentActions {
   static async getCommentCount(blogId: string): Promise<number> {
     const res = await apiFetch(`/blogs/${blogId}/comments/count`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || 'Failed to fetch comment count');
