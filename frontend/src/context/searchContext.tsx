@@ -1,6 +1,7 @@
 import { debounce } from 'lodash';
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
+import { apiFetch } from '../api/api';
 
 export interface SearchResult {
   id: string;
@@ -47,7 +48,7 @@ export const SearchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const loadInitialData = async () => {
       try {
         // Fetch trending content
-        const trendingResponse = await fetch('/api/v1/search/trending');
+        const trendingResponse = await apiFetch('/api/v1/search/trending');
         const trendingData = await trendingResponse.json();
         setTrending(trendingData);
         console.log('Trending data loaded:', trendingData);
@@ -75,7 +76,7 @@ export const SearchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     setLoading(true);
     try {
-      const response = await fetch(`/api/v1/search?query=${encodeURIComponent(query)}`);
+      const response = await apiFetch(`/api/v1/search?query=${encodeURIComponent(query)}`);
       const data = await response.json();
       setResults(data);
       console.log('Search results:', data);
@@ -106,7 +107,7 @@ export const SearchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const fetchSuggestions = async (query: string) => {
     try {
-      const res = await fetch(`/api/v1/search/suggest?query=${encodeURIComponent(query)}`);
+      const res = await apiFetch(`/api/v1/search/suggest?query=${encodeURIComponent(query)}`);
       const data = await res.json();
       setSuggestions(data);
       console.log('Suggestions fetched:', data);

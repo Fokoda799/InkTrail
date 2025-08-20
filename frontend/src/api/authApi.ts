@@ -56,6 +56,7 @@ export const logOut = async () => {
     console.error('Failed to log out:', res.statusText);
     throw new Error('Failed to log out');
   }
+  localStorage.clear();
   return res.json();
 }
 

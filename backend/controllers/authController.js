@@ -24,7 +24,7 @@ class AuthController {
     static async connectUser(req, res) {
         const { email, password } = req.body;
         try {
-            const user = await User.findOne({ email }).populate('blogs', 'title content image');
+            const user = await User.findOne({ email });
             if (!user) {
                 return res.status(400).json({ success: false, message: "Invalid credentials" });
             }
