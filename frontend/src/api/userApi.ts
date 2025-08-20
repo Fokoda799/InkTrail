@@ -17,7 +17,6 @@ interface UpdateUserData {
 export const updateUser = async (updates: UpdateUserData) => {
   const res = await fetch(apiUrl('/user/me'), {
     method: 'PUT',
-    ...defaultFetchOptions,
     body: JSON.stringify(updates),
   });
 
