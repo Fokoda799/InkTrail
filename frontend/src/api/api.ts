@@ -7,6 +7,7 @@ const API_BASE =
  * Helper to build full API URL.
  */
 export function apiUrl(path: string): string {
+  console.log("API_BASE:", API_BASE);
   return `${API_BASE}${path}`;
 }
 
