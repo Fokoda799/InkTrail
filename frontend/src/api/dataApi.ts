@@ -1,5 +1,5 @@
 import { Blog, BlogInput, Comment, Like } from '../types/blogTypes';
-import { apiUrl } from './api';
+import { apiFetch } from './api';
 
 // Fetch all blogs
 export const fetchBlogs = async (
@@ -7,12 +7,8 @@ export const fetchBlogs = async (
   page: number,
   sortBy: 'latest' | 'trending' | 'popular' | null
 ): Promise<Blog[]> => {
-  const res = await fetch(apiUrl(`/blogs?viewType=${viewType}&page=${page}&sortBy=${sortBy || ''}`), {
+  const res = await apiFetch(`/blogs?viewType=${viewType}&page=${page}&sortBy=${sortBy || ''}`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    credentials: 'include',
   });
 
   const data = await res.json();
@@ -22,12 +18,8 @@ export const fetchBlogs = async (
 
 // Fetch blog by ID
 export const fetchBlogById = async (id: string): Promise<Blog> => {
-  const res = await fetch(apiUrl(`/blogs/${id}`), {
+  const res = await apiFetch(`/blogs/${id}`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    credentials: 'include',
   });
 
   const data = await res.json();
@@ -37,12 +29,8 @@ export const fetchBlogById = async (id: string): Promise<Blog> => {
 
 // Create a new blog
 export const createBlog = async (blogData: BlogInput): Promise<Blog> => {
-  const res = await fetch(apiUrl('/blogs'), {
+  const res = await apiFetch('/blogs', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    credentials: 'include',
     body: JSON.stringify(blogData),
   });
 
@@ -53,12 +41,8 @@ export const createBlog = async (blogData: BlogInput): Promise<Blog> => {
 
 // Update blog
 export const updateBlog = async (id: string, blogData: BlogInput): Promise<Blog> => {
-  const res = await fetch(apiUrl(`/blogs/${id}`), {
+  const res = await apiFetch(`/blogs/${id}`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    credentials: 'include',
     body: JSON.stringify(blogData),
   });
 
@@ -69,12 +53,8 @@ export const updateBlog = async (id: string, blogData: BlogInput): Promise<Blog>
 
 // Delete blog
 export const deleteBlog = async (id: string) => {
-  const res = await fetch(apiUrl(`/blogs/${id}`), {
+  const res = await apiFetch(`/blogs/${id}`, {
     method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    credentials: 'include',
   });
 
   if (!res.ok) {
@@ -85,12 +65,8 @@ export const deleteBlog = async (id: string) => {
 
 // Toggle like/bookmark/etc. on blog
 export const toggleAction = async (id: string, actionType: string): Promise<Blog> => {
-  const res = await fetch(apiUrl(`/blogs/${id}/action`), {
+  const res = await apiFetch(`/blogs/${id}/action`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    credentials: 'include',
     body: JSON.stringify({ actionType }),
   });
 
@@ -102,12 +78,8 @@ export const toggleAction = async (id: string, actionType: string): Promise<Blog
 // Comments class
 export class CommentActions {
   static async getComments(blogId: string): Promise<Comment[]> {
-    const res = await fetch(apiUrl(`/blogs/${blogId}/comments`), {
+    const res = await apiFetch(`/blogs/${blogId}/comments`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || 'Failed to fetch comments');
@@ -115,7 +87,7 @@ export class CommentActions {
   }
 
   static async getCommentCount(blogId: string): Promise<number> {
-    const res = await fetch(apiUrl(`/blogs/${blogId}/comments/count`), {
+    const res = await apiFetch(`/blogs/${blogId}/comments/count`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -128,12 +100,8 @@ export class CommentActions {
   }
 
   static async addComment(blogId: string, content: string, replyingTo?: string): Promise<Comment> {
-    const res = await fetch(apiUrl(`/blogs/${blogId}/comments`), {
+    const res = await apiFetch(`/blogs/${blogId}/comments`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
       body: JSON.stringify({ content, replyingTo }),
     });
     const data = await res.json();
@@ -142,12 +110,8 @@ export class CommentActions {
   }
 
   static async updateComment(commentId: string, content: string): Promise<Comment> {
-    const res = await fetch(apiUrl(`/blogs/comments/${commentId}`), {
+    const res = await apiFetch(`/blogs/comments/${commentId}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
       body: JSON.stringify({ content }),
     });
     const data = await res.json();
@@ -156,12 +120,8 @@ export class CommentActions {
   }
 
   static async deleteComment(commentId: string) {
-    const res = await fetch(apiUrl(`/blogs/comments/${commentId}`), {
+    const res = await apiFetch(`/blogs/comments/${commentId}`, {
       method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
     });
     if (!res.ok) {
       const errorData = await res.json();
@@ -170,12 +130,8 @@ export class CommentActions {
   }
 
   static async toggleCommentLike(commentId: string, blogId: string): Promise<Like> {
-    const res = await fetch(apiUrl(`/blogs/comments/${commentId}/like`), {
+    const res = await apiFetch(`/blogs/comments/${commentId}/like`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
       body: JSON.stringify({ blogId }),
     });
     const data = await res.json();
@@ -185,12 +141,8 @@ export class CommentActions {
 }
 
 export const getBlogsByUsername = async (username: string, limit: number, offset: number): Promise<Blog[]> => {
-  const res = await fetch(apiUrl(`/blogs/user/${username}?limit=${limit}&offset=${offset}`), {
+  const res = await apiFetch(`/blogs/user/${username}?limit=${limit}&offset=${offset}`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    credentials: 'include',
   });
 
   const data = await res.json();

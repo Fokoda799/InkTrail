@@ -4,12 +4,8 @@ import { app } from "../firebase";
 import { apiUrl, apiFetch } from "./api";
 
 export const getMe = async (): Promise<User> => {
-  const res = await fetch(apiUrl('/auth/me'), {
+  const res = await apiFetch('/auth/me', {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    credentials: 'include',
   });
   if (!res.ok) {
     console.error('Failed to fetch user data:', res.statusText);
@@ -53,12 +49,8 @@ export const signIn = async (email: string, password: string) => {
 };
 
 export const logOut = async () => {
-  const res = await fetch(apiUrl('/auth/logout'), {
+  const res = await apiFetch('/auth/logout', {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    credentials: 'include',
   });
   if (!res.ok) {
     console.error('Failed to log out:', res.statusText);
@@ -80,12 +72,8 @@ export const verifyEmailToken = async (token: string) => {
 };
 
 export const resendVerificationCode = async (email: string) => {
-  const res = await fetch(apiUrl('/auth/resend-verification-email'), {
+  const res = await apiFetch('/auth/resend-verification-email', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    credentials: 'include',
     body: JSON.stringify({ email }),
   });
   if (!res.ok) {
@@ -107,12 +95,8 @@ export const linkWithGoogle = async () => {
 
     if (!email) throw new Error("Missing email from Google account.");
 
-    const res = await fetch(apiUrl('/auth/google'), {
+    const res = await apiFetch('/auth/google', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
       body: JSON.stringify({ username, email, avatar }),
     });
 
@@ -139,12 +123,8 @@ export const linkWithGoogle = async () => {
 
 export const getUser = async (username: string): Promise<User | null> => {
   try {
-    const res = await fetch(apiUrl(`/user/profile/${username}`), {
+    const res = await apiFetch(`/user/profile/${username}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
     });
     if (!res.ok) {
       throw new Error('Failed to fetch user data');
@@ -157,12 +137,8 @@ export const getUser = async (username: string): Promise<User | null> => {
 };
 
 export const updatePassword = async (currentPassword: string | undefined, newPassword: string) => {
-  const res = await fetch(apiUrl('/auth/update-password'), {
+  const res = await apiFetch('/auth/update-password', {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    credentials: 'include',
     body: JSON.stringify({ currentPassword, newPassword }),
   });
   if (!res.ok) {
@@ -174,12 +150,8 @@ export const updatePassword = async (currentPassword: string | undefined, newPas
 };
 
 export const deleteAccount = async () => {
-  const res = await fetch(apiUrl('/auth/delete-account'), {
+  const res = await apiFetch('/auth/delete-account', {
     method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    credentials: 'include',
   });
   if (!res.ok) {
     const errorData = await res.json();

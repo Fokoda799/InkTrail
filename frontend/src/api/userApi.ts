@@ -1,4 +1,4 @@
-import { apiUrl } from './api';
+import { apiFetch } from './api';
 
 interface UpdateUserData {
   username?: string;
@@ -15,7 +15,7 @@ interface UpdateUserData {
 }
 
 export const updateUser = async (updates: UpdateUserData) => {
-  const res = await fetch(apiUrl('/user/me'), {
+  const res = await apiFetch('/user/me', {
     method: 'PUT',
     body: JSON.stringify(updates),
   });
