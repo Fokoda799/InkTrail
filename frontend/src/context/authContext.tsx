@@ -136,6 +136,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const oAuth = async () => {
     try {
       const res = await linkWithGoogle();
+      localStorage.setItem('token', res.token);
       storeUser(res.user);
     } catch (error) {
       console.error('OAuth error:', error);
