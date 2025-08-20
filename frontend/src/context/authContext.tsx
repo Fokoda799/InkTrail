@@ -92,6 +92,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string) => {
     try {
       const res = await signIn(email, password);
+      localStorage.setItem('token', res.token);
       storeUser(res.user);
     } catch (error) {
       console.error('Login error:', error);
