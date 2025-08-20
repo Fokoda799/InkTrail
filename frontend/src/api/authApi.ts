@@ -1,7 +1,7 @@
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { SignUpData, User } from "../types/userTypes";
 import { app } from "../firebase";
-import { apiUrl } from "./api";
+import { apiUrl, apiFetch } from "./api";
 
 export const getMe = async (): Promise<User> => {
   const res = await fetch(apiUrl('/auth/me'), {
@@ -68,12 +68,8 @@ export const logOut = async () => {
 }
 
 export const verifyEmailToken = async (token: string) => {
-  const res = await fetch(apiUrl('/auth/verify-email'), {
+  const res = await apiFetch('/auth/verify-email', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    credentials: 'include',
     body: JSON.stringify({ token }),
   });
   if (!res.ok) {

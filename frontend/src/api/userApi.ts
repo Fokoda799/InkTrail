@@ -1,4 +1,4 @@
-import { apiUrl, defaultFetchOptions } from './api';
+import { apiUrl } from './api';
 
 interface UpdateUserData {
   username?: string;
