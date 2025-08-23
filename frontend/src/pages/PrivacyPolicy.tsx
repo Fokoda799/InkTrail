@@ -1,35 +1,13 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { ArrowLeft, Shield, Mail, ExternalLink } from 'lucide-react';
+import { Shield, Mail, ExternalLink } from 'lucide-react';
+import ContactModal from '../components/ContacModal';
 
 const PrivacyPolicy: React.FC = () => {
+  const [isOpen, setIsOpen] = React.useState(false);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-10"
-      >
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
-            <Link 
-              to="/"
-              className="inline-flex items-center gap-2 text-gray-600 hover:text-amber-600 transition-colors duration-200"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              Back to Home
-            </Link>
-            <div className="flex items-center gap-3 ml-auto">
-              <Shield className="w-6 h-6 text-amber-500" />
-              <span className="font-semibold text-gray-900">InkTrail Privacy</span>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 py-12">
         <motion.div
@@ -280,41 +258,14 @@ const PrivacyPolicy: React.FC = () => {
               <p className="text-gray-600 leading-relaxed mb-4">
                 If you have any questions about this Privacy Policy, You can contact us:
               </p>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 cursor-pointer" onClick={() => setIsOpen(true)}>
                 <Mail className="w-5 h-5 text-amber-500" />
-                <a 
-                  href="mailto:abdllahhadid@gmail.com"
-                  className="text-amber-600 hover:text-amber-700 font-medium transition-colors duration-150"
-                >
-                  abdllahhadid@gmail.com
-                </a>
+                <span className="text-amber-600 hover:text-amber-400">abdllahhadid@gmail.com</span>
               </div>
             </section>
           </motion.div>
         </motion.div>
-
-        {/* Footer Navigation */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
-          className="mt-12 text-center"
-        >
-          <div className="flex flex-wrap justify-center gap-6 text-sm">
-            <Link to="/terms" className="text-gray-600 hover:text-amber-600 transition-colors duration-150">
-              Terms of Service
-            </Link>
-            <Link to="/cookies" className="text-gray-600 hover:text-amber-600 transition-colors duration-150">
-              Cookie Policy
-            </Link>
-            <Link to="/support" className="text-gray-600 hover:text-amber-600 transition-colors duration-150">
-              Support
-            </Link>
-            <Link to="/" className="text-amber-600 hover:text-amber-700 font-medium transition-colors duration-150">
-              Back to InkTrail
-            </Link>
-          </div>
-        </motion.div>
+        {isOpen && <ContactModal setIsOpen={setIsOpen} />}
       </div>
     </div>
   );

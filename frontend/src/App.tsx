@@ -20,6 +20,7 @@ import UpdateBlog from './pages/updateBlog';
 import NotificationsPage from './pages/Notifications/Notifications';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import ScrollToTop from './components/ScrollToTop';
+import TermsOfService from './pages/ToS';
 
 function App() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -64,8 +65,8 @@ function App() {
             {/* Public pages for everyone */}
             <Route path="/about" element={<About />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-            {/* <Route path="/terms-of-service" element={<TermsOfService />} />
-            <Route path="/contact-us" element={<ContactUs />} /> */}
+            <Route path="/terms-of-service" element={<TermsOfService />} />
+            {/* <Route path="/contact-us" element={<ContactUs />} /> */}
 
             {/* Not Found */}
             <Route path="*" element={<NotFound />} />
