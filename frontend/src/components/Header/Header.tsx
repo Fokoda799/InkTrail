@@ -296,7 +296,7 @@ const Header: React.FC<HeaderProps> = ({
               className="flex items-center gap-2 hover:opacity-80 transition-opacity duration-150"
             >
               <div className="w-10 h-10  rounded-lg flex items-center justify-center">
-                <img className='w-full h-full' alt="logo" src="/public/icon.png" />
+                <img className='w-full h-full' alt="logo" src="/icon.png" /> 
               </div>
               <span className="text-xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
                 InkTrail
