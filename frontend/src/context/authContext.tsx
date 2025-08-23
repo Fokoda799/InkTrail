@@ -61,22 +61,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const currentUser = await getMe();
         if (currentUser) {
           storeUser(currentUser);
+        } else {
+          storeUser(null);
         }
       } catch (error) {
         console.error('Error checking auth status:', error);
         storeUser(null);
-        navigate('/welcome', { replace: true });
       } finally {
         setIsLoading(false);
       }
     };
-    if (!token) {
+
+    if (token) {
+      checkAuthStatus();
+    } else {
       storeUser(null);
       setIsLoading(false);
-      return;
-  }
-    checkAuthStatus();
-  }, []); // ✅ No unnecessary dependencies
+    }
+  }, []);
 
   const register = async (userData: SignUpData) => {
     try {
