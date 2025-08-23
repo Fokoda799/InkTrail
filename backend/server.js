@@ -19,6 +19,7 @@ import error from './middlewares/error.js';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import jwt from 'jsonwebtoken';
+import contactRouter from './routes/contact.js';
 
 // Load env variables
 dotenv.config();
@@ -100,6 +101,7 @@ app.use('/api/v1/admin', adminRouter);
 app.use('/api/v1/blogs', blogRouter);
 app.use('/api/v1/search', searchRouter);
 app.use('/api/v1/notifications', notificationRouter);
+app.use('/api/v1/contact', contactRouter);
 
 // Centralized error handling middleware
 app.use(error);

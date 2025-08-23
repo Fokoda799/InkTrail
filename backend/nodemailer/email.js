@@ -54,4 +54,23 @@ async function sendWelcomeEmail(user) {
 
 }
 
-export { sendVerificationEmail, sendWelcomeEmail };
+async function sendContactEmail(name, email, message) {
+  const mailOptions = {
+    from: process.env.SMTP_USER,
+    to: process.env.CONTACT_EMAIL,
+    subject: `New Contact Form Submission from ${name}`,
+    html: `<p>You have received a new message from the contact form:</p>
+           <p><strong>Name:</strong> ${name}</p>
+           <p><strong>Email:</strong> ${email}</p>
+           <p><strong>Message:</strong> ${message}</p>`,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`Contact email sent to ${process.env.CONTACT_EMAIL}`);
+  } catch (error) {
+    console.error(`Error sending contact email: ${error.message}`);
+  }
+}
+
+export { sendVerificationEmail, sendWelcomeEmail, sendContactEmail };

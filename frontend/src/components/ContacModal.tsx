@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, X, Send, User, MessageCircle } from 'lucide-react';
+import { useAlert } from 'react-alert';
 
+const VITE_API_BASE = import.meta.env.VITE_API_BASE;
 interface ContactModalProps {
   setIsOpen: (open: boolean) => void;
 }
 
 const ContactModal: React.FC<ContactModalProps> = ({ setIsOpen }) => {
+  const alert = useAlert();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -21,11 +25,26 @@ const ContactModal: React.FC<ContactModalProps> = ({ setIsOpen }) => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    // Handle form submission here
-    setIsOpen(false);
+    setLoading(true);
+    try {
+      await fetch(`${VITE_API_BASE}/contact`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      alert.success('Message sent successfully!');
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      alert.error('Failed to send message.');
+    } finally {
+      setLoading(false);
+      setIsOpen(false);
+    }
   };
 
   return (
@@ -109,7 +128,7 @@ const ContactModal: React.FC<ContactModalProps> = ({ setIsOpen }) => {
                     value={formData.name}
                     onChange={handleInputChange}
                     placeholder="Your full name"
-                    className="w-full border-2 text-gray-600 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all duration-200 bg-gray-50 hover:bg-white"
+                    className="w-full border-2 focus:text-gray-600 text-gray-600 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all duration-200 bg-gray-50 hover:bg-white"
                     required
                   />
                 </motion.div>
@@ -130,7 +149,7 @@ const ContactModal: React.FC<ContactModalProps> = ({ setIsOpen }) => {
                     value={formData.email}
                     onChange={handleInputChange}
                     placeholder="your@email.com"
-                    className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all duration-200 bg-gray-50 hover:bg-white"
+                    className="w-full border-2 focus:text-gray-600 text-gray-600 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all duration-200 bg-gray-50 hover:bg-white"
                     required
                   />
                 </motion.div>
@@ -150,7 +169,7 @@ const ContactModal: React.FC<ContactModalProps> = ({ setIsOpen }) => {
                     value={formData.message}
                     onChange={handleInputChange}
                     placeholder="Tell us what's on your mind..."
-                    className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 h-32 resize-none focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all duration-200 bg-gray-50 hover:bg-white"
+                    className="w-full border-2 focus:text-gray-600 text-gray-600 border-gray-200 rounded-xl px-4 py-3 h-32 resize-none focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all duration-200 bg-gray-50 hover:bg-white"
                     required
                   />
                 </motion.div>
@@ -160,11 +179,13 @@ const ContactModal: React.FC<ContactModalProps> = ({ setIsOpen }) => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.6 }}
+                  disabled={loading}
                   type="submit"
-                  className="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:from-amber-600 hover:to-orange-600 transition-all duration-200 flex items-center justify-center gap-2 group"
+                  className={`w-full py-4 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 group
+                    ${loading ? 'opacity-40 cursor-not-allowed bg-gray-500' : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600'}`}
                 >
-                  <Send className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
-                  Send Message
+                  <Send className={`w-5 h-5 group-hover:translate-x-1 transition-transform duration-200 ${loading ? 'animate-spin' : ''}`} />
+                  {loading ? 'Sending...' : 'Send Message'}
                 </motion.button>
               </form>
 
