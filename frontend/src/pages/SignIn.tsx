@@ -101,7 +101,7 @@ const SignIn: React.FC<SignInProps> = () => {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4"
             >
-              <img alt="log" src="/public/icon.png"/>
+              <img alt="log" src="/icon.png"/>
             </motion.div>
             
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
