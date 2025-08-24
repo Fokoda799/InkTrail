@@ -262,7 +262,7 @@ class AuthController {
         try {
             const userId = req.user.id; // from auth middleware
 
-            const user = await User.deleteOne({ _id: userId });
+            const user = await User.findOne({ _id: userId });
             if (!user) {
                 return res.status(404).json({
                     success: false,
@@ -270,6 +270,7 @@ class AuthController {
                 });
             }
 
+            await user.remove();
             removeToken(res); // Clear the token cookie
 
         } catch (error) {

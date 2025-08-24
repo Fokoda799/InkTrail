@@ -169,7 +169,7 @@ const Header: React.FC<HeaderProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+            className="fixed h-screen inset-0 bg-black bg-opacity-50 z-40 md:hidden"
             onClick={() => setIsMenuOpen(false)}
           />
           
@@ -179,7 +179,7 @@ const Header: React.FC<HeaderProps> = ({
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'tween', duration: 0.3 }}
-            className="fixed right-0 top-0 h-full w-80 bg-white shadow-xl z-50 md:hidden"
+            className="fixed right-0 top-0 h-screen w-80 bg-white shadow-xl z-50 md:hidden"
           >
             <div className="p-4 border-b border-gray-200">
               <div className="flex items-center justify-between">
@@ -193,7 +193,7 @@ const Header: React.FC<HeaderProps> = ({
               </div>
             </div>
             
-            <div className="p-4">
+            <div className="p-4 bg-white">
               {isAuthorized ? (
                 <div className="space-y-4">
                   <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
@@ -208,7 +208,9 @@ const Header: React.FC<HeaderProps> = ({
                     <Link
                       to="/profile"
                       onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors duration-150"
+                      className={`flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors duration-150
+                        ${location.pathname === '/profile' ? 'bg-amber-100' : ''}
+                      `}
                     >
                       <User className="w-5 h-5 text-gray-500" />
                       <span className="text-gray-700">Profile</span>
@@ -217,7 +219,9 @@ const Header: React.FC<HeaderProps> = ({
                     <Link
                       to="/settings"
                       onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors duration-150"
+                      className={`flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors duration-150
+                        ${location.pathname === '/settings' ? 'bg-amber-100' : ''}
+                      `}
                     >
                       <Settings className="w-5 h-5 text-gray-500" />
                       <span className="text-gray-700">Settings</span>
@@ -240,7 +244,9 @@ const Header: React.FC<HeaderProps> = ({
                   <Link
                     to="/welcome"
                     onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors duration-150"
+                    className={`flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors duration-150
+                      ${location.pathname === '/welcome' ? 'bg-amber-100' : ''}
+                    `}
                   >
                     <Home className="w-5 h-5 text-gray-500" />
                     <span className="text-gray-700">Home</span>
@@ -249,7 +255,9 @@ const Header: React.FC<HeaderProps> = ({
                   <Link
                     to="/about"
                     onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors duration-150"
+                    className={`flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors duration-150
+                      ${location.pathname === '/about' ? 'bg-amber-100' : ''}
+                    `}
                   >
                     <Info className="w-5 h-5 text-gray-500" />
                     <span className="text-gray-700">About</span>
@@ -259,7 +267,9 @@ const Header: React.FC<HeaderProps> = ({
                     <Link
                       to="/signin"
                       onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors duration-150"
+                      className={`flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors duration-150
+                        ${location.pathname === '/signin' ? 'bg-amber-100' : ''}
+                      `}
                     >
                       <LogIn className="w-5 h-5 text-gray-500" />
                       <span className="text-gray-700">Sign In</span>
@@ -270,7 +280,8 @@ const Header: React.FC<HeaderProps> = ({
                     <Link
                       to="/signup"
                       onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors duration-150"
+                      className={"flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors duration-150" + 
+                        (location.pathname === '/signup' ? ' bg-amber-100' : '')}
                     >
                       <UserPlus className="w-5 h-5 text-gray-500" />
                       <span className="text-gray-700">Sign Up</span>
@@ -286,7 +297,7 @@ const Header: React.FC<HeaderProps> = ({
   );
 
   return (
-    <header className="fixed top-0 left-0 w-full z-50 bg-white border-b border-gray-200 backdrop-blur-sm bg-white/95">
+    <header className="fixed top-0 left-0 w-full z-50 opacity-95 bg-white border-b border-gray-200 backdrop-blur-sm bg-white/95">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}

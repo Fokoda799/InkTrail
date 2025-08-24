@@ -111,6 +111,9 @@ userSchema.pre('remove', async function(next) {
   try {
     // `this` is the user document being removed
     await mongoose.model('Blog').deleteMany({ author: this._id });
+    await mongoose.model('Comment').deleteMany({ author: this._id });
+    await mongoose.model('Notification').deleteMany({ user: this._id });
+    await mongoose.model('User').deleteOne({ _id: this._id });
     next();
   } catch (err) {
     next(err);

@@ -559,7 +559,7 @@ const ProfilePage: React.FC<ProfilePageProps> = () => {
                                 {blog.excerpt?.substring(0, 100) || ''}...
                               </p>
                               <div className="flex items-center justify-between text-xs text-gray-500">
-                                <span>{new Date(blog.createdAt).toLocaleDateString()}</span>
+                                <span>{new Date(blog.updatedAt).toLocaleDateString()}</span>
                                 <div className="flex items-center gap-3">
                                   <span className="flex items-center gap-1">
                                     <Eye className="w-3 h-3" />
@@ -710,7 +710,7 @@ const ProfilePage: React.FC<ProfilePageProps> = () => {
                                 {blog.excerpt?.substring(0, 100) || ''}...
                               </p>
                               <div className="flex items-center justify-between text-xs text-gray-500">
-                                <span>{new Date(blog.createdAt).toLocaleDateString()}</span>
+                                <span>{new Date(blog.updatedAt).toLocaleDateString()}</span>
                                 <div className="flex items-center gap-3">
                                   <span className="flex items-center gap-1">
                                     <Eye className="w-3 h-3" />

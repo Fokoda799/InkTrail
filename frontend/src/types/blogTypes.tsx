@@ -18,6 +18,7 @@ export interface Blog {
   author: Author;
   state: 'draft' | 'published' | 'archived';
   createdAt: string;
+  updatedAt: string;
   likes?: number;
   isLiked: boolean;
   bookmarks?: string[];
