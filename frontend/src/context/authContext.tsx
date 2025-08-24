@@ -58,11 +58,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const checkAuthStatus = async () => {
       setIsLoading(true);
       try {
-        const currentUser = await getMe();
-        if (currentUser) {
-          storeUser(currentUser);
-        } else {
-          storeUser(null);
+        const token = localStorage.getItem('token');
+        if (token) {
+          const currentUser = await getMe();
+          if (currentUser) {
+            storeUser(currentUser);
+          } else {
+            storeUser(null);
+          }
         }
       } catch (error) {
         console.error('Error checking auth status:', error);
