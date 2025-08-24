@@ -1,34 +1,30 @@
-import { Box, Typography, Button, Container } from '@mui/material';
-import { Link } from 'react-router-dom';
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
-
-const NotFound = () => {
+export default function NotFound() {
   return (
-    <Container component="main" maxWidth="sm" sx={{ textAlign: 'center', mt: 10, marginBottom: 10 }}>
-      <ErrorOutlineIcon sx={{ fontSize: 100, color: 'error.main' }} />
-      <Typography variant="h2" color="text.primary" gutterBottom>
-        404
-      </Typography>
-      <Typography variant="h5" color="text.secondary" paragraph>
-        Oops! The page you're looking for doesn't exist.
-      </Typography>
-      <Typography variant="body1" color="text.secondary" paragraph>
-        It looks like you may have taken a wrong turn. Don't worry... it happens to the best of us.
-      </Typography>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-6">
+      {/* Big Fun Emoji/Icon */}
+      <div className="text-8xl">🚧</div>
 
-      <Box mt={4} >
-        <Button 
-          variant="contained" 
-          color="primary" 
-          component={Link} 
-          to="/" 
-          sx={{ textTransform: 'none' }}
-        >
-          Go Back Home
-        </Button>
-      </Box>
-    </Container>
+      {/* 404 Heading */}
+      <h1 className="mt-6 text-6xl font-extrabold text-gray-800">404</h1>
+
+      {/* Subheading */}
+      <h2 className="mt-2 text-2xl font-semibold text-gray-600">
+        Oops! Page not found
+      </h2>
+
+      {/* Funny Description */}
+      <p className="mt-4 max-w-md text-center text-gray-500">
+        Looks like you wandered off the path. Don’t worry, even the best explorers
+        get lost sometimes. 🗺️
+      </p>
+
+      {/* Button */}
+      <a
+        href="/"
+        className="mt-8 px-6 py-3 rounded-2xl bg-indigo-600 text-white font-medium shadow-md hover:bg-indigo-700 transition-all duration-200"
+      >
+        ⬅️ Go Back Home
+      </a>
+    </div>
   );
-};
-
-export default NotFound;
+}

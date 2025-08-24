@@ -72,7 +72,7 @@ class BlogController {
 
     static async getAllBlogs(req, res) {
         // Validate and sanitize input
-        const { page = 1, limit = 10, viewType, sortBy } = req.query;
+        const { page = 1, limit = 10, viewType, sortBy, selectedTags } = req.query;
         const pageInt = parseInt(page, 10);
         const limitInt = parseInt(limit, 10);
         
@@ -140,6 +140,10 @@ class BlogController {
                 }
 
                 queryConditions.author = { $in: user.following };
+            }
+
+            if (selectedTags && selectedTags.length > 0) {
+                queryConditions.tags = { $in: selectedTags };
             }
 
             // Execute paginated query

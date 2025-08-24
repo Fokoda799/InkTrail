@@ -37,7 +37,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [totalResults, setTotalResults] = useState(0);
 
-  const { searchQuery } = useSearch();
+  const { searchQuery, setSearchQuery } = useSearch();
   const navigate = useNavigate();
 
   const performSearch = async (query: string) => {
@@ -101,6 +101,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
   const clearSearch = () => {
     setFilteredResults([]);
     setTotalResults(0);
+    setSearchQuery('');
   };
 
   const formatNumber = (num: number) => {

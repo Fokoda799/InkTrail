@@ -5,15 +5,16 @@ import { apiFetch } from './api';
 export const fetchBlogs = async (
   viewType: 'feeds' | 'following',
   page: number,
-  sortBy: 'latest' | 'trending' | 'popular' | null
-): Promise<Blog[]> => {
-  const res = await apiFetch(`/blogs?viewType=${viewType}&page=${page}&sortBy=${sortBy || ''}`, {
+  sortBy: 'latest' | 'trending' | 'popular' | null,
+  selectedTags: string[] = [],
+): Promise<{ blogs: Blog[], pagination: { hasNextPage: boolean } }> => {
+  const res = await apiFetch(`/blogs?viewType=${viewType}&page=${page}&sortBy=${sortBy || ''}&tags=${selectedTags.join(',')}`, {
     method: 'GET',
   });
 
   const data = await res.json();
   if (!res.ok) throw new Error(data.message || 'Failed to fetch blogs');
-  return data.data.blogs;
+  return data.data;
 };
 
 // Fetch blog by ID

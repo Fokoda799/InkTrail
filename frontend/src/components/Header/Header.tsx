@@ -206,7 +206,7 @@ const Header: React.FC<HeaderProps> = ({
                   
                   <nav className="space-y-2">
                     <Link
-                      to="/profile"
+                      to={`/profile/${user?.username}`}
                       onClick={() => setIsMenuOpen(false)}
                       className={`flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors duration-150
                         ${location.pathname === '/profile' ? 'bg-amber-100' : ''}
@@ -301,9 +301,9 @@ const Header: React.FC<HeaderProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center">
+          <div className="flex items-center mr-2">
             <button
-              onClick={() => navigate('/welcome')}
+              onClick={() => navigate('/')}
               className="flex items-center gap-2 hover:opacity-80 transition-opacity duration-150"
             >
               <div className="w-10 h-10  rounded-lg flex items-center justify-center">
@@ -323,7 +323,9 @@ const Header: React.FC<HeaderProps> = ({
             {isAuthorized ? (
               <>
                 {/* Action Buttons */}
-                <div className="hidden md:flex items-center gap-2">
+                <div className={"items-center gap-2" +
+                  (path === '/results' ? ' hidden' : 'flex')
+                }>
                   {path !== '/new-fact' && (
                     <motion.button
                       whileHover={{ scale: 1.05 }}
@@ -339,7 +341,7 @@ const Header: React.FC<HeaderProps> = ({
 
                 {/* Notifications */}
                 {location.pathname !== '/notifications' && (
-                  <div className="relative hidden md:block">
+                  <div className={`relative ${(path === '/results' ? ' hidden' : 'block')}`}>
                     <button
                       onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
                       className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-all duration-150"

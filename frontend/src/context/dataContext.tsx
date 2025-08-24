@@ -22,10 +22,15 @@ interface CommentActionsProps {
 
 interface DataContextType {
   blogs: Blog[];
+  pagination: { hasNextPage: boolean };
   blog: Blog | null;
   isLoading: boolean;
   error: string | null;
-  refreshBlogs: (viewType: 'feeds' | 'following', page: number, sortBy: 'latest' | 'trending' | 'popular' | null) => Promise<void>;
+  refreshBlogs: (viewType: 'feeds' | 'following',
+    page: number,
+    sortBy: 'latest' | 'trending' | 'popular' | null,
+    selectedTags: string[],
+  ) => Promise<void>;
   getBlogById: (id: string) => Promise<Blog | null | undefined>;
   addBlog: (data: BlogInput) => Promise<void>;
   editBlog: (id: string, data: BlogInput) => Promise<void>;
@@ -39,16 +44,21 @@ const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [pagination, setPagination] = useState<{ hasNextPage: boolean }>({ hasNextPage: false });
   const [blog, setBlog] = useState<Blog | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const refreshBlogs = async (viewType: 'feeds' | 'following' = 'feeds', page: number = 1, sortBy: 'latest' | 'trending' | 'popular' | null = null) => {
+  const refreshBlogs = async (viewType: 'feeds' | 'following' = 'feeds', page: number = 1,
+    sortBy: 'latest' | 'trending' | 'popular' | null = null,
+    selectedTags: string[] = [],
+  ) => {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await fetchBlogs(viewType, page, sortBy);
-      setBlogs(prev => page === 1 ? data : [...prev, ...data]);
+      const { blogs, pagination } = await fetchBlogs(viewType, page, sortBy, selectedTags);
+      setBlogs(prev => page === 1 ? blogs : [...prev, ...blogs]);
+      setPagination(pagination);
     } catch (err: any) {
       setError(err.message || 'Failed to load blogs');
     } finally {
@@ -121,8 +131,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <DataContext.Provider
-      value={{ 
-        blogs, isLoading, error,
+      value={{
+        blogs, pagination, isLoading, error,
         refreshBlogs, blog,
         getBlogById, addBlog, editBlog, 
         removeBlog, setAction, CommentActions,

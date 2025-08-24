@@ -22,9 +22,10 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import ScrollToTop from './components/ScrollToTop';
 import TermsOfService from './pages/ToS';
 import ResetPassword from './pages/ResetPassword';
+import LoadingSpinner from './components/LoadingSpinner';
 
 function App() {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout, isLoading } = useAuth();
 
   return (
     <>
@@ -36,7 +37,7 @@ function App() {
           <Routes>
             {/* Root redirect */}
             <Route path="/" element={
-              isAuthenticated ? <Navigate to="/blogs" replace /> : <Navigate to="/welcome" replace />
+              isAuthenticated ? <Navigate to="/blogs" replace /> : isLoading ? <LoadingSpinner /> : <Navigate to="/welcome" replace />
             } />
 
             {/* Authentication routes for NOT logged-in users */}

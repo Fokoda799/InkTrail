@@ -17,7 +17,7 @@ import SearchBar from '../components/AppComponents/SearchBar';
 
 const BlogsPage: React.FC = () => {
   const navigate = useNavigate();
-  const { blogs, isLoading, error, refreshBlogs, getBlogById } = useData();
+  const { blogs, pagination, isLoading, error, refreshBlogs, getBlogById } = useData();
   const alert = useAlert();
   
   // Use ref to track if we're currently fetching to prevent duplicate requests
@@ -45,7 +45,7 @@ const BlogsPage: React.FC = () => {
     }
     
     try {
-      await refreshBlogs(viewType, pageNum, sortBy);
+      await refreshBlogs(viewType, pageNum, sortBy, selectedTags);
       
       // The blogs from context should contain the new page data
       // We'll handle the accumulation in the useEffect below
@@ -57,7 +57,7 @@ const BlogsPage: React.FC = () => {
       isFetchingRef.current = false;
       setLoadingMore(false);
     }
-  }, [viewType, sortBy, page]);
+  }, [viewType, sortBy, page, selectedTags]);
 
   // Handle blogs data from context
   useEffect(() => {
@@ -97,7 +97,7 @@ const BlogsPage: React.FC = () => {
     setBlogList([]);
     setPage(1);
     setHasMore(true);
-  }, [sortBy, viewType]);
+  }, [sortBy, viewType, selectedTags]);
 
   // Handle errors
   useEffect(() => {
@@ -132,11 +132,11 @@ const BlogsPage: React.FC = () => {
     if (
       scrollPosition >= scrollHeight - threshold &&
       !loadingMore &&
-      hasMore
+      pagination.hasNextPage
     ) {
       setPage(prevPage => prevPage + 1);
     }
-  }, [hasMore, isLoading]);
+  }, [pagination.hasNextPage, isLoading]);
 
   // Set up scroll listener on the scroll container
   useEffect(() => {
@@ -366,7 +366,7 @@ const BlogsPage: React.FC = () => {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => navigate('/write')}
+              onClick={() => navigate('/new-fact')}
               className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-full font-semibold hover:from-amber-600 hover:to-orange-600 transition-all duration-200 shadow-lg hover:shadow-xl"
             >
               <PenTool className="w-5 h-5" />

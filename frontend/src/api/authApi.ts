@@ -93,11 +93,15 @@ export const linkWithGoogle = async () => {
     const email = result.user.email;
     const username = email?.split('@')[0];
     const avatar = result.user.photoURL;
+    console.log("Google sign-in successful:", { username, email, avatar });
 
     if (!email) throw new Error("Missing email from Google account.");
 
-    const res = await apiFetch('/auth/google', {
+    const res = await fetch(apiUrl('/auth/google'), {
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({ username, email, avatar }),
     });
 
