@@ -21,6 +21,7 @@ import NotificationsPage from './pages/Notifications/Notifications';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import ScrollToTop from './components/ScrollToTop';
 import TermsOfService from './pages/ToS';
+import ResetPassword from './pages/ResetPassword';
 
 function App() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -66,6 +67,7 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             {/* <Route path="/contact-us" element={<ContactUs />} /> */}
 
             {/* Not Found */}

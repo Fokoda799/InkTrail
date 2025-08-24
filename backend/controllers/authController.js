@@ -1,6 +1,6 @@
 import User from '../models/userModel.js';
 import sendToken, { removeToken } from '../utils/jwtToken.js';
-import { sendVerificationEmail, sendWelcomeEmail } from '../nodemailer/email.js';
+import { sendVerificationEmail, sendWelcomeEmail, sendChangePasswordLink } from '../nodemailer/email.js';
 
 class AuthController {
     static async getMe(req, res) {
@@ -88,6 +88,51 @@ class AuthController {
             return res.status(500).json({ message: error.message });
         }
     }
+
+    static checkEmail = async (req, res) => {
+        const { email } = req.body;
+        try {
+            const user = await User.findOne({ email });
+            if (!user) {
+                return res.status(200).json({ success: true, message: "Email is not found" });
+            }
+
+            user.resetPasswordToken = Math.floor(100000 + Math.random() * 900000).toString();
+            user.resetPasswordExpire = Date.now() + 15 * 60 * 1000; // 15 minutes
+            await user.save();
+
+            sendChangePasswordLink(email, user.resetPasswordToken, user.username);
+            res.status(200).json({ success: true, message: "Link sent to email" });
+        } catch (error) {
+            console.error('Error checking email:', error);
+            res.status(500).json({ success: false, message: error.message });
+        }
+    };
+
+    static resetPassword = async (req, res) => {
+        const { token, newPassword } = req.body;
+        try {
+            const user = await User.findOne({
+                resetPasswordToken: token,
+                resetPasswordExpire: { $gt: Date.now() },
+            });
+
+            if (!user) {
+                return res.status(400).json({ success: false, message: "Invalid or expired token" });
+            }
+
+            user.password = newPassword;
+            user.withPassword = true;
+            user.resetPasswordToken = undefined;
+            user.resetPasswordExpire = undefined;
+            await user.save();
+
+            res.status(200).json({ success: true, message: "Password reset successfully" });
+        } catch (error) {
+            console.error('Error resetting password:', error);
+            res.status(500).json({ success: false, message: error.message });
+        }
+    };
 
     static updatePassword = async (req, res) => {
         try {

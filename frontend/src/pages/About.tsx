@@ -10,7 +10,7 @@ const About = () => {
     { 
       name: 'Abdellah Nait Hadid', 
       role: 'CEO & Founder', 
-      avatar: 'https://via.placeholder.com/150',
+      avatar: '/seo.jpg',
       bio: 'Passionate about creating platforms that empower writers and storytellers worldwide.',
       linkedin: 'https://www.linkedin.com/in/fokoda-code/'
     },

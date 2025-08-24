@@ -256,6 +256,31 @@ export const createWelcomeEmailTemplate = (userName) => {
             font-size: 14px;
             margin-bottom: 16px;
         }
+
+        .logo {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .logo-icon {
+            width: 60px;
+            height: 60px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .logo-text {
+            color: #ffffff;
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
         
         .social-links {
             display: flex;
@@ -391,12 +416,7 @@ export const createWelcomeEmailTemplate = (userName) => {
         <div class="header">
             <div class="logo">
                 <div class="logo-icon">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: white;">
-                        <path d="M12 19l7-7 3 3-7 7-3-3z"/>
-                        <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
-                        <path d="M2 2l7.586 7.586"/>
-                        <circle cx="11" cy="11" r="2"/>
-                    </svg>
+                    <img src="https://firebasestorage.googleapis.com/v0/b/blogify-auth-893b7.appspot.com/o/logo%2Ficon.png?alt=media&token=d127ac3d-1d30-4960-b66f-6d8c5f24f79b" alt="InkTrail Logo" style="width: 100%; height: 100%;">
                 </div>
                 <h1 class="logo-text">InkTrail</h1>
                 <div class="welcome-badge">✨ Welcome to the Community</div>

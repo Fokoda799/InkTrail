@@ -12,6 +12,7 @@ import {
   Chrome
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import ForgotPasswordModal from '../components/ForgotePassword';
 
 interface SignInProps {
   onSignIn?: (email: string, password: string) => Promise<void>;
@@ -25,7 +26,8 @@ const SignIn: React.FC<SignInProps> = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [localError, setLocalError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  
+  const [isOpen, setIsOpen] = useState(false); // For future use if needed
+
   const navigate = useNavigate();
   const { login, oAuth } = useAuth(); // Assuming useAuth is a custom hook for authentication
 
@@ -177,13 +179,16 @@ const SignIn: React.FC<SignInProps> = () => {
 
             {/* Forgot Password Link */}
             <div className="flex justify-end">
-              <Link
-                to="/forgot-password"
+              <button
+                type="button"
+                onClick={() => setIsOpen(true)}
                 className="text-sm text-amber-600 hover:text-amber-700 font-medium transition-colors duration-150"
               >
                 Forgot your password?
-              </Link>
+              </button>
             </div>
+
+            {isOpen && <ForgotPasswordModal isOpen={isOpen} setIsOpen={setIsOpen} />}
 
             {/* Sign In Button */}
             <motion.button
@@ -258,11 +263,11 @@ const SignIn: React.FC<SignInProps> = () => {
         >
           <p className="text-m text-gray-700">
             By signing in, you agree to our{' '}
-            <Link to="/terms" className="text-amber-600 hover:text-amber-700">
+            <Link to="/terms-of-service" className="text-amber-600 hover:text-amber-700">
               Terms of Service
             </Link>{' '}
             and{' '}
-            <Link to="/privacy" className="text-amber-600 hover:text-amber-700">
+            <Link to="/privacy-policy" className="text-amber-600 hover:text-amber-700">
               Privacy Policy
             </Link>
           </p>

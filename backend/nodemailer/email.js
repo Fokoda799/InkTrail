@@ -2,6 +2,7 @@ import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 import { html, createVerificationEmailPlainText } from '../templates/emailVerification.js';
 import { createWelcomeEmailTemplate, createWelcomeEmailPlainText } from '../templates/welcomeEmail.js';
+import { createResetPasswordEmail } from '../templates/resetPassword.js';
 
 dotenv.config();
 
@@ -73,4 +74,21 @@ async function sendContactEmail(name, email, message) {
   }
 }
 
-export { sendVerificationEmail, sendWelcomeEmail, sendContactEmail };
+async function sendChangePasswordLink(email, token, username) {
+  const message = {
+    from: process.env.SMTP_USER,
+    to: email,
+    subject: 'Change Your Password - InkTrail',
+    html: createResetPasswordEmail(process.env.FRONTEND_URL, `${process.env.FRONTEND_URL}/reset-password?email=${email}&token=${token}`, username, email),
+    text: `click this link to change your password: ${process.env.FRONTEND_URL}/reset-password?token=${token}`,
+  };
+
+  try {
+    await transporter.sendMail(message);
+    console.log(`Password change email sent to ${email}`);
+  } catch (error) {
+    console.error(`Error sending password change email: ${error.message}`);
+  }
+}
+
+export { sendVerificationEmail, sendWelcomeEmail, sendContactEmail, sendChangePasswordLink };

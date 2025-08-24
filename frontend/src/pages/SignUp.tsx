@@ -365,11 +365,11 @@ const SignUp: React.FC = () => {
         >
           <p className="text-sm text-gray-500">
             By creating an account, you agree to our{' '}
-            <Link to="/terms" className="text-amber-600 hover:text-amber-700">
+            <Link to="/terms-of-service" className="text-amber-600 hover:text-amber-700">
               Terms of Service
             </Link>{' '}
             and{' '}
-            <Link to="/privacy" className="text-amber-600 hover:text-amber-700">
+            <Link to="/privacy-policy" className="text-amber-600 hover:text-amber-700">
               Privacy Policy
             </Link>
           </p>

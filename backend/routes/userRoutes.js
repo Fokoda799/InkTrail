@@ -31,4 +31,8 @@ authRouter.post('/resend-verification-email', isAuthenticatedUser, AuthControlle
 authRouter.put('/update-password', isAuthenticatedUser, AuthController.updatePassword);
 authRouter.delete('/delete-account', isAuthenticatedUser, AuthController.deleteAccount);
 
+// Reset Password
+userRouter.post('/check-email', AuthController.checkEmail);
+userRouter.post('/reset-password', AuthController.resetPassword);
+
 export { userRouter, authRouter, adminRouter };
