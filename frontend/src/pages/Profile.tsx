@@ -207,22 +207,22 @@ const ProfilePage: React.FC<ProfilePageProps> = () => {
     return num.toString();
   };
 
-if (!profile && !loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
-        <UserIcon className="w-16 h-16 text-gray-300" />
-        <h2 className="text-2xl font-bold text-gray-900">Profile not found</h2>
-        <p className="text-gray-600">The user you're looking for doesn't exist.</p>
-      </div>
-    );
-  }
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader className="w-12 h-12 text-gray-400 animate-spin" />
       </div>
     );
+  }
+
+  if (!profile) {
+      return (
+        <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+          <UserIcon className="w-16 h-16 text-gray-300" />
+          <h2 className="text-2xl font-bold text-gray-900">Profile not found</h2>
+          <p className="text-gray-600">The user you're looking for doesn't exist.</p>
+        </div>
+      );
   }
 
   return (
